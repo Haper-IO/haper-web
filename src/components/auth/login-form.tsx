@@ -91,7 +91,7 @@ export const LoginForm = () => {
                 { field }) => (
                 <FormItem>
                   <FormLabel>
-                    Email
+                    Password
                   </FormLabel>
                   <FormControl>
                     <Input
