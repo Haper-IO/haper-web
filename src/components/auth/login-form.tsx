@@ -43,8 +43,10 @@ export const LoginForm = () => {
       () => {
         login(values)
           .then((data) => {
-            setError(data.error);
-            setSuccess(data.success);
+            if (data) {
+              setError(data.error);
+              setSuccess(data.success);
+            }
         })
       });
   };
@@ -107,8 +109,8 @@ export const LoginForm = () => {
             }>
             </FormField>
           </div>
-          <FormError message={error} />
-          <FormSuccess message={success} />
+          {error && <FormError message={error} />}
+          {success && <FormSuccess message={success} />}
           <Button
             type={"submit"}
             className={"w-full"}
