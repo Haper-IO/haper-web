@@ -6,7 +6,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 
 import { Button } from '@/components/ui/button';
-import {DEFAULT_LOGIN_REDIRECT} from "@/routes";
+import {DEFAULT_DASHBOARD_REDIRECT, DEFAULT_LOGIN_REDIRECT} from "@/routes";
 
 export const Social = () => {
 
@@ -14,7 +14,7 @@ export const Social = () => {
     try {
       await signIn(provider,
         {
-          callbackUrl: DEFAULT_LOGIN_REDIRECT
+          callbackUrl: DEFAULT_DASHBOARD_REDIRECT
         })
     }
     catch (error) {

@@ -4,7 +4,7 @@
  **/
 
 export const publicRoutes = [
-  "/"
+  "/dashboard",
 ];
 
 /**
@@ -30,3 +30,9 @@ export const apiAuthPrefix = "/api/auth";
  * @type {string}
  */
 export const DEFAULT_LOGIN_REDIRECT = "/settings";
+
+/**
+ * The default redirect path after a successful logout.
+ * @type {string}
+ */
+export const DEFAULT_DASHBOARD_REDIRECT = "/dashboard";
