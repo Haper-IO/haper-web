@@ -1,13 +1,13 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-
+import Nagivation from '@/components/ui/navigation-bar'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'My App',
-  description: 'My application description',
+  title: 'haper',
+  description: 'AI assistant that automatically collects, prioritizes, and responds to messages across Gmail, WhatsApp, and other platforms',
 }
 
 export default function RootLayout({
@@ -16,10 +16,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
 
+
   return (
     <html lang="en">
     <body className={inter.className}>
-    <main className="h-full">{children}</main>
+      <Nagivation/>
+      <main>{children}</main>
     </body>
     </html>
   )
