@@ -6,53 +6,23 @@ import { ArrowUp, Menu, PanelLeftClose, PanelLeft } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
+import Nagivation from '@/components/ui/navigation-bar'
+
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-sm border-b">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden md:flex"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-          >
-            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-          </Button>
-          <Link href="/" className="font-semibold text-xl">
-            OpenAI
-          </Link>
-        </div>
-        <div className="hidden md:flex items-center gap-6">
-          <nav className="flex items-center gap-6">
-            <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              API
-            </Link>
-            <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              Research
-            </Link>
-            <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              ChatGPT
-            </Link>
-            <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              Safety
-            </Link>
-            <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              Company
-            </Link>
-          </nav>
-          <Button variant="outline" size="sm">
-            Log in
-          </Button>
-        </div>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
-        </Button>
-      </header>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden md:flex"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+      >
+        {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
+      </Button>
 
       {/* Sidebar Navigation */}
       <aside

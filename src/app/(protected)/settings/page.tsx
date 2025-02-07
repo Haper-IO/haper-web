@@ -4,17 +4,19 @@ const SettingsPage = async () => {
   const session = await auth();
 
   return (
-    <div>
-      {JSON.stringify(session)}
-      <form action={async () => {
-        "use server";
+    <div className={"justify-center items-center"}>
+      <div>
+        {JSON.stringify(session)}
+        <form action={async () => {
+          "use server";
 
-        await signOut();
-      }}>
-        <button type="submit">
-          Sign Out
-        </button>
-      </form>
+          await signOut();
+        }}>
+          <button type="submit">
+            Sign Out
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

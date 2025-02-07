@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
-import { Logo } from "@/icons/logo";
+import { Logo_md } from "@/icons/logo-md";
 
 export default function Navigation() {
   const router = useRouter();
@@ -15,17 +15,17 @@ export default function Navigation() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-sm border-b">
+      className="relative top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-sm border-b">
       <div className="w-full max-w-[1200px] px-4 py-3 flex justify-between items-center mx-auto">
         <Link href={"/"}>
           <div className={"flex"}>
-          <Logo/>
+          <Logo_md/>
           </div>
         </Link>
         <div className="md:flex items-center gap-6">
           <nav className="flex items-center gap-6">
-            <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              API
+            <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
+              Dashboard
             </Link>
             <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
               Safety

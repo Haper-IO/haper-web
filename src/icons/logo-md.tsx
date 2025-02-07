@@ -1,16 +1,4 @@
-// export function Logo () {
-//   return (
-//   <svg width="100"
-//        height="22"
-//        viewBox="0 0 100 22"
-//        color={"#000000"}
-//   >
-//     @/assets/haper_logo.svg
-//   </svg>
-//   )
-// }
-
-export function Logo() {
+export function Logo_md() {
   return (
     <svg width="160" height="35" viewBox="0 0 160 35" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
