@@ -2,11 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowUp, Menu, PanelLeftClose, PanelLeft } from "lucide-react"
+import { ArrowUp, PanelLeftClose, PanelLeft } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
-
-import Nagivation from '@/components/navigation-bar'
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
