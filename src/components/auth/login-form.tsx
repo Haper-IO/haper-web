@@ -1,16 +1,15 @@
 'use client'
 import * as z from 'zod';
-import { CardWrapper } from '@/components/auth/card-wrapper'
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { LoginSchema } from '@/schemas';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { FormError } from '@/components/form-error';
-import { FormSuccess } from '@/components/form-success';
+import {CardWrapper} from '@/components/auth/card-wrapper'
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {LoginSchema} from '@/schemas';
+import {Input} from '@/components/ui/input';
+import {Button} from '@/components/ui/button';
+import {FormError} from '@/components/form-error';
 
-import { login } from '@/actions/login';
-import { useState, useTransition } from "react";
+
+import {useState} from "react";
 
 import {
   Form,
@@ -21,10 +20,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+import { useRouter } from 'next/navigation';
+import {loginByCredential} from "@/lib/requests/client/user";
+
 export const LoginForm = () => {
-  const [isPending, startTransition] = useTransition();
-  const [success, setSuccess] = useState<string | undefined>("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [error, setError] = useState<string | undefined>("");
+
+  const router = useRouter()
 
   const form =
     useForm<z.infer<typeof LoginSchema>>({
@@ -36,19 +39,19 @@ export const LoginForm = () => {
     });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    if (isLoggingIn) {
+      return
+    }
+    setIsLoggingIn(true)
     setError("");
-    setSuccess("");
 
-    startTransition(
-      () => {
-        login(values)
-          .then((data) => {
-            if (data) {
-              setError(data.error);
-              setSuccess(data.success);
-            }
-        })
-      });
+    loginByCredential(values.email, values.password).then(() => {
+      router.push("/dashboard")
+    }).catch(({message}) => {
+      setError(message)
+    }).finally(()=>{
+      setIsLoggingIn(false)
+    })
   };
 
   return (
@@ -56,7 +59,7 @@ export const LoginForm = () => {
       headerLabel={"Welcome back"}
       backButtonHref={"/register"}
       backButtonLabel={"Don't have an account?"}
-      showSocial
+      authType={"login"}
     >
       <Form {...form}>
         <form
@@ -68,29 +71,29 @@ export const LoginForm = () => {
               control={form.control}
               name="email"
               render={(
-                { field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        disabled={isPending}
-                        placeholder={"johndoe@eample.com"}
-                        type={"email"}
-                      />
-                    </FormControl>
-                    <FormMessage/>
-                  </FormItem>
+                {field}) => (
+                <FormItem>
+                  <FormLabel>
+                    Email
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={isLoggingIn}
+                      placeholder={"haper@example.com"}
+                      type={"email"}
+                    />
+                  </FormControl>
+                  <FormMessage/>
+                </FormItem>
               )
-            }>
+              }>
             </FormField>
             <FormField
               control={form.control}
               name="password"
               render={(
-                { field }) => (
+                {field}) => (
                 <FormItem>
                   <FormLabel>
                     Password
@@ -98,7 +101,7 @@ export const LoginForm = () => {
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={isPending}
+                      disabled={isLoggingIn}
                       placeholder={"********"}
                       type={"password"}
                     />
@@ -106,15 +109,14 @@ export const LoginForm = () => {
                   <FormMessage/>
                 </FormItem>
               )
-            }>
+              }>
             </FormField>
           </div>
-          {error && <FormError message={error} />}
-          {success && <FormSuccess message={success} />}
+          <FormError message={error}/>
           <Button
             type={"submit"}
             className={"w-full"}
-            disabled={isPending}>
+            disabled={isLoggingIn}>
             Login
           </Button>
         </form>

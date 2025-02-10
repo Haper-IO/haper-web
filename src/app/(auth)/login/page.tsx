@@ -1,10 +1,7 @@
 import {LoginForm} from "@/components/auth/login-form";
-import BackgroundPaths from "@/components/background-effect/bg-path-lines";
 
-const LoginPage = () => {
+export default function LoginPage() {
   return (
     <LoginForm/>
   );
 };
-
-export default LoginPage;

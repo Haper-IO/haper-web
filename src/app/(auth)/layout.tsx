@@ -1,16 +1,15 @@
-import BackgroundPaths from "@/components/background-effect/bg-path-lines";
+import React from "react";
+import {NavigationUnauthenticated} from '@/components/navigation-bar'
 
-const AuthLayout = ({
-  children } : {
-  children: React.ReactNode }) => {
+export default function AuthLayout({
+  children
+} : { children: React.ReactNode }) {
   return (
-    <div className={"flex items-center justify-center min-h-screen"}>
-      {children}
-
+    <div className="w-full">
+      <NavigationUnauthenticated />
+      <div className="w-full h-screen flex items-center justify-center">
+        {children}
+      </div>
     </div>
-
   )
-    ;
 }
-
-export default AuthLayout;

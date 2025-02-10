@@ -6,7 +6,7 @@ import { ArrowUp, Menu, PanelLeftClose, PanelLeft } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
-import Nagivation from '@/components/ui/navigation-bar'
+import Nagivation from '@/components/navigation-bar'
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)

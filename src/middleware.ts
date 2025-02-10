@@ -1,20 +1,50 @@
-import NextAuth from "next-auth";
+import {NextRequest} from "next/server";
+import { jwtVerify } from 'jose';
 
-import authConfig from "@/auth.config";
+/**
+ * An array of routes that can be accessed without logging in
+ */
+const publicRoutes = [
+  "/about",
+  "/faq",
+];
 
-import {
-  DEFAULT_LOGIN_REDIRECT,
-  apiAuthPrefix,
-  authRoutes,
-  publicRoutes,
-} from "@/routes"
-import {auth} from "@/auth";
+/**
+ * An array of routes that are used for authentication.
+ * These routes will redirect logged-in users to main page.
+ */
+const authRoutes = [
+  "/",
+  "/login",
+  "/register",
+  "/error",
+];
 
-// const { auth } = NextAuth(authConfig);
+/**
+ * The prefix for API authentication routes
+ * Routes that start with this prefix are used for API authentication.
+ */
+const apiAuthPrefix = "/api/auth";
 
-export default auth((req) => {
+const JWT_AUTH_SECRET_KEY = new TextEncoder().encode(process.env.JWT_AUTH_SECRET!); // Use a secure secret!
+
+async function checkLoggedIn(req: NextRequest) {
+  const token = req.cookies.get(process.env.JWT_AUTH_COOKIE_NAME!);
+  if (!token) {
+    return false;
+  }
+  try {
+    const { payload } = await jwtVerify(token.value, JWT_AUTH_SECRET_KEY);
+    return !!payload
+  } catch {
+    return false; // Invalid token
+  }
+}
+
+
+export default async function middleware(req: NextRequest) {
   const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+  const isLoggedIn = await checkLoggedIn(req);
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
@@ -26,7 +56,7 @@ export default auth((req) => {
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+      return Response.redirect(new URL("/dashboard", nextUrl))
     }
     return;
   }
@@ -36,7 +66,7 @@ export default auth((req) => {
   }
 
   return;
-})
+}
 
 export const config = {
   matcher: [

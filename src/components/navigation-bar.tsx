@@ -1,40 +1,39 @@
 'use client'
 
-import { useRouter } from 'next/navigation';
+import {useRouter} from 'next/navigation';
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Menu} from "lucide-react";
 
-import { Logo_md } from "@/icons/logo-md";
+import {Logo_md} from "@/icons/logo-md";
 
-export default function Navigation() {
+export function NavigationUnauthenticated() {
   const router = useRouter();
-  const handleSignUp = () => {
-    router.push('/register');
-  }
 
   return (
     <header
-      className="relative top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-sm border-b">
+      className="fixed left-0 top-0 right-0 flex z-50 items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-sm border-b"
+    >
       <div className="w-full max-w-[1200px] px-4 py-3 flex justify-between items-center mx-auto">
-        <Link href={"/"}>
+        <Link href="/">
           <div className={"flex"}>
-          <Logo_md/>
+            <Logo_md/>
           </div>
         </Link>
         <div className="md:flex items-center gap-6">
           <nav className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-              Dashboard
-            </Link>
+            {/*//TODO: add safety page*/}
             <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
               Safety
             </Link>
+            {/*//TODO: add about page*/}
             <Link href="#" className="text-sm text-gray-600 hover:text-gray-900">
               About
             </Link>
           </nav>
-          <Button variant="outline" size="sm" onClick={handleSignUp}>
+          <Button variant="outline" size="sm" onClick={() => {
+            router.push('/register');
+          }}>
             Join Beta Test
           </Button>
         </div>
@@ -43,5 +42,5 @@ export default function Navigation() {
         </Button>
       </div>
     </header>
-);
+  );
 }

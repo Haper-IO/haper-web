@@ -1,10 +1,12 @@
-import { ErrorCard } from '@/components/auth/error-card';
+"use client";
 
-const AuthErrorPage = () => {
+import {ErrorCard} from '@/components/auth/error-card';
+import {useSearchParams} from "next/navigation";
+
+export default function AuthErrorPage() {
+  const searchParams = useSearchParams()
   return (
-      <ErrorCard/>
+    <ErrorCard message={searchParams.get('error_msg') ?? 'Unknown error'}/>
   );
-
 };
 
-export default AuthErrorPage;

@@ -47,12 +47,8 @@ function FloatingPaths({ position }: { position: number }) {
 }
 
 export default function BackgroundPaths({
-                                          title = "welcome to haper beta",
-                                        }: {
-  title?: string
-}) {
-  const words = title.split(" ")
-
+  title = "Welcome to haper beta",
+}: { title?: string }) {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden dark:bg-neutral-950 bg-white">
       <div className="absolute inset-0">
