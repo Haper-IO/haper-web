@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import {redirect} from 'next/navigation'
 import {NextRequest, NextResponse} from "next/server";
 import {loginByOAuth, signupByOAuth} from "@/lib/requests/server/user";
 import {oauthClients} from "@/oauth-config";
@@ -6,11 +6,13 @@ import {ActionType, OAuthError} from "@/lib/oauth/types";
 import {AxiosError} from "axios";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ provider: string, action: string }> },
+  req: NextRequest,
+  {params}: { params: Promise<{ provider: string, action: string }> },
 ) {
-  const {searchParams} = request.nextUrl
+  const {searchParams} = req.nextUrl
   const {provider, action} = await params
+  const proto = req.headers.get("x-forwarded-proto") || "http";  // Default to 'http' if not found
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host")
 
   const client = oauthClients[provider]
   if (!client) {
@@ -52,9 +54,11 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/dashboard", request.url))
+      const resp = NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
       if (response.headers["set-cookie"]) {
-        resp.headers.set("Set-Cookie", response.headers["set-cookie"].join(", "))
+        for (const cookie of response.headers["set-cookie"]) {
+          resp.headers.append("Set-Cookie", cookie)
+        }
       }
       return resp
     } else if (action === 'signup') {
@@ -68,9 +72,11 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/dashboard", request.url))
+      const resp = NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
       if (response.headers["set-cookie"]) {
-        resp.headers.set("Set-Cookie", response.headers["set-cookie"].join(", "))
+        for (const cookie of response.headers["set-cookie"]) {
+          resp.headers.append("Set-Cookie", cookie)
+        }
       }
       return resp
     } else {
@@ -81,14 +87,14 @@ export async function GET(
     if (e instanceof OAuthError) {
       return redirect(`/error?error_msg=${e.message}`)
     } else if (e instanceof AxiosError) {
-      if (e.response && e.response.data && e.response.data.message) {
+      if (e.response && e.response.data && e.response.data.message
+        && e.response.data.status && e.response.data.status != 9999) {
         return redirect(`/error?error_msg=${e.response.data.message}`)
       } else {
         console.error(e)
         return redirect(`/error?error_msg=unknown error happened when request backend`)
       }
-    }
-    else if (e instanceof Error) {
+    } else if (e instanceof Error) {
       console.error(e)
       return redirect(`/error?error_msg=${e.message}`)
     } else {
