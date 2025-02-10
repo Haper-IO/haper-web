@@ -2,6 +2,7 @@
 
 import * as z from 'zod';
 import { RegisterSchema } from '@/schemas';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {RegisterForm} from "@/components/auth/register-form";
 import bcrypt from "bcrypt";
 import { db } from "@/lib/db";
