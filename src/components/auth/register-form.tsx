@@ -1,16 +1,15 @@
 'use client'
 import * as z from 'zod';
-import { CardWrapper } from '@/components/auth/card-wrapper'
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { RegisterSchema } from '@/schemas';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { FormError } from '@/components/form-error';
-import { FormSuccess } from '@/components/form-success';
+import {CardWrapper} from '@/components/auth/card-wrapper'
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {RegisterSchema} from '@/schemas';
+import {Input} from '@/components/ui/input';
+import {Button} from '@/components/ui/button';
+import {FormError} from '@/components/form-error';
 
-import { register } from '@/actions/register';
-import { useState, useTransition } from "react";
+
+import {useState} from "react";
 
 import {
   Form,
@@ -21,10 +20,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+import { useRouter } from 'next/navigation';
+import {signupByCredential} from "@/lib/requests/client/user";
+
 export const RegisterForm = () => {
-  const [isPending, startTransition] = useTransition();
-  const [success, setSuccess] = useState<string | undefined>("");
+  const [isSigningUp, setIsSigningUp] = useState(false)
   const [error, setError] = useState<string | undefined>("");
+
+  const router = useRouter()
 
   const form =
     useForm<z.infer<typeof RegisterSchema>>({
@@ -37,17 +40,19 @@ export const RegisterForm = () => {
     });
 
   const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+    if (isSigningUp) {
+      return
+    }
     setError("");
-    setSuccess("");
+    setIsSigningUp(true)
 
-    startTransition(
-      () => {
-        register(values)
-          .then((data) => {
-            setError(data.error);
-            setSuccess(data.success);
-        })
-      });
+    signupByCredential(values.name, values.email, values.password).then(() => {
+      router.push("/dashboard")
+    }).catch(({message}) => {
+      setError(message)
+    }).finally(()=>{
+      setIsSigningUp(false)
+    })
   };
 
   return (
@@ -55,7 +60,7 @@ export const RegisterForm = () => {
       headerLabel={"Create an account"}
       backButtonHref={"/login"}
       backButtonLabel={"Already have an account?"}
-      showSocial
+      authType="signup"
     >
       <Form {...form}>
         <form
@@ -67,16 +72,16 @@ export const RegisterForm = () => {
               control={form.control}
               name="name"
               render={(
-                { field }) => (
+                {field}) => (
                 <FormItem>
                   <FormLabel>
-                    Email
+                    Your Name
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={isPending}
-                      placeholder={"John Doe"}
+                      disabled={isSigningUp}
+                      placeholder={"haper"}
                       type={"name"}
                     />
                   </FormControl>
@@ -89,29 +94,7 @@ export const RegisterForm = () => {
               control={form.control}
               name="email"
               render={(
-                { field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        disabled={isPending}
-                        placeholder={"johndoe@eample.com"}
-                        type={"email"}
-                      />
-                    </FormControl>
-                    <FormMessage/>
-                  </FormItem>
-              )
-            }>
-            </FormField>
-            <FormField
-              control={form.control}
-              name="password"
-              render={(
-                { field }) => (
+                {field}) => (
                 <FormItem>
                   <FormLabel>
                     Email
@@ -119,7 +102,29 @@ export const RegisterForm = () => {
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={isPending}
+                      disabled={isSigningUp}
+                      placeholder={"haper@example.com"}
+                      type={"email"}
+                    />
+                  </FormControl>
+                  <FormMessage/>
+                </FormItem>
+              )
+              }>
+            </FormField>
+            <FormField
+              control={form.control}
+              name="password"
+              render={(
+                {field}) => (
+                <FormItem>
+                  <FormLabel>
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={isSigningUp}
                       placeholder={"********"}
                       type={"password"}
                     />
@@ -127,15 +132,14 @@ export const RegisterForm = () => {
                   <FormMessage/>
                 </FormItem>
               )
-            }>
+              }>
             </FormField>
           </div>
-          <FormError message={error} />
-          <FormSuccess message={success} />
+          <FormError message={error}/>
           <Button
             type={"submit"}
             className={"w-full"}
-            disabled={isPending}>
+            disabled={isSigningUp}>
             Create account
           </Button>
         </form>
