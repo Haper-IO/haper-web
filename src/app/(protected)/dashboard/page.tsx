@@ -5,9 +5,7 @@ import { Input } from "@/components/ui/input"
 import { ArrowUp, PanelLeftClose, PanelLeft } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
-import { EmailSummary } from "@/components/dashboard/email-summary"
-import { MessageStats } from "@/components/dashboard/message-stats"
-import { ReplyHistory } from "@/components/dashboard/reply-history"
+import { EmailSummary, ReplyHistory, MessageStats} from "@/components/dashboard-cards"
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
