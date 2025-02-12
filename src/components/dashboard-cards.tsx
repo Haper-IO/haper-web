@@ -1,6 +1,8 @@
 import { Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { GmailIcon } from "@/icons/gmail-icon"
 
 // Shared styles
 const SHARED_STYLES = {
@@ -33,9 +35,9 @@ export function ReplyHistory() {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
-        <div className={SHARED_STYLES.label}>Reply History</div>
+        <Badge variant="secondary">Reply History</Badge>
         <div className={SHARED_STYLES.subtitle}>In Last 12 Hours</div>
-        <Mail className={SHARED_STYLES.mailIcon} />
+        <GmailIcon className="h-5 w-5" />
       </CardHeader>
       <CardContent className="space-y-4">
         {replies.map((reply, index) => (
@@ -62,7 +64,7 @@ export function MessageStats() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <h3 className={SHARED_STYLES.heading}>Message Summary</h3>
+          <Badge variant="secondary">Summary</Badge>
           <div className="flex gap-4">
             <button className="text-sm font-medium text-[#0f172a]">12 hour</button>
             <button className={SHARED_STYLES.subtitle}>Day</button>
@@ -120,7 +122,7 @@ export function EmailSummary() {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
-        <div className={SHARED_STYLES.label}>Summary</div>
+        <Badge variant="default">Summary</Badge>
         <div className={SHARED_STYLES.subtitle}>Updated 3 mins ago</div>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
