@@ -28,23 +28,23 @@ const apiAuthPrefix = "/api/auth";
 
 const JWT_AUTH_SECRET_KEY = new TextEncoder().encode(process.env.JWT_AUTH_SECRET!); // Use a secure secret!
 
-async function checkLoggedIn(req: NextRequest) {
-  const token = req.cookies.get(process.env.JWT_AUTH_COOKIE_NAME!);
-  if (!token) {
-    return false;
-  }
-  try {
-    const { payload } = await jwtVerify(token.value, JWT_AUTH_SECRET_KEY);
-    return !!payload
-  } catch {
-    return false; // Invalid token
-  }
-}
+// async function checkLoggedIn(req: NextRequest) {
+//   const token = req.cookies.get(process.env.JWT_AUTH_COOKIE_NAME!);
+//   if (!token) {
+//     return false;
+//   }
+//   try {
+//     const { payload } = await jwtVerify(token.value, JWT_AUTH_SECRET_KEY);
+//     return !!payload
+//   } catch {
+//     return false; // Invalid token
+//   }
+// }
 
 
 export default async function middleware(req: NextRequest) {
   const { nextUrl } = req;
-  const isLoggedIn = await checkLoggedIn(req);
+  // const isLoggedIn = await checkLoggedIn(req);
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
@@ -54,16 +54,16 @@ export default async function middleware(req: NextRequest) {
     return;
   }
 
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL("/dashboard", nextUrl))
-    }
-    return;
-  }
-
-  if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL("/login", nextUrl))
-  }
+  // if (isAuthRoute) {
+  //   if (isLoggedIn) {
+  //     return Response.redirect(new URL("/dashboard", nextUrl))
+  //   }
+  //   return;
+  // }
+  //
+  // if (!isLoggedIn && !isPublicRoute) {
+  //   return Response.redirect(new URL("/login", nextUrl))
+  // }
 
   return;
 }

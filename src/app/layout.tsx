@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import {Toaster} from "@/components/ui/sonner";
 import React from "react";
 import {PublicEnvScript} from "next-runtime-env";
+import {NavigationAuthenticated} from "@/components/navigation-bar";
 
 const inter = Inter({ subsets: ['latin'] })
 
