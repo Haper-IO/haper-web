@@ -2,10 +2,33 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowUp, PanelLeftClose, PanelLeft } from "lucide-react"
+import {
+  ArrowUp,
+  PanelLeftClose,
+  PanelLeft,
+  LayoutDashboard,
+  History,
+  LucideIcon
+} from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { EmailSummary, ReplyHistory, MessageStats } from "@/components/dashboard-cards"
+
+interface SidebarLinkProps {
+  href: string
+  icon: LucideIcon
+  children: React.ReactNode
+}
+
+const SidebarLink = ({ href, icon: Icon, children }: SidebarLinkProps) => (
+  <Link
+    href={href}
+    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md group transition-colors"
+  >
+    <Icon className="h-4 w-4 text-gray-500 group-hover:text-gray-900" />
+    <span className="group-hover:text-gray-900">{children}</span>
+  </Link>
+)
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -34,13 +57,13 @@ export default function DashboardPage() {
         } hidden md:block`}
       >
         <div className="p-5">
-          <nav className="space-y-2">
-            <Link href="#" className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md">
+          <nav className="space-y-1">
+            <SidebarLink href="#" icon={LayoutDashboard}>
               Overview
-            </Link>
-            <Link href="#" className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md">
+            </SidebarLink>
+            <SidebarLink href="#" icon={History}>
               History
-            </Link>
+            </SidebarLink>
           </nav>
         </div>
       </aside>
