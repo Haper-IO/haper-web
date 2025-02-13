@@ -37,7 +37,7 @@ export function ReplyHistory() {
       <CardHeader className={SHARED_STYLES.cardHeader}>
         <Badge variant="secondary">Reply History</Badge>
         <div className={SHARED_STYLES.subtitle}>In Last 12 Hours</div>
-        <GmailIcon className="h-5 w-5" />
+        <GmailIcon/>
       </CardHeader>
       <CardContent className="space-y-4">
         {replies.map((reply, index) => (
