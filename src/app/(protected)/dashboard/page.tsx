@@ -13,6 +13,7 @@ import {
 import Link from "next/link"
 import { useState } from "react"
 import { EmailSummary, ReplyHistory, MessageStats } from "@/components/dashboard-cards"
+import texture from "@/assets/images/texture_flows.webp"
 
 interface SidebarLinkProps {
   href: string
@@ -34,7 +35,8 @@ export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
+
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b">
         <div className="px-5 py-3">
@@ -45,14 +47,14 @@ export default function DashboardPage() {
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
-            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
+            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5"/> : <PanelLeft className="h-5 w-5"/>}
           </Button>
         </div>
       </header>
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed top-[61px] left-0 bottom-0 w-60 border-r bg-white transition-transform duration-300 z-10 ${
+        className={`fixed top-[61px] left-0 bottom-0 w-60 border-r bg-slate-50/75 transition-transform duration-300 z-10 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } hidden md:block`}
       >
@@ -75,12 +77,12 @@ export default function DashboardPage() {
         }`}
       >
         {/* Dashboard Content */}
-        <div className="p-5">
+        <div className="container p-5 center mx-auto">
           <div className="grid gap-6">
-            <EmailSummary />
+            <EmailSummary/>
             <div className="grid gap-6 md:grid-cols-2">
-              <MessageStats />
-              <ReplyHistory />
+              <MessageStats/>
+              <ReplyHistory/>
             </div>
           </div>
 
@@ -91,7 +93,7 @@ export default function DashboardPage() {
                 placeholder="Quiz me on vocabulary"
                 className="w-full pl-4 pr-10 py-6 text-lg rounded-xl border-gray-200 focus:border-gray-300 focus:ring-0"
               />
-              <ArrowUp className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <ArrowUp className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"/>
             </div>
 
             {/* Action Buttons */}
@@ -121,7 +123,8 @@ export default function DashboardPage() {
           Scroll to explore
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 h-[300px] bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-yellow-500/20 blur-3xl -z-10" />
+        <div
+          className="fixed bottom-0 left-0 right-0 h-[300px] bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-yellow-500/20 blur-3xl -z-10"/>
       </main>
     </div>
   )

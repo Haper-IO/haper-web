@@ -17,13 +17,14 @@ const badgeVariants = cva(
         outline: "text-foreground",
       },
       size : {
-        sm: "h-9 px-2 py-0.5",
+        sm: "px-2 py-0.5",
         md: "px-2.5 py-1",
         lg: "px-3 py-1.5",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "md",
     },
   })
 

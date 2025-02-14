@@ -35,8 +35,8 @@ export function ReplyHistory() {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
-        <Badge variant="secondary">Reply History</Badge>
-        <div className={SHARED_STYLES.subtitle}>In Last 12 Hours</div>
+        <Badge variant="secondary" size={"md"}>Reply History</Badge>
+        <Badge variant="secondary" size={"md"}>In Last 12 Hours</Badge>
         <GmailIcon/>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -64,7 +64,7 @@ export function MessageStats() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <Badge variant="secondary">Summary</Badge>
+          <Badge variant="secondary" size="md">Summary</Badge>
           <div className="flex gap-4">
             <button className="text-sm font-medium text-[#0f172a]">12 hour</button>
             <button className={SHARED_STYLES.subtitle}>Day</button>
@@ -73,7 +73,7 @@ export function MessageStats() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-8">
           <div className="relative h-40 w-40">
             <svg className="h-full w-full" viewBox="0 0 36 36">
               <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
@@ -122,24 +122,74 @@ export function EmailSummary() {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
-        <Badge variant="default" size="lg">Summary</Badge>
-        <div className={SHARED_STYLES.subtitle}>Updated 3 mins ago</div>
+        <Badge variant="default" size="md">Summary</Badge>
+        <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
-      <CardContent className="space-y-4">
-        <h3 className={SHARED_STYLES.heading}>
-          You received 3 Essential Emails in the Past 3 hours +++
-        </h3>
-        <p className={SHARED_STYLES.text}>
-          In the past 3 hours, You have received 1 invitation from{" "}
-          <span className={SHARED_STYLES.accent}>Grant</span> about your upcoming trip,
-          1 reply from <span className={SHARED_STYLES.accent}>Alice</span> about your car rental project,
-          1 email from your instructor <span className={SHARED_STYLES.accent}>Dr. Bieler</span> discussing your essay topics.
-        </p>
-        <Button variant="secondary" className="ml-auto">
-          Quick Batch Actions
-        </Button>
-      </CardContent>
+        <div className="flex flex-row gap-4 bg">
+          <CardContent className="container space-y-4 w-3/5">
+            <h3 className={SHARED_STYLES.heading}>
+              You received 3 Essential Emails in the Past 3 hours
+            </h3>
+            <div className={"px-2 py-2 bg-slate-200 rounded-md"}>
+              <p className={SHARED_STYLES.text}>
+                In the past 3 hours, You have received 1 invitation from{" "}
+                <span className={SHARED_STYLES.accent}>Grant</span> about your upcoming trip,
+                1 reply from <span className={SHARED_STYLES.accent}>Alice</span> about your car rental project,
+                1 email from your instructor <span className={SHARED_STYLES.accent}>Dr. Bieler</span> discussing your
+                essay topics.
+            </p>
+          </div>
+            <div className={"pt-3"}>
+              <Button variant="default" className="ml-auto">
+                Quick Batch Actions
+              </Button>
+            </div>
+          </CardContent>
+
+          {/* Message Stats Statistics */}
+          <CardContent className={"container mx-auto w-2/5"}>
+            <div className="flex items-center gap-8">
+              <div className="relative h-40 w-40">
+                <svg className="h-full w-full" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    fill="none"
+                    stroke="#92bfff"
+                    strokeWidth="4"
+                    strokeDasharray="100.53 100"
+                    transform="rotate(-90 18 18)"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    fill="none"
+                    stroke="#94e9b8"
+                    strokeWidth="4"
+                    strokeDasharray="13.9 100"
+                    transform="rotate(-90 18 18)"
+                  />
+                </svg>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-[#92bfff]" />
+                  <span className={SHARED_STYLES.text}>Essential (39)</span>
+                  <span className="ml-auto text-sm font-medium">13.9%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-[#94e9b8]" />
+                  <span className={SHARED_STYLES.text}>Non-essential (69)</span>
+                  <span className="ml-auto text-sm font-medium">22.8%</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </div>
     </Card>
   )
 }

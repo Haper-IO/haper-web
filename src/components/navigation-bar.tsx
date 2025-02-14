@@ -23,7 +23,7 @@ export function NavigationUnauthenticated() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <header className="fixed left-0 top-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b">
+    <header className="fixed left-0 top-0 right-0 z-50 bg-slate-50/20 backdrop-blur-sm border-b">
       <div className="w-full max-w-[1200px] px-4 py-3 flex justify-between items-center mx-auto relative">
         <Link href="/">
           <div className="flex">
