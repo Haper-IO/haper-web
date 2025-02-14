@@ -122,13 +122,13 @@ export function EmailSummary() {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
-        <Badge variant="default">Summary</Badge>
+        <Badge variant="default" size="lg">Summary</Badge>
         <div className={SHARED_STYLES.subtitle}>Updated 3 mins ago</div>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
       <CardContent className="space-y-4">
         <h3 className={SHARED_STYLES.heading}>
-          You received 3 Essential Emails in the Past 3 hours
+          You received 3 Essential Emails in the Past 3 hours +++
         </h3>
         <p className={SHARED_STYLES.text}>
           In the past 3 hours, You have received 1 invitation from{" "}
