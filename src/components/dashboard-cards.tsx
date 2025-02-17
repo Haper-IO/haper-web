@@ -118,7 +118,7 @@ export function MessageStats() {
 }
 
 // Email Summary Component
-export function EmailSummary() {
+export function EmailSummaryWithStats() {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
@@ -190,6 +190,37 @@ export function EmailSummary() {
             </div>
           </CardContent>
         </div>
+    </Card>
+  )
+}
+
+export function EmailSummaryHistory() {
+  return (
+    <Card>
+      <CardHeader className={SHARED_STYLES.cardHeader}>
+        <Badge variant="default" size="md">Summary</Badge>
+        <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
+        <Mail className={SHARED_STYLES.mailIcon} />
+      </CardHeader>
+        <CardContent className="container space-y-4">
+          <h3 className={SHARED_STYLES.heading}>
+            You received 3 Essential Emails in the Past 3 hours
+          </h3>
+          <div className={"px-2 py-2 bg-slate-200 rounded-md"}>
+            <p className={SHARED_STYLES.text}>
+              In the past 3 hours, You have received 1 invitation from{" "}
+              <span className={SHARED_STYLES.accent}>Grant</span> about your upcoming trip,
+              1 reply from <span className={SHARED_STYLES.accent}>Alice</span> about your car rental project,
+              1 email from your instructor <span className={SHARED_STYLES.accent}>Dr. Bieler</span> discussing your
+              essay topics.
+            </p>
+          </div>
+          <div className={"pt-3"}>
+            <Button variant="secondary" className="ml-auto">
+              Check Last Report
+            </Button>
+          </div>
+        </CardContent>
     </Card>
   )
 }

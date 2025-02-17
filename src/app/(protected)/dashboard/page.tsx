@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
-import { EmailSummary, ReplyHistory, MessageStats } from "@/components/dashboard-cards"
+import {EmailSummaryWithStats, EmailSummaryHistory} from "@/components/dashboard-cards"
 import texture from "@/assets/images/texture_flows.webp"
 
 interface SidebarLinkProps {
@@ -79,11 +79,8 @@ export default function DashboardPage() {
         {/* Dashboard Content */}
         <div className="container p-5 center mx-auto">
           <div className="grid gap-6">
-            <EmailSummary/>
-            <div className="grid gap-6 md:grid-cols-2">
-              <MessageStats/>
-              <ReplyHistory/>
-            </div>
+            <EmailSummaryWithStats/>
+            <EmailSummaryHistory/>
           </div>
 
           {/* Search Section */}
