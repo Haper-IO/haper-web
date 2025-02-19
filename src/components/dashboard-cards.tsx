@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { GmailIcon } from "@/icons/gmail-icon"
+import { useRouter } from "next/navigation"
 
 // Shared styles
 const SHARED_STYLES = {
@@ -173,11 +174,15 @@ export function EmailSummaryWithStats({
                                           essentialPercentage: 13.9,
                                           nonEssentialCount: 69,
                                           nonEssentialPercentage: 22.8
-                                        }
+                                        },
+                                        onBatchAction
                                       }: {
   summaryData?: EmailSummaryData,
-  statsData?: MessageStatsData
+  statsData?: MessageStatsData,
+  onBatchAction?: () => void
 }) {
+  const router = useRouter();
+
   // Function to highlight names
   const renderHighlightedContent = (content: string, highlights: Array<{name: string}>) => {
     let result = content;
@@ -189,6 +194,14 @@ export function EmailSummaryWithStats({
     });
 
     return <p className={SHARED_STYLES.text} dangerouslySetInnerHTML={{ __html: result }} />;
+  };
+
+  const handleBatchAction = () => {
+    if (onBatchAction) {
+      onBatchAction();
+    } else {
+      router.push("/report");
+    }
   };
 
   return (
@@ -257,7 +270,7 @@ export function EmailSummaryWithStats({
         {/* Button Section */}
         <CardContent>
           <div className="pt-3 flex justify-center sm:justify-start">
-            <Button variant="default">
+            <Button variant="default" onClick={handleBatchAction}>
               Quick Batch Actions
             </Button>
           </div>
@@ -277,10 +290,14 @@ export function EmailSummaryHistory({
                                           {name: "Alice", context: "car rental project"},
                                           {name: "Dr. Bieler", context: "essay topics"}
                                         ]
-                                      }
+                                      },
+                                      onCheckLastReport
                                     }: {
-  summaryData?: EmailSummaryData
+  summaryData?: EmailSummaryData,
+  onCheckLastReport?: () => void
 }) {
+  const router = useRouter();
+
   // Function to highlight names
   const renderHighlightedContent = (content: string, highlights: Array<{name: string}>) => {
     let result = content;
@@ -292,6 +309,14 @@ export function EmailSummaryHistory({
     });
 
     return <p className={SHARED_STYLES.text} dangerouslySetInnerHTML={{ __html: result }} />;
+  };
+
+  const handleCheckLastReport = () => {
+    if (onCheckLastReport) {
+      onCheckLastReport();
+    } else {
+      router.push("/report");
+    }
   };
 
   return (
@@ -309,7 +334,7 @@ export function EmailSummaryHistory({
           {renderHighlightedContent(summaryData.content, summaryData.highlightedPeople)}
         </div>
         <div className={"pt-3"}>
-          <Button variant="outline" className="ml-auto">
+          <Button variant="outline" className="ml-auto" onClick={handleCheckLastReport}>
             Check Last Report
           </Button>
         </div>
