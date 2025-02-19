@@ -126,30 +126,27 @@ export function EmailSummaryWithStats() {
         <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
-        <div className="flex flex-row gap-4 bg">
-          <CardContent className="container space-y-4 w-3/5">
+      <div>
+        <div className="flex flex-col lg:flex-row flex-wrap gap-4">
+          {/* Email Summary */}
+          <CardContent className="flex-1 min-w-[300px] lg:min-w-[420px] space-y-4 lg:w-3/5">
             <h3 className={SHARED_STYLES.heading}>
               You received 3 Essential Emails in the Past 3 hours
             </h3>
-            <div className={"px-2 py-2 bg-slate-200 rounded-md"}>
+            <div className="px-2 py-2 bg-slate-200 rounded-md">
               <p className={SHARED_STYLES.text}>
                 In the past 3 hours, You have received 1 invitation from{" "}
                 <span className={SHARED_STYLES.accent}>Grant</span> about your upcoming trip,
                 1 reply from <span className={SHARED_STYLES.accent}>Alice</span> about your car rental project,
                 1 email from your instructor <span className={SHARED_STYLES.accent}>Dr. Bieler</span> discussing your
                 essay topics.
-            </p>
-          </div>
-            <div className={"pt-3"}>
-              <Button variant="default" className="ml-auto">
-                Quick Batch Actions
-              </Button>
+              </p>
             </div>
           </CardContent>
 
           {/* Message Stats Statistics */}
-          <CardContent className={"container mx-auto w-2/5"}>
-            <div className="flex items-center gap-8">
+          <CardContent className="flex-1 min-w-[300px] lg:min-w-[400px] lg:w-2/5">
+            <div className="flex flex-col lg:flex-row items-center gap-8">
               <div className="relative h-40 w-40">
                 <svg className="h-full w-full" viewBox="0 0 36 36">
                   <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
@@ -190,15 +187,25 @@ export function EmailSummaryWithStats() {
             </div>
           </CardContent>
         </div>
+
+        {/* Button Section */}
+        <CardContent>
+          <div className="pt-3 flex justify-center sm:justify-start">
+            <Button variant="default">
+              Quick Batch Actions
+            </Button>
+          </div>
+        </CardContent>
+      </div>
     </Card>
-  )
+  );
 }
 
 export function EmailSummaryHistory() {
   return (
     <Card>
-      <CardHeader className={SHARED_STYLES.cardHeader}>
-        <Badge variant="default" size="md">Summary</Badge>
+    <CardHeader className={SHARED_STYLES.cardHeader}>
+      <Badge variant="secondary" size="md">Summary</Badge>
         <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
