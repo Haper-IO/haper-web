@@ -15,23 +15,51 @@ const SHARED_STYLES = {
   accent: "text-lime-600"
 }
 
-// Reply History Component
-const replies = [
-  {
-    name: "Alice Smith",
-    subject: "Re: Project Update",
-    time: "Thu Feb 6 2:22 PM",
-    preview: "Ms. Alice has reviewed your car rental budget. While generally satisfactory, she's flagged insurance costs for discus...",
-  },
-  {
-    name: "Alice Smith",
-    subject: "Re: Project Update",
-    time: "Thu Feb 6 2:22 PM",
-    preview: "Ms. Alice has reviewed your car rental budget. While generally satisfactory, she's flagged insurance costs for discus...",
-  },
-]
+// Types for backend data
+export interface ReplyData {
+  id: string;
+  name: string;
+  subject: string;
+  time: string;
+  preview: string;
+}
 
-export function ReplyHistory() {
+export interface MessageStatsData {
+  timeRange: string;
+  essentialCount: number;
+  essentialPercentage: number;
+  nonEssentialCount: number;
+  nonEssentialPercentage: number;
+}
+
+export interface EmailSummaryData {
+  title: string;
+  updateTime: string;
+  content: string;
+  highlightedPeople: Array<{name: string, context: string}>;
+}
+
+// Reply History Component
+export function ReplyHistory({
+                               replies = [
+                                 {
+                                   id: "1",
+                                   name: "Alice Smith",
+                                   subject: "Re: Project Update",
+                                   time: "Thu Feb 6 2:22 PM",
+                                   preview: "Ms. Alice has reviewed your car rental budget. While generally satisfactory, she's flagged insurance costs for discus...",
+                                 },
+                                 {
+                                   id: "2",
+                                   name: "Alice Smith",
+                                   subject: "Re: Project Update",
+                                   time: "Thu Feb 6 2:22 PM",
+                                   preview: "Ms. Alice has reviewed your car rental budget. While generally satisfactory, she's flagged insurance costs for discus...",
+                                 },
+                               ]
+                             }: {
+  replies?: ReplyData[]
+}) {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
@@ -40,8 +68,8 @@ export function ReplyHistory() {
         <GmailIcon/>
       </CardHeader>
       <CardContent className="space-y-4">
-        {replies.map((reply, index) => (
-          <div key={index} className="space-y-1">
+        {replies.map((reply) => (
+          <div key={reply.id} className="space-y-1">
             <div className="flex items-center justify-between">
               <div className={SHARED_STYLES.heading}>{reply.name}</div>
               <div className={SHARED_STYLES.subtitle}>{reply.time}</div>
@@ -59,14 +87,24 @@ export function ReplyHistory() {
 }
 
 // Message Stats Component
-export function MessageStats() {
+export function MessageStats({
+                               stats = {
+                                 timeRange: "12 hour",
+                                 essentialCount: 39,
+                                 essentialPercentage: 13.9,
+                                 nonEssentialCount: 69,
+                                 nonEssentialPercentage: 22.8
+                               }
+                             }: {
+  stats?: MessageStatsData
+}) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <Badge variant="secondary" size="md">Summary</Badge>
           <div className="flex gap-4">
-            <button className="text-sm font-medium text-[#0f172a]">12 hour</button>
+            <button className="text-sm font-medium text-[#0f172a]">{stats.timeRange}</button>
             <button className={SHARED_STYLES.subtitle}>Day</button>
             <button className={SHARED_STYLES.subtitle}>Week</button>
           </div>
@@ -94,7 +132,7 @@ export function MessageStats() {
                 fill="none"
                 stroke="#94e9b8"
                 strokeWidth="4"
-                strokeDasharray="13.9 100"
+                strokeDasharray={`${stats.essentialPercentage} 100`}
                 transform="rotate(-90 18 18)"
               />
             </svg>
@@ -102,13 +140,13 @@ export function MessageStats() {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-[#92bfff]" />
-              <span className={SHARED_STYLES.text}>Essential (39)</span>
-              <span className="ml-auto text-sm font-medium">13.9%</span>
+              <span className={SHARED_STYLES.text}>Essential ({stats.essentialCount})</span>
+              <span className="ml-auto text-sm font-medium">{stats.essentialPercentage}%</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-[#94e9b8]" />
-              <span className={SHARED_STYLES.text}>Non-essential (69)</span>
-              <span className="ml-auto text-sm font-medium">22.8%</span>
+              <span className={SHARED_STYLES.text}>Non-essential ({stats.nonEssentialCount})</span>
+              <span className="ml-auto text-sm font-medium">{stats.nonEssentialPercentage}%</span>
             </div>
           </div>
         </div>
@@ -118,12 +156,46 @@ export function MessageStats() {
 }
 
 // Email Summary Component
-export function EmailSummaryWithStats() {
+export function EmailSummaryWithStats({
+                                        summaryData = {
+                                          title: "You received 3 Essential Emails in the Past 3 hours",
+                                          updateTime: "3 mins ago",
+                                          content: "In the past 3 hours, You have received 1 invitation from Grant about your upcoming trip, 1 reply from Alice about your car rental project, 1 email from your instructor Dr. Bieler discussing your essay topics.",
+                                          highlightedPeople: [
+                                            {name: "Grant", context: "invitation"},
+                                            {name: "Alice", context: "car rental project"},
+                                            {name: "Dr. Bieler", context: "essay topics"}
+                                          ]
+                                        },
+                                        statsData = {
+                                          timeRange: "3 hours",
+                                          essentialCount: 39,
+                                          essentialPercentage: 13.9,
+                                          nonEssentialCount: 69,
+                                          nonEssentialPercentage: 22.8
+                                        }
+                                      }: {
+  summaryData?: EmailSummaryData,
+  statsData?: MessageStatsData
+}) {
+  // Function to highlight names
+  const renderHighlightedContent = (content: string, highlights: Array<{name: string}>) => {
+    let result = content;
+    highlights.forEach(person => {
+      result = result.replace(
+        person.name,
+        `<span class="${SHARED_STYLES.accent}">${person.name}</span>`
+      );
+    });
+
+    return <p className={SHARED_STYLES.text} dangerouslySetInnerHTML={{ __html: result }} />;
+  };
+
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
         <Badge variant="emphasis" size="md">Summary</Badge>
-        <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
+        <Badge variant="secondary" size="md">Updated {summaryData.updateTime}</Badge>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
       <div>
@@ -131,16 +203,10 @@ export function EmailSummaryWithStats() {
           {/* Email Summary */}
           <CardContent className="flex-1 min-w-[300px] lg:min-w-[420px] space-y-4 lg:w-3/5">
             <h3 className={SHARED_STYLES.heading}>
-              You received 3 Essential Emails in the Past 3 hours
+              {summaryData.title}
             </h3>
             <div className="px-2 py-2 bg-slate-200 rounded-md">
-              <p className={SHARED_STYLES.text}>
-                In the past 3 hours, You have received 1 invitation from{" "}
-                <span className={SHARED_STYLES.accent}>Grant</span> about your upcoming trip,
-                1 reply from <span className={SHARED_STYLES.accent}>Alice</span> about your car rental project,
-                1 email from your instructor <span className={SHARED_STYLES.accent}>Dr. Bieler</span> discussing your
-                essay topics.
-              </p>
+              {renderHighlightedContent(summaryData.content, summaryData.highlightedPeople)}
             </div>
           </CardContent>
 
@@ -167,7 +233,7 @@ export function EmailSummaryWithStats() {
                     fill="none"
                     stroke="#94e9b8"
                     strokeWidth="4"
-                    strokeDasharray="13.9 100"
+                    strokeDasharray={`${statsData.essentialPercentage} 100`}
                     transform="rotate(-90 18 18)"
                   />
                 </svg>
@@ -175,13 +241,13 @@ export function EmailSummaryWithStats() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-[#92bfff]" />
-                  <span className={SHARED_STYLES.text}>Essential (39)</span>
-                  <span className="ml-auto text-sm font-medium">13.9%</span>
+                  <span className={SHARED_STYLES.text}>Essential ({statsData.essentialCount})</span>
+                  <span className="ml-auto text-sm font-medium">{statsData.essentialPercentage}%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-[#94e9b8]" />
-                  <span className={SHARED_STYLES.text}>Non-essential (69)</span>
-                  <span className="ml-auto text-sm font-medium">22.8%</span>
+                  <span className={SHARED_STYLES.text}>Non-essential ({statsData.nonEssentialCount})</span>
+                  <span className="ml-auto text-sm font-medium">{statsData.nonEssentialPercentage}%</span>
                 </div>
               </div>
             </div>
@@ -201,33 +267,53 @@ export function EmailSummaryWithStats() {
   );
 }
 
-export function EmailSummaryHistory() {
+export function EmailSummaryHistory({
+                                      summaryData = {
+                                        title: "You received 3 Essential Emails in the Past 3 hours",
+                                        updateTime: "3 mins ago",
+                                        content: "In the past 3 hours, You have received 1 invitation from Grant about your upcoming trip, 1 reply from Alice about your car rental project, 1 email from your instructor Dr. Bieler discussing your essay topics.",
+                                        highlightedPeople: [
+                                          {name: "Grant", context: "invitation"},
+                                          {name: "Alice", context: "car rental project"},
+                                          {name: "Dr. Bieler", context: "essay topics"}
+                                        ]
+                                      }
+                                    }: {
+  summaryData?: EmailSummaryData
+}) {
+  // Function to highlight names
+  const renderHighlightedContent = (content: string, highlights: Array<{name: string}>) => {
+    let result = content;
+    highlights.forEach(person => {
+      result = result.replace(
+        person.name,
+        `<span class="${SHARED_STYLES.accent}">${person.name}</span>`
+      );
+    });
+
+    return <p className={SHARED_STYLES.text} dangerouslySetInnerHTML={{ __html: result }} />;
+  };
+
   return (
     <Card>
-    <CardHeader className={SHARED_STYLES.cardHeader}>
-      <Badge variant="default" size="md">Summary</Badge>
-        <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
+      <CardHeader className={SHARED_STYLES.cardHeader}>
+        <Badge variant="default" size="md">Summary</Badge>
+        <Badge variant="secondary" size="md">Updated {summaryData.updateTime}</Badge>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
-        <CardContent className="container space-y-4">
-          <h3 className={SHARED_STYLES.heading}>
-            You received 3 Essential Emails in the Past 3 hours
-          </h3>
-          <div className={"px-2 py-2 bg-slate-200 rounded-md"}>
-            <p className={SHARED_STYLES.text}>
-              In the past 3 hours, You have received 1 invitation from{" "}
-              <span className={SHARED_STYLES.accent}>Grant</span> about your upcoming trip,
-              1 reply from <span className={SHARED_STYLES.accent}>Alice</span> about your car rental project,
-              1 email from your instructor <span className={SHARED_STYLES.accent}>Dr. Bieler</span> discussing your
-              essay topics.
-            </p>
-          </div>
-          <div className={"pt-3"}>
-            <Button variant="outline" className="ml-auto">
-              Check Last Report
-            </Button>
-          </div>
-        </CardContent>
+      <CardContent className="container space-y-4">
+        <h3 className={SHARED_STYLES.heading}>
+          {summaryData.title}
+        </h3>
+        <div className={"px-2 py-2 bg-slate-200 rounded-md"}>
+          {renderHighlightedContent(summaryData.content, summaryData.highlightedPeople)}
+        </div>
+        <div className={"pt-3"}>
+          <Button variant="outline" className="ml-auto">
+            Check Last Report
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   )
 }
