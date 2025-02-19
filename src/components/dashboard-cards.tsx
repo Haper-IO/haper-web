@@ -12,7 +12,7 @@ const SHARED_STYLES = {
   mailIcon: "ml-auto h-4 w-4 text-[#94a3b8]",
   heading: "font-medium text-[#0f172a]",
   text: "text-sm text-[#475569]",
-  accent: "text-[#92bfff]"
+  accent: "text-lime-600"
 }
 
 // Reply History Component
@@ -122,7 +122,7 @@ export function EmailSummaryWithStats() {
   return (
     <Card>
       <CardHeader className={SHARED_STYLES.cardHeader}>
-        <Badge variant="default" size="md">Summary</Badge>
+        <Badge variant="emphasis" size="md">Summary</Badge>
         <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
@@ -205,7 +205,7 @@ export function EmailSummaryHistory() {
   return (
     <Card>
     <CardHeader className={SHARED_STYLES.cardHeader}>
-      <Badge variant="secondary" size="md">Summary</Badge>
+      <Badge variant="default" size="md">Summary</Badge>
         <Badge variant="secondary" size="md">Updated 3 mins ago</Badge>
         <Mail className={SHARED_STYLES.mailIcon} />
       </CardHeader>
@@ -223,7 +223,7 @@ export function EmailSummaryHistory() {
             </p>
           </div>
           <div className={"pt-3"}>
-            <Button variant="secondary" className="ml-auto">
+            <Button variant="outline" className="ml-auto">
               Check Last Report
             </Button>
           </div>
