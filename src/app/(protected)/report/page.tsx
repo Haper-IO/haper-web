@@ -1,201 +1,168 @@
-'use client'
+// app/report/page.tsx
+"use client"
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, MoreVertical, ChevronDown, Mail } from 'lucide-react'
-import Link from 'next/link'
+import { useState } from "react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { MoreVertical, ChevronDown, Check, Reply, Trash, Move } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
 
-interface EmailItem {
-  id: string
-  sender: string
-  subject: string
-  time: string
-  preview?: string
-  isRead: boolean
-  hasReply?: boolean
-  replyText?: string
+const SHARED_STYLES = {
+  heading: "font-medium text-[#0f172a]",
+  text: "text-sm text-[#475569]",
+  subtitle: "text-xs text-[#64748b]",
+  accent: "text-lime-600"
 }
 
 export default function ReportPage() {
-  const [showReply, setShowReply] = useState(false)
+  const [showReplyField, setShowReplyField] = useState(false)
+  const [selectedAction, setSelectedAction] = useState<string>("")
 
-  const essentialEmails: EmailItem[] = [
-    {
-      id: '1',
-      sender: 'Alice Smith',
-      subject: 'Re: Project Update',
-      time: 'Thu Feb 6 2:22 PM',
-      preview: 'Ms. Alice has reviewed your car rental budget. While generally satisfactory, she\'s flagged insurance costs for discussion tomorrow.',
-      isRead: false
-    },
-    {
-      id: '2',
-      sender: 'John Grant',
-      subject: 'Re: Project Update',
-      time: 'Thu Feb 6 2:22 PM',
-      preview: 'Mr. Grant has extended an invitation for a Lake Tahoe weekend getaway (April 12-14) with Sarah and Mike. This requires your response.',
-      isRead: false
-    },
-    {
-      id: '3',
-      sender: 'Roger Bieler',
-      subject: 'Re: Project Update',
-      time: 'Thu Feb 6 2:22 PM',
-      preview: 'Your instructor has provided constructive feedback on your essay topic, suggesting to refine your sustainable urban development focus specifically to public transportation in major cities.',
-      isRead: false,
-      hasReply: true,
-      replyText: 'Dear Professor,\nThank you for your thoughtful feedback. I agree that focusing on public transportation systems would provide a more focused analysis. Would it be acceptable to specifically examine case studies from New York, Tokyo, and London? I look forward to your guidance.\nBest regards'
-    }
-  ]
-
-  const nonEssentialEmails: EmailItem[] = Array(8).fill(null).map((_, index) => ({
-    id: `ne-${index + 1}`,
-    sender: 'John Grant',
-    subject: 'Re: Project Update',
-    time: 'Thu Feb 6 2:22 PM',
-    isRead: false
-  }))
-
-  const toggleReply = () => {
-    setShowReply(!showReply)
-  }
-
-  const markAsRead = (email: EmailItem) => {
-    // This would update the backend in a real implementation
-    console.log(`Marking email ${email.id} as read`)
-  }
-
-  const applyToAll = () => {
-    // This would batch update all emails in a real implementation
-    console.log('Applying read status to all emails')
+  const handleActionSelect = (action: string) => {
+    setSelectedAction(action)
+    setShowReplyField(action === "reply")
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b px-4 py-3">
-        <div className="container mx-auto">
-          <Link href="/dashboard" className="inline-flex items-center text-slate-600 hover:text-slate-900">
-            <ChevronLeft className="h-5 w-5 mr-2" />
-            Check Today's Report
-          </Link>
-        </div>
-      </header>
-
       {/* Main Content */}
-      <main className="container mx-auto py-6 px-4">
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Essential Emails Section */}
-          <div>
-            <Card className="overflow-hidden">
-              <div className="p-4 bg-slate-50 border-b">
-                <div className="flex items-center mb-2">
-                  <Badge variant="default" className="bg-slate-800 text-white mr-3">Essential</Badge>
-                  <span className="text-sm text-slate-500">Updated 3 mins ago</span>
-                </div>
-                <h2 className="text-lg font-medium">You received 3 Essential Emails in the Past 3 hours</h2>
-              </div>
-
-              <div className="divide-y">
-                {essentialEmails.map((email) => (
-                  <div key={email.id} className="p-4 bg-white">
-                    <div className="flex justify-between mb-1">
-                      <div className="font-medium">{email.sender}</div>
-                      <div className="text-xs text-slate-500">{email.time}</div>
-                    </div>
-                    <div className="text-sm text-slate-700 mb-1">{email.subject}</div>
-                    {email.preview && (
-                      <p className="text-sm text-slate-600">{email.preview}</p>
-                    )}
-
-                    <div className="flex justify-between mt-3">
-                      <button
-                        className="text-slate-400"
-                        onClick={() => {/* handle action */}}
-                      >
-                        <MoreVertical className="h-5 w-5" />
-                      </button>
-
-                      <button
-                        className="inline-flex items-center text-sm text-slate-600 border px-3 py-1 rounded-md"
-                        onClick={() => markAsRead(email)}
-                      >
-                        Marked as Read <ChevronDown className="h-4 w-4 ml-1" />
-                      </button>
-                    </div>
-
-                    {email.hasReply && (
-                      <div className="mt-4">
-                        {showReply ? (
-                          <div className="border rounded-md p-3 bg-slate-50 mt-2 text-sm whitespace-pre-line">
-                            {email.replyText}
-                          </div>
-                        ) : (
-                          <button
-                            className="text-sm text-slate-600 hover:text-slate-900"
-                            onClick={toggleReply}
-                          >
-                            Reply Generated <ChevronDown className="h-4 w-4 inline" />
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="p-4 bg-white border-t flex justify-center">
-                <Button variant="secondary" onClick={applyToAll}>
-                  Apply All
-                </Button>
-              </div>
-
-              <div className="p-4 flex justify-start">
-                <Mail className="h-5 w-5 text-blue-500" />
-              </div>
-            </Card>
+      <main className="min-h-screen pt-[61px] md:pl-60">
+        <div className="container p-5 mx-auto">
+          {/* Report Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-semibold text-[#0f172a]">Email Report</h1>
+            <Badge variant="secondary">Last 7 Days</Badge>
           </div>
 
-          {/* Non-Essential Emails Section */}
-          <div>
-            <Card className="overflow-hidden">
-              <div className="p-4 bg-slate-50 border-b">
-                <div className="flex items-center mb-2">
-                  <Badge variant="secondary" className="bg-slate-200 text-slate-800 mr-3">Non-Essential</Badge>
-                  <span className="text-sm text-slate-500">Updated 3 mins ago</span>
-                </div>
-                <h2 className="text-lg font-medium">You received 12 Non-Essential Emails in the Past 3 hours</h2>
+          {/* Email List */}
+          <Card className="mb-6">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className={SHARED_STYLES.heading}>Non-Essential Group (24)</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      Filter <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>All</DropdownMenuItem>
+                    <DropdownMenuItem>Unread</DropdownMenuItem>
+                    <DropdownMenuItem>Flagged</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
+              <Button variant="ghost" size="sm" className={SHARED_STYLES.accent}>
+                Show All
+              </Button>
+            </CardHeader>
 
-              <div className="divide-y">
-                {nonEssentialEmails.map((email) => (
-                  <div key={email.id} className="p-4 bg-white">
-                    <div className="flex justify-between mb-1">
-                      <div className="font-medium">{email.sender}</div>
-                      <div className="text-xs text-slate-500">{email.time}</div>
-                    </div>
-                    <div className="text-sm text-slate-700 mb-1">{email.subject}</div>
+            <CardContent className="space-y-4">
+              {/* Email Item */}
+              <div className="border rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className={SHARED_STYLES.heading}>Marketing Newsletter</h3>
+                    <p className={SHARED_STYLES.subtitle}>From: newsletter@company.com</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem>
+                          <Move className="mr-2 h-4 w-4" />
+                          Move to Essential
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Move className="mr-2 h-4 w-4" />
+                          Move to Non-Essential
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
-                    <div className="flex justify-end mt-3">
-                      <button
-                        className="inline-flex items-center text-sm text-slate-600 border px-3 py-1 rounded-md"
-                        onClick={() => markAsRead(email)}
-                      >
-                        Marked as Read <ChevronDown className="h-4 w-4 ml-1" />
-                      </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-1">
+                          Mark as Read <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleActionSelect("read")}>
+                          <Check className="mr-2 h-4 w-4" />
+                          Mark as Read
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleActionSelect("reply")}>
+                          <Reply className="mr-2 h-4 w-4" />
+                          Reply Generated
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleActionSelect("delete")}>
+                          <Trash className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                <p className={`${SHARED_STYLES.text} mb-4`}>
+                  This week's marketing updates and campaign performance...
+                </p>
+
+                {showReplyField && (
+                  <div className="mt-4">
+                    <Textarea
+                      placeholder="Type your reply here..."
+                      className="mb-2"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" size="sm">Cancel</Button>
+                      <Button size="sm">Send Reply</Button>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
 
-              <div className="p-4 flex justify-between items-center">
-                <Button variant="link" className="text-slate-600">
-                  Show All <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-                <Mail className="h-5 w-5 text-blue-500" />
-              </div>
+              {/* Additional email items can be added here */}
+            </CardContent>
+          </Card>
+
+          {/* Stats Section */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader className={SHARED_STYLES.heading}>
+                Essential Email Statistics
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <span>Processed Emails</span>
+                  <Badge variant="secondary">24</Badge>
+                </div>
+                {/* Add charts/stats here */}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className={SHARED_STYLES.heading}>
+                Non-Essential Breakdown
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <span>Marketing</span>
+                  <Badge variant="secondary">12</Badge>
+                </div>
+                {/* Add breakdown list here */}
+              </CardContent>
             </Card>
           </div>
         </div>
