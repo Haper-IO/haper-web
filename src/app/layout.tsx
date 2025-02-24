@@ -4,7 +4,6 @@ import { Inter } from 'next/font/google'
 import {Toaster} from "@/components/ui/sonner";
 import React from "react";
 import {PublicEnvScript} from "next-runtime-env";
-import {NavigationAuthenticated} from "@/components/navigation-bar";
 import texture from "@/assets/images/texture_flows.webp";
 
 const inter = Inter({ subsets: ['latin'] })
@@ -22,15 +21,18 @@ export default function RootLayout({
     <head>
       <PublicEnvScript/>
     </head>
-    <div
-      className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-      style={{
-        backgroundImage: `url(${texture.src})`,
-        opacity: 0.16
-      }}
-    />
     <body className={inter.className}>
-    <main>{children}</main>
+
+    <main>
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${texture.src})`,
+          opacity: 0.16
+        }}
+      />
+      {children}
+    </main>
     <Toaster/>
     </body>
     </html>

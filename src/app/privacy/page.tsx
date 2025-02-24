@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React from 'react'
 import { Footer } from '@/components/Footer'
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <div className="prose prose-slate max-w-none">
             <h2 className="text-2xl font-semibold mt-8 mb-4">1. Introduction</h2>
             <p>
-              Welcome to InfoFilter ("we," "our," or "us"). We respect your privacy and are committed to protecting
+              Welcome to InfoFilter (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;). We respect your privacy and are committed to protecting
               your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard
               your information when you use our information filtering platform.
             </p>
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             </ul>
             <p>To exercise these rights, contact us at privacy@infofilter.com.</p>
 
-            <h2 className="text-2xl font-semibold mt-8 mb-4">8. Children's Privacy</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">8. Children&apos;s Privacy</h2>
             <p>
               Our service is not directed to children under 16. We do not knowingly collect information
               from children under 16.

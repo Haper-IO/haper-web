@@ -23,6 +23,8 @@ const SHARED_STYLES = {
 
 export default function ReportPage() {
   const [showReplyField, setShowReplyField] = useState(false)
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedAction, setSelectedAction] = useState<string>("")
 
   const handleActionSelect = (action: string) => {
@@ -116,7 +118,7 @@ export default function ReportPage() {
                 </div>
 
                 <p className={`${SHARED_STYLES.text} mb-4`}>
-                  This week's marketing updates and campaign performance...
+                  This week&apos;s marketing updates and campaign performance...
                 </p>
 
                 {showReplyField && (

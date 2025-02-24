@@ -1,5 +1,6 @@
 import { History, PieChart } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from "next/image";
 
 const navigation = [
   { name: "Overview", icon: PieChart, href: "#", current: true },
@@ -10,7 +11,7 @@ export function Sidebar() {
   return (
     <div className="flex h-screen w-[240px] flex-col border-r border-[#e2e8f0] bg-white">
       <div className="p-6">
-        <img
+        <Image
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Haper_Design_File_v.0.1.0-gGKjyWjhITYr509LycdGJAQcmGzphu.png"
           alt="Haper Logo"
           className="h-8"

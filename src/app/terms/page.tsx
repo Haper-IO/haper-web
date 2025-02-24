@@ -18,7 +18,7 @@ export default function TermsPage() {
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using InfoFilter's services, you agree to be bound by these Terms of Service ("Terms").
+              By accessing or using InfoFilter&apos;s services, you agree to be bound by these Terms of Service (&ldquo;Terms&rdquo;).
               If you disagree with any part of these terms, you may not access our service.
             </p>
 
@@ -60,7 +60,7 @@ export default function TermsPage() {
             <p>We will:</p>
             <ul className="list-disc pl-6 mb-4">
               <li className="mb-2">Only access data necessary for providing our services</li>
-              <li className="mb-2">Not store your messages beyond what's required for functionality</li>
+              <li className="mb-2">Not store your messages beyond what&apos;s required for functionality</li>
               <li className="mb-2">Not share your data with unauthorized third parties</li>
               <li className="mb-2">Adhere to all Google API Services User Data Policies</li>
             </ul>
@@ -114,7 +114,7 @@ export default function TermsPage() {
             </p>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">9. Disclaimer of Warranties</h2>
-            <p>Our service is provided "as is" without warranties of any kind, either express or implied.</p>
+            <p>Our service is provided &ldquo;as is&rdquo; without warranties of any kind, either express or implied.</p>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">10. Limitation of Liability</h2>
             <p>
