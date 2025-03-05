@@ -9,7 +9,7 @@ const Card = ({ className, ...props }: CardProps) => {
     <div
       ref={ref}
       className={cn(
-        "rounded-xl border bg-slate-50/50 text-card-foreground shadow-sm z-10 outline-slate-200",
+        "relative rounded-xl border bg-slate-50/50 text-card-foreground shadow-sm outline-slate-200",
         className
       )}
       {...props}

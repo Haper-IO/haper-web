@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Footer } from '@/components/Footer'
+import { Footer } from '@/components/footer'
 import { NavigationUnauthenticated } from '@/components/navigation-bar'
 
 export default function TermsPage() {

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { SidebarButton } from "@/components/SidebarButton"
-import { SidebarNav } from "@/components/SidebarNav"
+import { SidebarButton } from "@/components/sidebar-button"
+import { Sidebar } from "@/components/sidebar"
 import {
   EmailSummaryWithStats,
   EmailSummaryHistory,
@@ -76,7 +76,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Sidebar Navigation */}
-      <SidebarNav isOpen={isSidebarOpen} />
+      <Sidebar isOpen={isSidebarOpen} />
 
       {/* Main Content */}
       <main

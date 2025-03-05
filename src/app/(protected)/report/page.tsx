@@ -7,12 +7,14 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MoreVertical, ChevronDown, Check, Reply, Trash, Move } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
+import {DropdownMenuDemo} from "@/components/dropdown-menu";
 
 const SHARED_STYLES = {
   heading: "font-medium text-[#0f172a]",
@@ -33,9 +35,9 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="space-y-8 space-x-8">
       {/* Main Content */}
-      <main className="min-h-screen pt-[61px] md:pl-60">
+      <main className="min-h-screen mx-auto ">
         <div className="container p-5 mx-auto">
           {/* Report Header */}
           <div className="flex justify-between items-center mb-6">
@@ -50,17 +52,21 @@ export default function ReportPage() {
                 <span className={SHARED_STYLES.heading}>Non-Essential Group (24)</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-1">
+                    <Button variant="ghost" size="sm" className="gap-1" >
                       Filter <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem>All</DropdownMenuItem>
-                    <DropdownMenuItem>Unread</DropdownMenuItem>
-                    <DropdownMenuItem>Flagged</DropdownMenuItem>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem>All</DropdownMenuItem>
+                      <DropdownMenuItem>Unread</DropdownMenuItem>
+                      <DropdownMenuItem>Flagged</DropdownMenuItem>
+                    </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
               </div>
+              <DropdownMenuDemo />
               <Button variant="ghost" size="sm" className={SHARED_STYLES.accent}>
                 Show All
               </Button>

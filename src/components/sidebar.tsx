@@ -1,4 +1,4 @@
-// SidebarNav.tsx
+// Sidebar.tsx
 import { LucideIcon, LayoutDashboard, History } from "lucide-react"
 import Link from "next/link"
 
@@ -22,7 +22,7 @@ interface SidebarNavProps {
   isOpen: boolean
 }
 
-export function SidebarNav({ isOpen }: SidebarNavProps) {
+export function Sidebar({ isOpen }: SidebarNavProps) {
   return (
     <aside
       className={`fixed top-[61px] left-0 bottom-0 w-60 border-r bg-slate-50/75 transition-transform duration-300 z-10 ${

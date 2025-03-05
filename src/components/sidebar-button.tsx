@@ -1,4 +1,4 @@
-// SidebarButton.tsx
+// sidebar-button.tsx
 import { Button } from "@/components/ui/button"
 import { PanelLeftClose, PanelLeft } from "lucide-react"
 
@@ -21,7 +21,7 @@ export function SidebarButton({ isOpen, toggle }: SidebarButtonProps) {
   )
 }
 
-// SidebarNav.tsx
+// Sidebar.tsx
 import { LucideIcon, LayoutDashboard, History } from "lucide-react"
 import Link from "next/link"
 
