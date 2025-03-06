@@ -1,18 +1,18 @@
 "use client"
 
 import { motion } from "framer-motion"
-import {GradientTitle} from "@/components/text-effect/header-gradient";
+import { GradientTitle } from "@/components/text-effect/header-gradient";
 
 function FloatingPaths({ position }: { position: number }) {
   const paths = Array.from({ length: 36 }, (_, i) => ({
     id: i,
-    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
-      380 - i * 5 * position
-    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
-      152 - i * 5 * position
-    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
-      684 - i * 5 * position
-    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    d: `M-${380 - i * 5 + position} -${189 + i * 6}C-${
+      380 - i * 5 + position
+    } -${189 + i * 6} -${312 - i * 5 + position} ${216 - i * 6} ${
+      152 - i * 5 + position
+    } ${343 - i * 6}C${616 - i * 5 + position} ${470 - i * 6} ${
+      684 - i * 5 + position
+    } ${875 - i * 6} ${684 - i * 5 + position} ${875 - i * 6}`,
     color: `rgba(15,23,42,${0.1 + i * 0.03})`,
     width: 0.5 + i * 0.03,
   }))
@@ -47,27 +47,34 @@ function FloatingPaths({ position }: { position: number }) {
 }
 
 export default function BackgroundPaths({
-  title = "Welcome to haper beta",
-}: { title?: string }) {
+                                          title = "Welcome to haper beta",
+                                          showTitle = true,
+                                          className = "",
+                                        }: {
+  title?: string;
+  showTitle?: boolean;
+  className?: string;
+}) {
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden dark:bg-neutral-950 bg-white">
+    <div className={`relative min-h-screen w-full flex items-center justify-center overflow-hidden ${className}`}>
       <div className="absolute inset-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
         <FloatingPaths position={-5} />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2 }}
-          className="max-w-4xl mx-auto"
-        >
-        <GradientTitle title={title} />
-        </motion.div>
-      </div>
+      {showTitle && (
+        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 2 }}
+            className="max-w-4xl mx-auto"
+          >
+            <GradientTitle title={title} />
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
-
