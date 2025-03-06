@@ -1,136 +1,21 @@
 'use client'
 
-import { useRef, useEffect, ReactNode } from 'react'
+import { useRef } from 'react'
 import { NavigationUnauthenticated } from '@/components/navigation-bar'
-import BackgroundPaths from "@/components/background-effect/bg-path-lines"
-import { motion, useInView, useAnimation } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { ChevronDown, CheckCircle, MessageSquare, Clock, Filter, Zap, Tag } from 'lucide-react'
 import {
   Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
 } from "@/components/ui/accordion"
 
-// Types
-interface FadeInWhenVisibleProps {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
-}
+import { FeatureCard } from "@/components/feature-card";
+import { FAQItem } from "@/components/faq-item";
+import { TestimonialCard } from "@/components/testimonial-card";
+import { GradientTitle } from "@/components/text-effect/header-gradient";
+import { FadeInWhenVisible } from "@/components/background-effect/fade-in-when-visible";
 
-interface FeatureCardProps {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  delay?: number;
-}
-
-interface TestimonialCardProps {
-  quote: string;
-  author: string;
-  role: string;
-  delay?: number;
-}
-
-interface FAQItemProps {
-  question: string;
-  answer: string;
-  value: string;
-}
-
-// Fade In Animation Component
-const FadeInWhenVisible = ({ children, delay = 0, className = "" }: FadeInWhenVisibleProps) => {
-  const controls = useAnimation()
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, amount: 0.3 })
-
-  useEffect(() => {
-    if (isInView) {
-      controls.start("visible")
-    }
-  }, [controls, isInView])
-
-  return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={controls}
-      variants={{
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0 }
-      }}
-      transition={{ duration: 0.5, delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-// Feature Card Component
-const FeatureCard = ({ icon, title, description, delay = 0 }: FeatureCardProps) => {
-  return (
-    <FadeInWhenVisible delay={delay} className="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-      <div className="p-3 mb-4 bg-lime-50 rounded-lg">
-        {icon}
-      </div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
-    </FadeInWhenVisible>
-  )
-}
-
-// Testimonial Card Component
-const TestimonialCard = ({ quote, author, role, delay = 0 }: TestimonialCardProps) => {
-  return (
-    <FadeInWhenVisible delay={delay} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <div className="mb-4">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9.33333 17.3333C11.5425 17.3333 13.3333 15.5425 13.3333 13.3333C13.3333 11.1241 11.5425 9.33333 9.33333 9.33333C7.12419 9.33333 5.33333 11.1241 5.33333 13.3333C5.33333 15.5425 7.12419 17.3333 9.33333 17.3333Z" fill="#E2E8F0"/>
-          <path d="M9.33333 17.3333C11.5425 17.3333 13.3333 19.1242 13.3333 21.3333V24C13.3333 24.7364 12.7364 25.3333 12 25.3333H6.66667C5.93029 25.3333 5.33333 24.7364 5.33333 24V21.3333C5.33333 19.1242 7.12419 17.3333 9.33333 17.3333Z" fill="#E2E8F0"/>
-          <path d="M22.6667 17.3333C24.8758 17.3333 26.6667 15.5425 26.6667 13.3333C26.6667 11.1241 24.8758 9.33333 22.6667 9.33333C20.4575 9.33333 18.6667 11.1241 18.6667 13.3333C18.6667 15.5425 20.4575 17.3333 22.6667 17.3333Z" fill="#E2E8F0"/>
-          <path d="M22.6667 17.3333C24.8758 17.3333 26.6667 19.1242 26.6667 21.3333V24C26.6667 24.7364 26.0697 25.3333 25.3333 25.3333H20C19.2636 25.3333 18.6667 24.7364 18.6667 24V21.3333C18.6667 19.1242 20.4575 17.3333 22.6667 17.3333Z" fill="#E2E8F0"/>
-        </svg>
-      </div>
-      <p className="text-gray-700 mb-6">{quote}</p>
-      <div>
-        <p className="font-semibold">{author}</p>
-        <p className="text-sm text-gray-500">{role}</p>
-      </div>
-    </FadeInWhenVisible>
-  )
-}
-
-// FAQ Item Component
-const FAQItem = ({ question, answer, value }: FAQItemProps) => {
-  return (
-    <AccordionItem value={value} className="border-b border-gray-200">
-      <AccordionTrigger className="text-lg font-medium py-4 text-left hover:text-lime-600 transition-colors">
-        {question}
-      </AccordionTrigger>
-      <AccordionContent className="text-gray-600 pb-4">
-        {answer}
-      </AccordionContent>
-    </AccordionItem>
-  )
-}
-
-// Gradient Title Component
-// Updated GradientTitle with centered text
-function GradientTitle({ title }: { title: string }) {
-  return (
-    <motion.h1
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-lime-600 via-emerald-600 to-lime-600 bg-size-200 animate-gradient-x text-center"
-    >
-      {title}
-    </motion.h1>
-  )
-}
+import Spline from '@splinetool/react-spline';
 
 // Main Component
 export default function LandingPage() {
@@ -146,9 +31,21 @@ export default function LandingPage() {
     <div className="w-full min-h-screen bg-gray-50">
       <NavigationUnauthenticated/>
 
-      {/* Simplified Hero Section */}
-      <section className="relative py-24 md:py-32 bg-white/75">
-        <div className="container px-4 mx-auto">
+      <section className="relative min-h-screen py-24 md:py-32 bg-slate-50/75">
+        {/* Spline Background Container */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+          <Spline
+            scene="https://prod.spline.design/qvpf9Bfmso51VoKI/scene.splinecode"
+            className="w-full h-full pointer-events-none"
+            onLoad={(spline) => {
+              spline.setZoom(0.6); // Adjust scene zoom level
+            }}
+            onMouseDown={(e) => e.preventDefault()} // Prevent scene interactions
+          />
+        </div>
+
+        {/* Content Container */}
+        <div className="container px-4 mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{opacity: 0}}
@@ -176,7 +73,7 @@ export default function LandingPage() {
               transition={{duration: 0.5, delay: 0.5}}
             >
               <Button
-                className="bg-lime-600 hover:bg-lime-500 text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all"
+                className="bg-lime-600 hover:bg-lime-500 text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all backdrop-blur-sm"
                 size="lg"
               >
                 Start Free Trial
@@ -184,7 +81,7 @@ export default function LandingPage() {
               <Button
                 variant="outline"
                 onClick={scrollToFeatures}
-                className="border-gray-300 hover:bg-gray-100 text-gray-700 px-8 py-6 text-lg rounded-lg flex items-center gap-2"
+                className="border-gray-300 hover:bg-gray-100 text-gray-700 px-8 py-6 text-lg rounded-lg flex items-center gap-2 backdrop-blur-sm"
                 size="lg"
               >
                 See How It Works <ChevronDown size={18}/>
@@ -430,7 +327,7 @@ export default function LandingPage() {
 
             <div className="mt-8 md:mt-0">
               <p className="text-center md:text-right text-gray-500">
-                &copy; {new Date().getFullYear()} Haper. All rights reserved.
+                &copy; {new Date().getFullYear()} Built in 2025. Haper. All rights reserved.
               </p>
             </div>
           </div>
