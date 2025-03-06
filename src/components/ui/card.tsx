@@ -23,7 +23,7 @@ const CardHeader = ({ className, ...props }: CardProps) => {
   return (
     <div
       ref={ref}
-      className={cn("flex flex-col space-y-1.5 p-6", className)}
+      className={cn("flex flex-col space-y-1.5 pl-6 pr-6 pt-6 pb-4", className)}
       {...props}
     />
   )
