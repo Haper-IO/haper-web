@@ -4,15 +4,13 @@ import { useRef } from 'react'
 import { NavigationUnauthenticated } from '@/components/navigation-bar'
 import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
-import { ChevronDown, CheckCircle, MessageSquare, Clock, Filter, Zap, Tag } from 'lucide-react'
-import {
-  Accordion,
-} from "@/components/ui/accordion"
+import { ChevronDown, CheckCircle, MessageSquare, Clock, Filter, Zap, Tag, Compass, Quote, ThumbsUp } from 'lucide-react'
+import { Accordion } from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
 
 import { FeatureCard } from "@/components/feature-card";
 import { FAQItem } from "@/components/faq-item";
 import { TestimonialCard } from "@/components/testimonial-card";
-import { GradientTitle } from "@/components/text-effect/header-gradient";
 import { FadeInWhenVisible } from "@/components/background-effect/fade-in-when-visible";
 
 import Spline from '@splinetool/react-spline';
@@ -31,12 +29,27 @@ export default function LandingPage() {
     <div className="w-full min-h-screen bg-gray-50">
       <NavigationUnauthenticated/>
 
+      {/* Hero Section */}
       <section className="relative min-h-screen py-24 md:py-32 bg-slate-50/75">
+        <div className="flex items-center space-x-2 mt-4 justify-center mb-4">
+          <Badge className={"mb-4 bg-slate-50"} variant="homepage_section" size="lg">
+            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+              <motion.div
+                animate={{scale: [1, 1.1, 1]}}
+                transition={{duration: 2, repeat: Infinity}}
+              >
+                <Clock className="h-4 w-4 text-gray-600"/>
+              </motion.div>
+            </div>
+            Save 5+ hours every week on email management
+          </Badge>
+        </div>
+
         {/* Spline Background Container */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
           <Spline
             scene="https://prod.spline.design/qvpf9Bfmso51VoKI/scene.splinecode"
-            className="w-full h-full pointer-events-none"
+            className="w-full h-full"
             onLoad={(spline) => {
               spline.setZoom(0.6); // Adjust scene zoom level
             }}
@@ -45,48 +58,43 @@ export default function LandingPage() {
         </div>
 
         {/* Content Container */}
-        <div className="container px-4 mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div
-              initial={{opacity: 0}}
-              animate={{opacity: 1}}
-              transition={{duration: 1}}
-              className="mb-8"
-            >
-              <GradientTitle title="Reclaim Your Time with Smarter Email Management"/>
-            </motion.div>
-
-            <motion.p
-              className="text-xl text-gray-600 md:text-2xl mb-12 mx-auto max-w-3xl leading-relaxed"
+        <div className="relative container px-4 mx-auto z-10">
+          <div className="max-w-4xl mx-auto text-center mb-1">
+            <motion.h1
               initial={{opacity: 0, y: 20}}
               animate={{opacity: 1, y: 0}}
-              transition={{duration: 0.5, delay: 0.3}}
+              transition={{duration: 0.8, ease: "easeOut"}}
+              className="text-4xl md:text-5xl lg:text-6xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-gray-800 via-gray-500 to-gray-600 mb-6 pb-2"
             >
-              Transform your inbox from a time-sink to a productivity powerhouse. Haper's AI cuts through
-              the noise, giving you back hours every week.
-            </motion.p>
+              Shield Yourself From Non-Relevant Messages
+            </motion.h1>
 
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-              initial={{opacity: 0, y: 20}}
-              animate={{opacity: 1, y: 0}}
-              transition={{duration: 0.5, delay: 0.5}}
-            >
-              <Button
-                className="bg-lime-600 hover:bg-lime-500 text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all backdrop-blur-sm"
-                size="lg"
-              >
+            {/*<div className="text-md text-gray-600 md:text-xl mb-12 mx-auto max-w-3xl leading-relaxed">*/}
+            {/*  Transform your inbox from a time-sink to a productivity powerhouse. Haper's AI cuts through*/}
+            {/*  the noise, giving you back hours every week.*/}
+            {/*</div>*/}
+
+
+            <div className="mt-16 mx-auto max-w-5xl rounded-2xl overflow-hidden border border-gray-200 shadow-xl mb-8">
+              <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
+                <p className="text-gray-400">Replace this placeholder with your app screenshot</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg">
                 Start Free Trial
               </Button>
               <Button
                 variant="outline"
                 onClick={scrollToFeatures}
-                className="border-gray-300 hover:bg-gray-100 text-gray-700 px-8 py-6 text-lg rounded-lg flex items-center gap-2 backdrop-blur-sm"
+                className=""
                 size="lg"
               >
                 See How It Works <ChevronDown size={18}/>
               </Button>
-            </motion.div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -96,7 +104,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <FadeInWhenVisible>
-              <h2 className="text-3xl font-bold mb-4">Smart features designed to save you time</h2>
+              <Badge className={"mb-4"} variant="homepage_section" size="lg"><Zap size={14} className={"mr-1"}/>Features</Badge>
+              <h2 className="text-3xl font-medium mb-4">
+                Smart features designed to save you time
+              </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                 Our AI-powered tools help you focus on what really matters by intelligently managing your inbox.
               </p>
@@ -105,42 +116,42 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
-              icon={<Filter className="h-6 w-6 text-lime-600"/>}
+              icon={<Filter className="h-6 w-6 text-gray-600"/>}
               title="Smart Email Filtering"
               description="Automatically categorizes emails based on importance, saving you from inbox overload."
               delay={0.1}
             />
 
             <FeatureCard
-              icon={<Clock className="h-6 w-6 text-lime-600"/>}
+              icon={<Clock className="h-6 w-6 text-gray-600"/>}
               title="Daily Summaries"
               description="Get concise reports of your important emails, helping you quickly catch up on what matters."
               delay={0.2}
             />
 
             <FeatureCard
-              icon={<Zap className="h-6 w-6 text-lime-600"/>}
+              icon={<Zap className="h-6 w-6 text-gray-600"/>}
               title="Suggested Actions"
               description="Smart suggestions for how to handle each email, from replies to scheduling and archiving."
               delay={0.3}
             />
 
             <FeatureCard
-              icon={<MessageSquare className="h-6 w-6 text-lime-600"/>}
+              icon={<MessageSquare className="h-6 w-6 text-gray-600"/>}
               title="Chat Interface"
               description="Coming soon: Interact with your emails through a natural chat interface for quick actions."
               delay={0.4}
             />
 
             <FeatureCard
-              icon={<Tag className="h-6 w-6 text-lime-600"/>}
+              icon={<Tag className="h-6 w-6 text-gray-600"/>}
               title="Topic Tracking"
               description="Coming soon: Keep track of key topics across your emails without manual sorting."
               delay={0.5}
             />
 
             <FeatureCard
-              icon={<CheckCircle className="h-6 w-6 text-lime-600"/>}
+              icon={<CheckCircle className="h-6 w-6 text-gray-600"/>}
               title="Auto Organization"
               description="Coming soon: Let Haper clean and categorize your inbox automatically."
               delay={0.6}
@@ -163,29 +174,20 @@ export default function LandingPage() {
 
             <div className="md:w-1/2">
               <FadeInWhenVisible delay={0.2}>
-                <h2 className="text-3xl font-bold mb-6">Our Vision</h2>
-                <p className="text-gray-600 mb-6 text-lg">
+
+                <Badge className={"mb-4"} variant="homepage_section" size="lg"><Compass size={14} className={"mr-1"}/> Our Vision</Badge>
+
+                <h2 className="text-2xl font-medium mb-6">Enable users to focus on what the matter without worry about less important messages</h2>
+
+                <p className="text-gray-700 mb-6">
                   At Haper, we believe your inbox should work for you, not against you. Our vision is to create a world
-                  where
-                  email is no longer a source of stress but a tool that adapts to your needs.
+                  where email is no longer a source of stress but a tool that adapts to your needs.
                 </p>
-                <p className="text-gray-600 mb-6 text-lg">
+                <p className="text-gray-700 mb-6">
                   We're building an email experience that understands context, recognizes patterns, and helps you make
                   decisions
                   faster, letting you focus on what truly matters.
                 </p>
-
-                <div className="flex items-center space-x-4 mt-8">
-                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-lime-100 flex items-center justify-center">
-                    <motion.div
-                      animate={{scale: [1, 1.1, 1]}}
-                      transition={{duration: 2, repeat: Infinity}}
-                    >
-                      <Clock className="h-6 w-6 text-lime-600"/>
-                    </motion.div>
-                  </div>
-                  <p className="font-medium">Save 5+ hours every week on email management</p>
-                </div>
               </FadeInWhenVisible>
             </div>
           </div>
@@ -197,7 +199,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <FadeInWhenVisible>
-              <h2 className="text-3xl font-bold mb-4">What Our Early Users Say</h2>
+              <Badge className={"mb-4"} variant="homepage_section" size="lg"> <ThumbsUp size={12} className={"mr-1"}/>Testimonials</Badge>
+              <h2 className="text-3xl font-medium mb-4">What Our Early Users Say</h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                 Feedback from professionals who are already using Haper to transform their inbox.
               </p>
@@ -236,8 +239,8 @@ export default function LandingPage() {
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
               <div className="p-8 md:p-12">
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold mb-4">Join Our Beta Program</h2>
-                  <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  <h2 className="text-3xl font-medium mb-4">Join Our Beta Program</h2>
+                  <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                     Be among the first to experience Haper and help shape the future of email management.
                   </p>
                 </div>
@@ -247,8 +250,7 @@ export default function LandingPage() {
                     whileHover={{scale: 1.02}}
                     whileTap={{scale: 0.98}}
                   >
-                    <Button
-                      className="w-full bg-lime-600 hover:bg-lime-500 text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all">
+                    <Button variant="default" size={"lg"}>
                       Request Beta Access
                     </Button>
                   </motion.div>
@@ -257,8 +259,7 @@ export default function LandingPage() {
                     whileHover={{scale: 1.02}}
                     whileTap={{scale: 0.98}}
                   >
-                    <Button variant="outline"
-                            className="w-full border-gray-300 hover:bg-gray-100 text-gray-700 px-8 py-6 text-lg rounded-lg transition-all">
+                    <Button variant="outline" size={"lg"}>
                       Learn More
                     </Button>
                   </motion.div>
@@ -274,8 +275,8 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <FadeInWhenVisible>
-              <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
-              <p className="text-xl text-gray-600">
+              <h2 className="text-3xl font-medium mb-4">Frequently Asked Questions</h2>
+              <p className="text-lg text-gray-600">
                 Find answers to common questions about Haper.
               </p>
             </FadeInWhenVisible>

@@ -14,9 +14,12 @@ const badgeVariants = cva(
           "border-transparent bg-slate-200 text-slate-500",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow",
-        outline: "text-foreground",
+        outline:
+          "text-foreground",
         emphasis:
           "border-transparent bg-lime-300 text-slate-700 shadow",
+        homepage_section:
+          "text-foreground text-slate-700 border-slate-200 bg-slate-50 rounded-3xl",
       },
       size : {
         sm: "px-2 py-0.5",

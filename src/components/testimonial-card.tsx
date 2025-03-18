@@ -18,7 +18,7 @@ export const TestimonialCard = ({ quote, author, role, delay = 0 }: TestimonialC
           <path d="M22.6667 17.3333C24.8758 17.3333 26.6667 19.1242 26.6667 21.3333V24C26.6667 24.7364 26.0697 25.3333 25.3333 25.3333H20C19.2636 25.3333 18.6667 24.7364 18.6667 24V21.3333C18.6667 19.1242 20.4575 17.3333 22.6667 17.3333Z" fill="#E2E8F0"/>
         </svg>
       </div>
-      <p className="text-gray-700 mb-6">{quote}</p>
+      <p className="test-sm text-gray-700 mb-6">{quote}</p>
       <div>
         <p className="font-semibold">{author}</p>
         <p className="text-sm text-gray-500">{role}</p>
