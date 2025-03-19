@@ -18,21 +18,21 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-semibold mt-8 mb-4">1. Introduction</h2>
             <h3 className="text-xl font-medium mt-6 mb-3">1. License</h3>
             <p>
-              haper, Inc. ("haper" or "We" and related connotations) is committed to protecting and respecting your privacy.
-              This Privacy Policy ("Policy") details our commitment to protecting the privacy of individuals who visit our
-              Website(haper.io) ("Website Visitors"), as well as users of our Services ("Subscribers"). This Policy
+              haper, Inc. (&quot;haper&quot; or &quot;We&quot; and related connotations) is committed to protecting and respecting your privacy.
+              This Privacy Policy (&quot;Policy&quot;) details our commitment to protecting the privacy of individuals who visit our
+              Website(haper.io) (&quot;Website Visitors&quot;), as well as users of our Services (&quot;Subscribers&quot;). This Policy
               describes how haper collects, uses, shares and secures the personal information you and/or Subscribers provide.
               It also describes your choices regarding use, access and correction of the respective personal information and
               how the personal information can be accessed and updated. In case of any questions or complaints regarding our
               Policy or practices, please get in touch at support@haper.io
             </p>
             <p>
-              Website Visitors and Subscribers are collectively and individually referred to as "You" and related connotations.
+              Website Visitors and Subscribers are collectively and individually referred to as &quot;You&quot; and related connotations.
             </p>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">2. Scope Of This Policy</h2>
             <p>
-              This Policy applies to the information that we obtain through your use of "Services" or when you otherwise interact with haper.
+              This Policy applies to the information that we obtain through your use of &quot;Services&quot; or when you otherwise interact with haper.
             </p>
             <p>
               <strong>Sub-Contractor(s):</strong> Shall mean Data Processors and Sub-processors and same shall be enlisted at
@@ -40,18 +40,18 @@ export default function PrivacyPage() {
             </p>
             <p>
               <strong>Gmail Restricted Scopes:</strong> Shall mean certain Google OAuth API scopes which are subjected to additional
-              security and privacy requirements as mentioned in Google's API Services User Data Policy
+              security and privacy requirements as mentioned in Google&apos;s API Services User Data Policy
             </p>
             <p>
-              "Services" includes our:
+              &quot;Services&quot; includes our:
             </p>
             <ul className="list-disc pl-6 mb-4">
-              <li className="mb-2"><strong>Websites:</strong> haper's website, including but not limited to haper.io, help.haper.io, status.haper.io and any sub-domains and pages;</li>
-              <li className="mb-2"><strong>SaaS Product:</strong> haper's "Cloud" hosted solutions; and</li>
-              <li className="mb-2"><strong>Browser Extension:</strong> haper's browser extensions that a user has to install in their web browser to use Services.</li>
+              <li className="mb-2"><strong>Websites:</strong> haper&apos;s website, including but not limited to haper.io, help.haper.io, status.haper.io and any sub-domains and pages;</li>
+              <li className="mb-2"><strong>SaaS Product:</strong> haper&apos;s &quot;Cloud&quot; hosted solutions; and</li>
+              <li className="mb-2"><strong>Browser Extension:</strong> haper&apos;s browser extensions that a user has to install in their web browser to use Services.</li>
             </ul>
             <p>
-              In this Policy, "personal information" means information relating to an identified or identifiable natural person.
+              In this Policy, &quot;personal information&quot; means information relating to an identified or identifiable natural person.
               An identifiable person is one who can be identified, directly or indirectly, in particular by reference to an identifier
               such as family name, first name, photograph, postal address, email address, telephone numbers, date of birth, data relating
               to your transactions on the Website, detail of your orders and subscriptions, bank card number, Payment Information as well
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
             <p>
               Subscribers/ Sub-Contractor to our Services are solely responsible for ensuring compliance with all applicable laws and
               regulations, as well as any and all privacy policies, agreements or other obligations, relating to the collection of personal
-              information in connection with the use of our Services by individuals (also referred to as "data subjects") with whom our
+              information in connection with the use of our Services by individuals (also referred to as &quot;data subjects&quot;) with whom our
               Subscribers/ Sub-Contractors interact. If you are an individual who interacts with a Subscriber/ Sub-Contractor using our
               Services, in addition to the rights available in Clause 13 below, you will be directed to contact our Subscriber/ Sub-Contractor
               for assistance with any requests or questions relating to your personal information.
@@ -77,12 +77,12 @@ export default function PrivacyPage() {
             </p>
             <p>
               <strong>Payment Information.</strong> When you purchase the Services, we will also collect transaction information, which may
-              include your credit card information, billing and mailing address, and other payment-related information ("Payment Information").
+              include your credit card information, billing and mailing address, and other payment-related information (&quot;Payment Information&quot;).
               We describe how Payment Information may be collected and processed in Clause 6 below.
             </p>
             <p>
               <strong>Technical, Usage and Location Information.</strong> We may collect information when you interact with our advertisements
-              and other content on third-party sites or platforms, such as social networking sites. This may include information such as "Likes",
+              and other content on third-party sites or platforms, such as social networking sites. This may include information such as &quot;Likes&quot;,
               profile information gathered from social networking sites or the fact that you viewed or interacted with our content.
             </p>
             <p>
@@ -113,7 +113,7 @@ export default function PrivacyPage() {
               information will depend on the personal information concerned and the specific context in which we collect it. However,
               we will normally collect personal information from you only where: (a) we have your consent to do so, (b) where we need
               the personal information to perform a contract with you (e.g. to deliver the Services you have requested), or (c) where
-              the processing is in our or a third party's legitimate interests (and not overridden by your data protection interests
+              the processing is in our or a third party&apos;s legitimate interests (and not overridden by your data protection interests
               or fundamental rights and freedoms). In some cases, we may also have a legal obligation to collect personal information
               from you, or may otherwise need the personal information to protect your vital interests or those of another person.
             </p>
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
               If we ask you to provide personal information to comply with a legal requirement or to perform a contract with you, we
               will make this clear at the relevant time and advise you whether the provision of your personal information is mandatory
               or not (as well as of the possible consequences if you do not provide your personal information). Similarly, if we collect
-              and use your personal information in reliance on our (or a third party's) legitimate interests which are not already
+              and use your personal information in reliance on our (or a third party&apos;s) legitimate interests which are not already
               described in this Notice, we will make clear to you at the relevant time what those legitimate interests are.
             </p>
             <p>
@@ -194,14 +194,14 @@ export default function PrivacyPage() {
               to refer unresolved complaints concerning our handling of personal data received in reliance on the EU-U.S. DPF, Swiss-U.S. DPF,
               and the UK Extension to the EU-U.S. DPF to the EU Data Protection Authorities (DPAs) as an alternative dispute resolution provider
               for the EU-U.S. DPF, the Swiss Federal Data Protection and Information Commissioner (FDPIC) as an alternative dispute resolution
-              provider for the Swiss-U.S. DPF, and the UK Information Commissioner's Office (ICO) as an alternative dispute resolution provider
+              provider for the Swiss-U.S. DPF, and the UK Information Commissioner&apos;s Office (ICO) as an alternative dispute resolution provider
               for the UK Extension to the EU-U.S. DPF. If you do not receive timely acknowledgment of your DPF Principles-related complaint from
               us, or if we have not addressed your DPF Principles-related complaint to your satisfaction, please visit EU Data Protection
-              Authorities(DPAs), UK Information Commissioner's Office (ICO) and Swiss Federal Data Protection and Information Commissioner (FDPIC)
+              Authorities(DPAs), UK Information Commissioner&apos;s Office (ICO) and Swiss Federal Data Protection and Information Commissioner (FDPIC)
               for more information or to file a complaint.
             </p>
             <p>
-              The services of EU Data Protection Authorities(DPAs), UK Information Commissioner's Office (ICO) and Swiss Federal Data Protection
+              The services of EU Data Protection Authorities(DPAs), UK Information Commissioner&apos;s Office (ICO) and Swiss Federal Data Protection
               and Information Commissioner (FDPIC) are provided at no cost to you.
             </p>
             <p>
@@ -219,7 +219,7 @@ export default function PrivacyPage() {
               We do not sell, trade, share or transfer your personal information to third parties, except in the following limited circumstances:
             </p>
             <ul className="list-disc pl-6 mb-4">
-              <li className="mb-2">We may share your personal information with third parties to permit such parties to provide services that help us to provide our business activities, which may include assisting us with marketing, advertising our product/service offerings, or providing, maintaining and improving the features and functionality of the Services, among other things ("Sub-Contractors"). The data shared is limited to your name, email address, the company information and your communication history with haper. This will never include sharing any email data which haper has access to through the Gmail Restricted Scopes for your account. For example, we may provide personal information to our sub-contractors for direct emailing of our newsletters or notifications of our product/service offerings. All third parties are engaged under contract and obliged to meet appropriate security requirements and comply with all applicable legislation;</li>
+              <li className="mb-2">We may share your personal information with third parties to permit such parties to provide services that help us to provide our business activities, which may include assisting us with marketing, advertising our product/service offerings, or providing, maintaining and improving the features and functionality of the Services, among other things (&quot;Sub-Contractors&quot;). The data shared is limited to your name, email address, the company information and your communication history with haper. This will never include sharing any email data which haper has access to through the Gmail Restricted Scopes for your account. For example, we may provide personal information to our sub-contractors for direct emailing of our newsletters or notifications of our product/service offerings. All third parties are engaged under contract and obliged to meet appropriate security requirements and comply with all applicable legislation;</li>
               <li className="mb-2">We may share your personal information when we have a good faith belief that access, use, preservation or disclosure of such information is reasonably necessary to (a) satisfy any applicable law, regulation, legal process or enforceable governmental request, (b) enforce a Customer Agreement, including investigation of potential violations thereof, or (c) protect against imminent harm to our rights, property or safety, or that of our users or the public as required or permitted by law;</li>
               <li className="mb-2">We may share your personal information with third parties (including our Sub-Contractors and government entities) to detect, prevent, or otherwise address fraud or security or technical issues;</li>
               <li className="mb-2">We may share your Payment Information to process your payments, as further described in Clause 6 (Payment Information);</li>
@@ -273,14 +273,14 @@ export default function PrivacyPage() {
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">9. Google API Services Usage Disclosure</h2>
             <p>
-              haper's use and transfer to any other app of information received from Google APIs will adhere to Google API Services User Data
+              haper&apos;s use and transfer to any other app of information received from Google APIs will adhere to Google API Services User Data
               Policy, including the Limited Use requirements.
             </p>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">10. Cookies</h2>
             <p>
               When you use our Websites or Services, we may store some information on your computer. This information will be in the form of a
-              "cookie" or similar technologies. Cookies are alphanumeric identifiers that are transferred to your computer or web device from
+              &quot;cookie&quot; or similar technologies. Cookies are alphanumeric identifiers that are transferred to your computer or web device from
               your browser. We do not use cookies to spy on you or otherwise invade your privacy. They cannot invade your hard drive and steal
               information. We use cookies to help you navigate the Websites and Services as easily as possible, and to remember information about
               your current session. You must enable cookies on your web browser to use the Services.
@@ -311,7 +311,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-semibold mt-8 mb-4">12. Disclaimer of Warranties</h2>
             <p>
               We offer those who provide personal information a means to choose how we use the information provided. You may manage your receipt
-              of marketing and non-transactional communications by clicking on the "unsubscribe" link located on the bottom of our marketing
+              of marketing and non-transactional communications by clicking on the &quot;unsubscribe&quot; link located on the bottom of our marketing
               emails or you may send a request to support@haper.io
             </p>
 
@@ -339,7 +339,7 @@ export default function PrivacyPage() {
               the EU-U.S. DPF, and the Swiss-U.S. DPF should first contact haper at: support@haper.io.
             </p>
             <p>
-              If you no longer wish to receive marketing communications from haper, you may click on the "unsubscribe" link located on the bottom
+              If you no longer wish to receive marketing communications from haper, you may click on the &quot;unsubscribe&quot; link located on the bottom
               of our marketing emails or you can contact us at support@haper.io.
             </p>
             <p>
@@ -393,10 +393,10 @@ export default function PrivacyPage() {
               <li className="mb-2">right to access (or obtain from us a confirmation if your personal information is being processed by us) the purpose of processing, recipients of your personal information. In the events your personal information is transferred to a third country, we hereby inform you that we undertake appropriate binding safeguards for such transfer;</li>
             </ul>
 
-            <h2 className="text-2xl font-semibold mt-8 mb-4">17. Children's Personal Information</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">17. Children&apos;s Personal Information</h2>
             <p>
               We do not knowingly collect any personal information from children under the age of 16. If you are under the age of 16, please do not
-              submit any personal information through our Websites or Services. We encourage parents and legal guardians to monitor their children's
+              submit any personal information through our Websites or Services. We encourage parents and legal guardians to monitor their children&apos;s
               Internet usage and to help enforce this Policy by instructing their children never to provide personal information through the Websites
               or Services without their permission. If you have reason to believe that a child under the age of 16 has provided personal information
               to us through the Websites or Services, please contact us at support@haper.io, and we will use commercially reasonable efforts to

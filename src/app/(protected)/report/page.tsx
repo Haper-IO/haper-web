@@ -1,7 +1,6 @@
-// app/report/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Tabs,
   TabsContent,
@@ -15,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ArrowLeft, ChevronDownIcon } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
@@ -113,6 +112,7 @@ export default function ReportPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showReplyField, setShowReplyField] = useState(false);
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
 
   const [emails, setEmails] = useState<Email[]>([

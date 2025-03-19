@@ -43,27 +43,27 @@ async function checkLoggedIn(req: NextRequest) {
 
 
 export default async function middleware(req: NextRequest) {
-  // const { nextUrl } = req;
-  // const isLoggedIn = await checkLoggedIn(req);
-  //
-  // const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  // const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-  // const isAuthRoute = authRoutes.includes(nextUrl.pathname);
-  //
-  // if (isApiAuthRoute) {
-  //   return;
-  // }
-  //
-  // if (isAuthRoute) {
-  //   if (isLoggedIn) {
-  //     return Response.redirect(new URL("/dashboard", nextUrl))
-  //   }
-  //   return;
-  // }
-  //
-  // if (!isLoggedIn && !isPublicRoute) {
-  //   return Response.redirect(new URL("/login", nextUrl))
-  // }
+  const { nextUrl } = req;
+  const isLoggedIn = await checkLoggedIn(req);
+
+  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+
+  if (isApiAuthRoute) {
+    return;
+  }
+
+  if (isAuthRoute) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL("/dashboard", nextUrl))
+    }
+    return;
+  }
+
+  if (!isLoggedIn && !isPublicRoute) {
+    return Response.redirect(new URL("/login", nextUrl))
+  }
 
   return;
 }

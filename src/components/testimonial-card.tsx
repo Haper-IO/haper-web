@@ -1,5 +1,3 @@
-import { ReactNode } from 'react'
-
 interface TestimonialCardProps {
   quote: string;
   author: string;
@@ -7,6 +5,7 @@ interface TestimonialCardProps {
   delay?: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const TestimonialCard = ({ quote, author, role, delay = 0 }: TestimonialCardProps) => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

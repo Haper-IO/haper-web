@@ -4,7 +4,7 @@ import { useRef } from 'react'
 import { NavigationUnauthenticated } from '@/components/navigation-bar'
 import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
-import { ChevronDown, CheckCircle, MessageSquare, Clock, Filter, Zap, Tag, Compass, Quote, ThumbsUp } from 'lucide-react'
+import { ChevronDown, CheckCircle, MessageSquare, Clock, Filter, Zap, Tag, Compass, ThumbsUp } from 'lucide-react'
 import { Accordion } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 
@@ -12,8 +12,6 @@ import { FeatureCard } from "@/components/feature-card";
 import { FAQItem } from "@/components/faq-item";
 import { TestimonialCard } from "@/components/testimonial-card";
 import { FadeInWhenVisible } from "@/components/background-effect/fade-in-when-visible";
-
-import Spline from '@splinetool/react-spline';
 
 // Main Component
 export default function LandingPage() {
@@ -161,7 +159,7 @@ export default function LandingPage() {
                   where email is no longer a source of stress but a tool that adapts to your needs.
                 </p>
                 <p className="text-gray-700 mb-6">
-                  We're building an email experience that understands context, recognizes patterns, and helps you make
+                  We&apos;re building an email experience that understands context, recognizes patterns, and helps you make
                   decisions
                   faster, letting you focus on what truly matters.
                 </p>
