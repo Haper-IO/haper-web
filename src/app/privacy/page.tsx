@@ -312,7 +312,7 @@ export default function PrivacyPage() {
             <p>
               We offer those who provide personal information a means to choose how we use the information provided. You may manage your receipt
               of marketing and non-transactional communications by clicking on the "unsubscribe" link located on the bottom of our marketing
-              emails or you may send a request to info@haper.io
+              emails or you may send a request to support@haper.io
             </p>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">13. How Long We Retain Your Personal Information</h2>
@@ -352,7 +352,7 @@ export default function PrivacyPage() {
               you shall be intimated about the identity and contact details of the controller, purpose, recipients of personal information, etc.
               within a reasonable time period. Even upon request we will provide you with information, in case it is not available with you, about
               whether we hold, or process on behalf of a third party, any of your personal information. To request this information please contact
-              us at privacy@haper.io. Subscribers to our Services may update or change their Account Information by editing their profile or
+              us at support@haper.io. Subscribers to our Services may update or change their Account Information by editing their profile or
               organization record or by contacting support@haper.io for more detailed instructions. To make a request to have personal information
               maintained by us returned to you or removed, please email support@haper.io Requests to access, change, or remove your information
               will be handled within thirty (30) days.
@@ -399,7 +399,7 @@ export default function PrivacyPage() {
               submit any personal information through our Websites or Services. We encourage parents and legal guardians to monitor their children's
               Internet usage and to help enforce this Policy by instructing their children never to provide personal information through the Websites
               or Services without their permission. If you have reason to believe that a child under the age of 16 has provided personal information
-              to us through the Websites or Services, please contact us at privacy@haper.io, and we will use commercially reasonable efforts to
+              to us through the Websites or Services, please contact us at support@haper.io, and we will use commercially reasonable efforts to
               delete that information.
             </p>
 
@@ -429,7 +429,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-semibold mt-8 mb-4">20. Contact Us</h2>
             <p>
               If you have questions or need to contact us about this Privacy Policy, please email our compliance officer at
-              privacy@haper.io
+              support@haper.io
             </p>
 
             <p className="mt-8 text-sm text-gray-500">Last Updated: 22 July, 2024</p>
