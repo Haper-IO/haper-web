@@ -1,9 +1,11 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import {Toaster} from "@/components/ui/sonner";
 import React from "react";
-import {PublicEnvScript} from "next-runtime-env";
+
+import { Inter } from 'next/font/google'
+import { Toaster } from "@/components/ui/sonner";
+import { PublicEnvScript } from "next-runtime-env";
+
 import texture from "@/assets/images/texture_flows.webp";
 
 const inter = Inter({ subsets: ['latin'] })

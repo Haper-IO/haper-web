@@ -2,19 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { SidebarButton } from "@/components/sidebar-button"
-import { CalendarIcon, ClockIcon, ChevronDownIcon, PlusIcon } from "lucide-react"
 import {
   EmailSummaryWithStats,
   EmailSummaryHistory,
   EmailSummaryData,
   MessageStatsData,
 } from "@/components/dashboard-cards"
-import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 
 // Mock API functions - replace with actual API calls
 const fetchEmailSummary = async (): Promise<EmailSummaryData> => {
@@ -85,14 +78,18 @@ function EnhancedSidebar({ isOpen, onSelectReport }: { isOpen: boolean, onSelect
       }`}
     >
       <div className="p-4">
-        <div className="space-y-2">
+        <div>
+          <h2 className="text-md font-medium text-gray-900 pl-2 mb-3">Previous Reports</h2>
+        </div>
+        <div className="space-y-4">
           {previousReports.map((group) => (
-            <Collapsible key={group.date} defaultOpen={group.date === "Today"}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded">
+            <div key={group.date}>
+              {/* Date header */}
+              <div className="flex items-center justify-between w-full p-2 text-xs font-medium text-gray-700 bg-gray-50 rounded">
                 <span>{group.date}</span>
-                <ChevronDownIcon size={16} className="text-gray-500" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pl-2">
+              </div>
+              {/* Content - always visible */}
+              <div className="pl-2">
                 <div className="space-y-1 mt-1">
                   {group.reports.map((report) => (
                     <button
@@ -107,8 +104,8 @@ function EnhancedSidebar({ isOpen, onSelectReport }: { isOpen: boolean, onSelect
                     </button>
                   ))}
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
+              </div>
+            </div>
           ))}
         </div>
       </div>

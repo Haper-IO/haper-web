@@ -45,18 +45,6 @@ export default function LandingPage() {
           </Badge>
         </div>
 
-        {/* Spline Background Container */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-          <Spline
-            scene="https://prod.spline.design/qvpf9Bfmso51VoKI/scene.splinecode"
-            className="w-full h-full"
-            onLoad={(spline) => {
-              spline.setZoom(0.6); // Adjust scene zoom level
-            }}
-            onMouseDown={(e) => e.preventDefault()} // Prevent scene interactions
-          />
-        </div>
-
         {/* Content Container */}
         <div className="relative container px-4 mx-auto z-10">
           <div className="max-w-4xl mx-auto text-center mb-1">
@@ -69,12 +57,6 @@ export default function LandingPage() {
               Shield Yourself From Non-Relevant Messages
             </motion.h1>
 
-            {/*<div className="text-md text-gray-600 md:text-xl mb-12 mx-auto max-w-3xl leading-relaxed">*/}
-            {/*  Transform your inbox from a time-sink to a productivity powerhouse. Haper's AI cuts through*/}
-            {/*  the noise, giving you back hours every week.*/}
-            {/*</div>*/}
-
-
             <div className="mt-16 mx-auto max-w-5xl rounded-2xl overflow-hidden border border-gray-200 shadow-xl mb-8">
               <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
                 <p className="text-gray-400">Replace this placeholder with your app screenshot</p>
@@ -85,12 +67,7 @@ export default function LandingPage() {
               <Button size="lg">
                 Start Free Trial
               </Button>
-              <Button
-                variant="outline"
-                onClick={scrollToFeatures}
-                className=""
-                size="lg"
-              >
+              <Button variant="outline" onClick={scrollToFeatures} className="" size="lg">
                 See How It Works <ChevronDown size={18}/>
               </Button>
             </div>
