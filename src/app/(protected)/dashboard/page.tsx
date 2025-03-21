@@ -9,13 +9,19 @@ import {
   MessageStatsData,
 } from "@/components/dashboard-cards"
 
+
+
 // Mock API functions - replace with actual API calls
 const fetchEmailSummary = async (): Promise<EmailSummaryData> => {
   // Replace with actual API call
+
+  const data = await fetch("/api/v1/report/newest")
+  const newestEmailSummary = await data.json()
+
   return {
-    title: "You received 3 Essential Emails in the Past 3 hours",
+    title: newestEmailSummary,
     updateTime: "3 mins ago",
-    content: "In the past 3 hours, You have received 1 invitation from Grant about your upcoming trip, 1 reply from Alice about your car rental project, 1 email from your instructor Dr. Bieler discussing your essay topics.",
+    content: newestEmailSummary.summary.text.content ,
     highlightedPeople: [
       {name: "Grant", context: "invitation"},
       {name: "Alice", context: "car rental project"},
@@ -25,13 +31,16 @@ const fetchEmailSummary = async (): Promise<EmailSummaryData> => {
 };
 
 const fetchMessageStats = async (): Promise<MessageStatsData> => {
-  // Replace with actual API call
+
+  const data = await fetch("/api/v1/report/newest")
+  const newestEmailSummary = await data.json()
+
   return {
-    timeRange: "3 hours",
-    essentialCount: 39,
-    essentialPercentage: 13.9,
-    nonEssentialCount: 69,
-    nonEssentialPercentage: 22.8
+    timeRange: "TODO: Time Range to be implemented",
+    essentialCount: newestEmailSummary.essential.length,
+    essentialPercentage: newestEmailSummary.essential.length / (newestEmailSummary.essential.length + newestEmailSummary.non_essential.length) * 100,
+    nonEssentialCount: newestEmailSummary.non_essential.length,
+    nonEssentialPercentage: newestEmailSummary.non_essential.length / (newestEmailSummary.essential.length + newestEmailSummary.non_essential.length) * 100,
   };
 };
 
@@ -69,7 +78,6 @@ const previousReports = [
   }
 ];
 
-// Enhanced Sidebar Component with ChatGPT-style date grouping
 function EnhancedSidebar({ isOpen, onSelectReport }: { isOpen: boolean, onSelectReport: (id: string) => void }) {
   return (
     <aside
