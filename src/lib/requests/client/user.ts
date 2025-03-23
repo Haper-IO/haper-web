@@ -11,15 +11,6 @@ export interface User {
   created_at: string;
 }
 
-interface UserResponse {
-  uri: string;
-  elapsed: number;
-  status: number;
-  message: string;
-  data: {
-    user: User;
-  };
-}
 
 /**
  * Log in a user by email and password.
@@ -50,33 +41,6 @@ export const signupByCredential = async (name: string, email: string, password: 
     email,
     password
   })
-}
-
-/**
- * Get user information.
- * @returns - A promise that resolves to the user information.
- * @throws - An error if the request fails.
- */
-export async function getUserInfo(): Promise<User> {
-  try {
-    const response = await fetch('/api/v1/user/info', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Assuming you store your auth token in localStorage
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data: UserResponse = await response.json();
-    return data.data.user;
-  } catch (error) {
-    console.error('Error fetching user info:', error);
-    throw error;
-  }
 }
 
 

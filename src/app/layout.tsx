@@ -5,7 +5,6 @@ import React from "react";
 import { Inter } from 'next/font/google'
 import { Toaster } from "@/components/ui/sonner";
 import { PublicEnvScript } from "next-runtime-env";
-
 import texture from "@/assets/images/texture_flows.webp";
 
 const inter = Inter({ subsets: ['latin'] })
@@ -15,9 +14,11 @@ export const metadata: Metadata = {
   description: 'AI assistant that automatically collects, prioritizes, and responds to messages across Gmail, WhatsApp, and other platforms',
 }
 
+
 export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
+
   return (
     <html lang="en">
     <head>
