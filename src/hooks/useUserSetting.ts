@@ -1,5 +1,8 @@
 import { reqHandler } from "@/lib/requests/server/base";
 import { useState, useEffect } from "react";
+import {CREATE_USER_SETTING_URI,
+        GET_USER_SETTING_URI,
+        UPDATE_USER_SETTING_URI} from "@/hooks/base";
 
 // Define the UserSetting interface
 interface UserSetting {
@@ -25,7 +28,7 @@ interface UserSettingError {
 }
 
 /**
- * Custom hook for managing user settings
+ * Custom hooks for managing user settings
  * Provides functionality to fetch, create, and update user settings
  */
 export function useUserSetting() {
@@ -38,7 +41,7 @@ export function useUserSetting() {
     const fetchUserSetting = async () => {
       try {
         setLoading(true);
-        const response = await reqHandler.get<UserSettingResponse>("/user/setting");
+        const response = await reqHandler.get<UserSettingResponse>(GET_USER_SETTING_URI);
 
         // Extract the setting data from the response
         if (response.data?.data?.setting) {
@@ -74,7 +77,7 @@ export function useUserSetting() {
   const createUserSetting = async (newSetting: UserSetting): Promise<boolean> => {
     try {
       setLoading(true);
-      const response = await reqHandler.post<UserSettingResponse>("/user/setting", newSetting);
+      const response = await reqHandler.post<UserSettingResponse>(CREATE_USER_SETTING_URI, newSetting);
 
       if (response.data && response.data.data && response.data.data.setting) {
         setUserSetting(response.data.data.setting);
@@ -97,7 +100,7 @@ export function useUserSetting() {
   const updateUserSetting = async (newSetting: Partial<UserSetting>): Promise<boolean> => {
     try {
       setLoading(true);
-      const response = await reqHandler.put<UserSettingResponse>("/user/setting", newSetting);
+      const response = await reqHandler.put<UserSettingResponse>(UPDATE_USER_SETTING_URI, newSetting);
 
       if (response.data && response.data.data && response.data.data.setting) {
         setUserSetting(response.data.data.setting);

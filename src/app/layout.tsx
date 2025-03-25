@@ -14,7 +14,6 @@ export const metadata: Metadata = {
   description: 'AI assistant that automatically collects, prioritizes, and responds to messages across Gmail, WhatsApp, and other platforms',
 }
 
-
 export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {

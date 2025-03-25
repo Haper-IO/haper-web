@@ -13,7 +13,6 @@ import {
 
 // Mock API functions - replace with actual API calls
 const fetchEmailSummary = async (): Promise<EmailSummaryData> => {
-  // Replace with actual API call
 
   const data = await fetch("/api/v1/report/newest")
   const newestEmailSummary = await data.json()
@@ -151,7 +150,6 @@ export default function DashboardPage() {
         setMessageStats(statsData);
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
-        // Handle error state
       } finally {
         setIsLoading(false);
       }
