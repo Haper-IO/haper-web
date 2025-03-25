@@ -138,7 +138,6 @@ export default function TestProfilePage() {
                     <div className="flex items-center gap-2">
                       <h1 className="text-xl font-medium">{userInfo?.data?.user?.name}</h1>
                       <div className="flex items-center gap-2">
-                        <p className="text-gray-600">{userInfo?.data?.user?.email}</p>
                         {userInfo?.data?.user?.email_verified ? (
                           <Badge variant="outline" className="border-green-100 bg-green-50 text-green-600">
                             <CheckCircle className="h-3 w-3 mr-1"/> Verified
