@@ -1,8 +1,10 @@
 import { reqHandler } from "@/lib/requests/server/base";
 import { useState, useEffect } from "react";
-import {CREATE_USER_SETTING_URI,
-        GET_USER_SETTING_URI,
-        UPDATE_USER_SETTING_URI} from "@/hooks/base";
+import {
+  CREATE_USER_SETTING_URI,
+  GET_USER_SETTING_URI,
+  UPDATE_USER_SETTING_URI
+} from "@/hooks/base";
 
 // Define the UserSetting interface
 interface UserSetting {
@@ -47,7 +49,6 @@ export function useUserSetting() {
         if (response.data?.data?.setting) {
           setUserSetting(response.data.data.setting);
         } else {
-          // Instead of throwing locally, just set the error directly
           setError({
             error: "invalid_response",
             message: "Invalid response format",
@@ -61,7 +62,6 @@ export function useUserSetting() {
       }
     };
 
-    // Call the function and handle the Promise properly
     fetchUserSetting().catch(err => {
       console.error("Failed to fetch user settings:", err);
       setError(err as UserSettingError);

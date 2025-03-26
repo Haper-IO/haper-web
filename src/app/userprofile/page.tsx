@@ -10,6 +10,7 @@ import { FadeInWhenVisible } from "@/components/background-effect/fade-in-when-v
 import { AlertCircle, CheckCircle } from 'lucide-react'
 import { useEffect, useState } from "react"
 import {useUserSetting} from "@/hooks/useUserSetting";
+import { Input } from "@/components/ui/input";
 
 
 export default function TestProfilePage() {
@@ -21,9 +22,10 @@ export default function TestProfilePage() {
     message?: string;
   }>({ loading: true })
 
-  const { userSetting, updateUserSetting } = useUserSetting();
+  const { userSetting, updateUserSetting, createUserSetting } = useUserSetting();
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
 
 // Initialize selected tags when userSetting loads
   useEffect(() => {
@@ -43,9 +45,39 @@ export default function TestProfilePage() {
 
 // Save changes
   const saveTagChanges = async () => {
-    await updateUserSetting({ key_message_tags: selectedTags });
-    setIsEditingTags(false);
+    try {
+      if (!userSetting) {
+        // If no settings exist, create new settings
+        console.log('Creating new settings with:', selectedTags);
+        const success = await createUserSetting({ key_message_tags: selectedTags });
+        if (success) {
+          setIsEditingTags(false);
+        } else {
+          console.error('Failed to create settings');
+        }
+      } else {
+        // Update existing settings
+        console.log('Updating settings with:', selectedTags);
+        const success = await updateUserSetting({ key_message_tags: selectedTags });
+        if (success) {
+          setIsEditingTags(false);
+        } else {
+          console.error('Failed to update settings');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving tags:', error);
+    }
   };
+
+// Add this new function to handle adding custom tags
+const addCustomTag = (e: React.FormEvent) => {
+  e.preventDefault();
+  if (newTag.trim()) {
+    setSelectedTags([...selectedTags, newTag.trim()]);
+    setNewTag(""); // Clear the input after adding
+  }
+};
 
   // Log API response for testing
   useEffect(() => {
@@ -164,7 +196,7 @@ export default function TestProfilePage() {
               <FadeInWhenVisible delay={0.4}>
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                   <div className="flex items-center justify-between mb-4">
-                    <Badge variant="homepage_section" size="lg">Your Interests</Badge>
+                    <Badge variant="homepage_section" size="lg">My Interests</Badge>
                     <button
                       className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
                       onClick={() => setIsEditingTags(!isEditingTags)}
@@ -209,7 +241,57 @@ export default function TestProfilePage() {
                           </button>
                         ))}
                       </div>
-                      <div className="flex justify-end">
+
+                      {/* Add custom tag input form */}
+                      <form onSubmit={addCustomTag} className="mb-4 flex gap-2">
+                        <Input
+                          type="text"
+                          value={newTag}
+                          onChange={(e) => setNewTag(e.target.value)}
+                          placeholder="Type a custom interest..."
+                          className="flex-1"
+                        />
+                        <button
+                          type="submit"
+                          className="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                          disabled={!newTag.trim()}
+                        >
+                          Add
+                        </button>
+                      </form>
+
+                      {/* Show selected tags with remove option */}
+                      <div className="mb-4">
+                        <Label className="text-sm text-gray-500 mb-2">Selected Interests:</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedTags.map((tag, index) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="px-3 py-1 bg-blue-50 text-blue-700 flex items-center gap-1"
+                            >
+                              {tag}
+                              <button
+                                onClick={() => toggleTag(tag)}
+                                className="ml-1 hover:text-red-500"
+                              >
+                                ×
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2">
+                        <button
+                          className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors"
+                          onClick={() => {
+                            setSelectedTags(userSetting?.key_message_tags || []); // Reset to original tags
+                            setIsEditingTags(false);
+                          }}
+                        >
+                          Cancel
+                        </button>
                         <button
                           className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
                           onClick={saveTagChanges}
