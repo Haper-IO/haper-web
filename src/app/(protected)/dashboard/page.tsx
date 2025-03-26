@@ -1,210 +1,127 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { SidebarButton } from "@/components/sidebar-button"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
-  EmailSummaryWithStats,
-  EmailSummaryHistory,
-  EmailSummaryData,
-  MessageStatsData,
-} from "@/components/dashboard-cards"
+  ArrowUp,
+  PanelLeftClose,
+  PanelLeft,
+  LayoutDashboard,
+  History,
+  LucideIcon
+} from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+import {EmailSummaryWithStats, EmailSummaryHistory} from "@/components/dashboard-cards"
+import texture from "@/assets/images/texture_flows.webp"
 
-
-
-// Mock API functions - replace with actual API calls
-const fetchEmailSummary = async (): Promise<EmailSummaryData> => {
-
-  const data = await fetch("/api/v1/report/newest")
-  const newestEmailSummary = await data.json()
-
-  return {
-    title: newestEmailSummary,
-    updateTime: "3 mins ago",
-    content: newestEmailSummary.summary.text.content ,
-    highlightedPeople: [
-      {name: "Grant", context: "invitation"},
-      {name: "Alice", context: "car rental project"},
-      {name: "Dr. Bieler", context: "essay topics"}
-    ]
-  };
-};
-
-const fetchMessageStats = async (): Promise<MessageStatsData> => {
-
-  const data = await fetch("/api/v1/report/newest")
-  const newestEmailSummary = await data.json()
-
-  return {
-    timeRange: "TODO: Time Range to be implemented",
-    essentialCount: newestEmailSummary.essential.length,
-    essentialPercentage: newestEmailSummary.essential.length / (newestEmailSummary.essential.length + newestEmailSummary.non_essential.length) * 100,
-    nonEssentialCount: newestEmailSummary.non_essential.length,
-    nonEssentialPercentage: newestEmailSummary.non_essential.length / (newestEmailSummary.essential.length + newestEmailSummary.non_essential.length) * 100,
-  };
-};
-
-// Mock data for previous reports
-const previousReports = [
-  {
-    date: "Today",
-    reports: [
-      { id: "today-1", title: "Morning Report", time: "10:30 AM" },
-      { id: "today-2", title: "Afternoon Update", time: "3:45 PM" }
-    ]
-  },
-  {
-    date: "Yesterday",
-    reports: [
-      { id: "yesterday-1", title: "Daily Summary", time: "5:20 PM" },
-      { id: "yesterday-2", title: "Morning Overview", time: "9:15 AM" }
-    ]
-  },
-  {
-    date: "Previous 7 Days",
-    reports: [
-      { id: "prev7-1", title: "Weekly Digest", time: "Monday, 4:00 PM" },
-      { id: "prev7-2", title: "Important Messages", time: "Tuesday, 11:30 AM" },
-      { id: "prev7-3", title: "Project Updates", time: "Thursday, 2:15 PM" }
-    ]
-  },
-  {
-    date: "Previous 30 Days",
-    reports: [
-      { id: "prev30-1", title: "Monthly Summary", time: "Mar 1, 9:00 AM" },
-      { id: "prev30-2", title: "Team Communication", time: "Mar 10, 3:30 PM" },
-      { id: "prev30-3", title: "Client Correspondence", time: "Mar 15, 10:45 AM" }
-    ]
-  }
-];
-
-function EnhancedSidebar({ isOpen, onSelectReport }: { isOpen: boolean, onSelectReport: (id: string) => void }) {
-  return (
-    <aside
-      className={`fixed top-0 left-0 z-20 h-full bg-white/55 border-r border-gray-50 pt-[84px] transition-all duration-300 w-60 ${
-        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:overflow-hidden"
-      }`}
-    >
-      <div className="p-4">
-        <div>
-          <h2 className="text-md font-medium text-gray-900 pl-2 mb-3">Previous Reports</h2>
-        </div>
-        <div className="space-y-4">
-          {previousReports.map((group) => (
-            <div key={group.date}>
-              {/* Date header */}
-              <div className="flex items-center justify-between w-full p-2 text-xs font-medium text-gray-700 bg-gray-50 rounded">
-                <span>{group.date}</span>
-              </div>
-              {/* Content - always visible */}
-              <div className="pl-2">
-                <div className="space-y-1 mt-1">
-                  {group.reports.map((report) => (
-                    <button
-                      key={report.id}
-                      onClick={() => onSelectReport(report.id)}
-                      className="flex items-start gap-3 w-full p-2 text-sm text-left text-gray-700 hover:bg-gray-100 rounded group"
-                    >
-                      <div className="overflow-hidden">
-                        <p className="font-medium truncate">{report.title}</p>
-                        <p className="text-xs text-gray-500 truncate">{report.time}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </aside>
-  );
+interface SidebarLinkProps {
+  href: string
+  icon: LucideIcon
+  children: React.ReactNode
 }
 
+const SidebarLink = ({ href, icon: Icon, children }: SidebarLinkProps) => (
+  <Link
+    href={href}
+    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md group transition-colors"
+  >
+    <Icon className="h-4 w-4 text-gray-500 group-hover:text-gray-900" />
+    <span className="group-hover:text-gray-900">{children}</span>
+  </Link>
+)
+
 export default function DashboardPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [emailSummary, setEmailSummary] = useState<EmailSummaryData | null>(null);
-  const [messageStats, setMessageStats] = useState<MessageStatsData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
-
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-  const handleSelectReport = (id: string) => {
-    setSelectedReportId(id);
-    // On mobile, close sidebar after selection
-    if (window.innerWidth < 768) {
-      setIsSidebarOpen(false);
-    }
-  };
-
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        const [summaryData, statsData] = await Promise.all([
-          fetchEmailSummary(),
-          fetchMessageStats()
-        ]);
-
-        setEmailSummary(summaryData);
-        setMessageStats(statsData);
-      } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, [selectedReportId]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
+
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-30 bg-white/75 border-b border-gray-100/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <SidebarButton isOpen={isSidebarOpen} toggle={toggleSidebar} />
-              <h1 className="ml-4 text-lg font-semibold text-gray-900">Email Summary</h1>
-            </div>
-          </div>
+      <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b">
+        <div className="px-5 py-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden md:flex"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+          >
+            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5"/> : <PanelLeft className="h-5 w-5"/>}
+          </Button>
         </div>
       </header>
 
       {/* Sidebar Navigation */}
-      <EnhancedSidebar isOpen={isSidebarOpen} onSelectReport={handleSelectReport} />
+      <aside
+        className={`fixed top-[61px] left-0 bottom-0 w-60 border-r bg-slate-50/75 transition-transform duration-300 z-10 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } hidden md:block`}
+      >
+        <div className="p-5">
+          <nav className="space-y-1">
+            <SidebarLink href="#" icon={LayoutDashboard}>
+              Overview
+            </SidebarLink>
+            <SidebarLink href="#" icon={History}>
+              History
+            </SidebarLink>
+          </nav>
+        </div>
+      </aside>
 
       {/* Main Content */}
       <main
-        className={`min-h-screen pt-16 transition-all duration-300 ${
-          isSidebarOpen ? "md:ml-60" : "md:ml-0"
+        className={`min-h-screen pt-[61px] transition-[padding] duration-300 ${
+          isSidebarOpen ? "md:pl-60" : "md:pl-0"
         }`}
       >
         {/* Dashboard Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="rounded-md bg-white p-8 shadow-sm">
-                <p className="text-gray-600">Loading dashboard data...</p>
-              </div>
+        <div className="container p-5 center mx-auto">
+          <div className="grid gap-6">
+            <EmailSummaryWithStats/>
+            <EmailSummaryHistory/>
+          </div>
+
+          {/* Search Section */}
+          <div className="max-w-3xl mx-auto mt-12">
+            <div className="relative">
+              <Input
+                placeholder="Quiz me on vocabulary"
+                className="w-full pl-4 pr-10 py-6 text-lg rounded-xl border-gray-200 focus:border-gray-300 focus:ring-0"
+              />
+              <ArrowUp className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"/>
             </div>
-          ) : (
-            <div className="grid gap-8">
-              {emailSummary && messageStats && (
-                <EmailSummaryWithStats
-                  summaryData={emailSummary}
-                  statsData={messageStats}
-                />
-              )}
-              {emailSummary && (
-                <EmailSummaryHistory
-                  summaryData={emailSummary}
-                />
-              )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              <Button variant="secondary" size="sm" className="rounded-full">
+                Search with ChatGPT
+              </Button>
+              <Button variant="secondary" size="sm" className="rounded-full">
+                Talk with ChatGPT
+              </Button>
+              <Button variant="secondary" size="sm" className="rounded-full">
+                Research
+              </Button>
+              <Button variant="secondary" size="sm" className="rounded-full">
+                Sora
+              </Button>
+              <Button variant="secondary" size="sm" className="rounded-full">
+                More
+              </Button>
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Fixed Elements */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-gray-500">
+          <div className="w-4 h-4 animate-bounce">↓</div>
+          Scroll to explore
+        </div>
+
+        <div
+          className="fixed bottom-0 left-0 right-0 h-[300px] bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-yellow-500/20 blur-3xl -z-10"/>
       </main>
     </div>
   )

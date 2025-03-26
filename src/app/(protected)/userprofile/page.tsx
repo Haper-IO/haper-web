@@ -227,7 +227,7 @@ const addCustomTag = (e: React.FormEvent) => {
                     // Simple tag editor
                     <div>
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {['Homework', 'Coop', 'Research', 'Engineering', 'Computer Science'].map((tag) => (
+                        {['Work Communications', 'Personal Messages', 'Financial Notification', 'Social Media', 'Administrative Updates', 'Calendar Invites', 'Travel Related'].map((tag) => (
                           <button
                             key={tag}
                             className={`px-3 py-1 rounded-md text-sm ${
