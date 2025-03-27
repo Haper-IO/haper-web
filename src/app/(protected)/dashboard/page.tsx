@@ -71,7 +71,7 @@ export default function DashboardPage() {
 
   const handleStopTracking = async () => {
     if (!trackingStatus?.account_id) return
-    
+
     try {
       setIsLoading(true)
       setError(null)
@@ -91,7 +91,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b">
         <div className="px-5 py-3">
@@ -172,7 +171,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-gray-500">Last Updated</p>
               <p className="font-medium">
-                {trackingStatus?.updated_at 
+                {trackingStatus?.updated_at
                   ? new Date(trackingStatus.updated_at).toLocaleString()
                   : 'Never'}
               </p>

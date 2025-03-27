@@ -1,3 +1,6 @@
+import { GmailIcon } from "@/icons/gmail-icon"
+import { OutlookIcon } from "@/icons/outlook-icon"
+
 const fetchSettings = async () => {
   try {
     setState(prev => ({ ...prev, loading: true }))
@@ -124,4 +127,44 @@ const updateSetting = async (settings: UserSettings) => {
     })
     return false
   }
-} 
+}
+
+// Then update the Connected Platforms section:
+<div className="space-y-6">
+  {/* Gmail Connection */}
+  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
+        <GmailIcon className="w-6 h-6" />
+      </div>
+      <div>
+        <div className="font-medium">Gmail</div>
+        <div className="text-sm text-gray-500">{userInfo?.data?.user?.email}</div>
+      </div>
+    </div>
+    <div className="flex flex-col items-end">
+      <Badge variant="outline" className="border-green-100 bg-green-50 text-green-600">
+        <CheckCircle className="h-3 w-3 mr-1"/> Connected
+      </Badge>
+      <span className="text-xs text-gray-400 mt-1">
+        Since {new Date(userInfo?.data?.user?.created_at || '').toLocaleDateString()}
+      </span>
+    </div>
+  </div>
+
+  {/* Outlook Connection */}
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+        <OutlookIcon className="w-6 h-6" />
+      </div>
+      <div>
+        <div className="font-medium">Outlook</div>
+        <div className="text-sm text-gray-500">Not connected</div>
+      </div>
+    </div>
+    <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm">
+      Connect
+    </button>
+  </div>
+</div> 

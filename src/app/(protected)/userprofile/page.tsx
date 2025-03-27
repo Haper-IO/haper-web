@@ -10,13 +10,15 @@ import { FadeInWhenVisible } from "@/components/background-effect/fade-in-when-v
 import { AlertCircle, CheckCircle } from 'lucide-react'
 import { Input } from "@/components/ui/input"
 import { useState, useEffect } from "react"
-import { 
+import {
   getUserSettings,
   createUserSettings,
   updateUserSettings,
   UserSettings,
   UserSettingsResponse
 } from "@/lib/requests/client/user-settings"
+import { GmailIcon } from "@/icons/gmail-icon";
+import { OutlookIcon } from "@/icons/outlook-icon";
 
 interface UserSettingState {
   data: UserSettingsResponse | null
@@ -36,7 +38,7 @@ export function useUserSetting() {
       setState(prev => ({ ...prev, loading: true }))
       const response = await getUserSettings()
       console.log('Settings response:', response);
-      
+
       setState({
         data: response,
         error: null,
@@ -109,7 +111,7 @@ export function useUserSetting() {
 export default function TestProfilePage() {
   const { userInfo, loading: userLoading, error: userError } = useUserInfo();
   const { userSetting, loading: settingsLoading, error: settingsError, createUserSetting, updateUserSetting, refreshSettings } = useUserSetting();
-  
+
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
@@ -182,10 +184,10 @@ export default function TestProfilePage() {
           success: true,
           message: 'Settings saved successfully!'
         });
-        
+
         // Refresh settings to get the latest data
         await refreshSettings();
-        
+
         // Hide success message after 2 seconds
         setTimeout(() => {
           setShowStatus(false);
@@ -238,7 +240,7 @@ export default function TestProfilePage() {
         message: 'Profile loaded successfully!'
       });
       setShowStatus(true);
-      
+
       // Hide status after 2 seconds if successful
       const timer = setTimeout(() => {
         setShowStatus(false);
@@ -318,8 +320,8 @@ export default function TestProfilePage() {
                         {userInfo?.data?.user?.name || 'Unknown User'}
                       </h1>
                       <Badge variant="outline" className={
-                        userInfo?.data?.user?.email_verified 
-                          ? "border-green-100 bg-green-50 text-green-600" 
+                        userInfo?.data?.user?.email_verified
+                          ? "border-green-100 bg-green-50 text-green-600"
                           : "border-yellow-100 bg-yellow-50 text-yellow-600"
                       }>
                         {userInfo?.data?.user?.email_verified ? "Verified" : "Unverified"}
@@ -477,10 +479,8 @@ export default function TestProfilePage() {
                     {/* Gmail Connection */}
                     <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#DB4437">
-                            <path d="M20,18h-2V9.8l-6,4.5L6,9.8V18H4V6h1.2l8.8,6.6L22.8,6H24V18z M20,4H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.1,4,20,4z"/>
-                          </svg>
+                        <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                          <GmailIcon/>
                         </div>
                         <div>
                           <div className="font-medium">Gmail</div>
@@ -500,10 +500,8 @@ export default function TestProfilePage() {
                     {/* Outlook Connection - Example of not connected platform */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#0078D4">
-                            <path d="M21.179,4.828v14.344h-7.658v-14.344h7.658Zm-9.237,0v14.344H2v-14.344h9.942Zm-1.577,1.577H3.577v11.19h6.788v-11.19Zm9.237,0h-6.08v11.19h6.08v-11.19Zm-12.871,1.893h-3.364v1.366h3.364v-1.366Zm0,2.733h-3.364v1.366h3.364v-1.366Zm0,2.733h-3.364v1.366h3.364v-1.366Zm8.396-5.466h-3.364v1.366h3.364v-1.366Zm0,2.733h-3.364v1.366h3.364v-1.366Zm0,2.733h-3.364v1.366h3.364v-1.366Z"/>
-                          </svg>
+                        <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                          <OutlookIcon/>
                         </div>
                         <div>
                           <div className="font-medium">Outlook</div>
