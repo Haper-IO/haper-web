@@ -187,45 +187,8 @@ export default function DashboardPage() {
             <EmailSummaryHistory/>
           </div>
 
-          {/* Search Section */}
-          <div className="max-w-3xl mx-auto mt-12">
-            <div className="relative">
-              <Input
-                placeholder="Quiz me on vocabulary"
-                className="w-full pl-4 pr-10 py-6 text-lg rounded-xl border-gray-200 focus:border-gray-300 focus:ring-0"
-              />
-              <ArrowUp className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"/>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Button variant="secondary" size="sm" className="rounded-full">
-                Search with ChatGPT
-              </Button>
-              <Button variant="secondary" size="sm" className="rounded-full">
-                Talk with ChatGPT
-              </Button>
-              <Button variant="secondary" size="sm" className="rounded-full">
-                Research
-              </Button>
-              <Button variant="secondary" size="sm" className="rounded-full">
-                Sora
-              </Button>
-              <Button variant="secondary" size="sm" className="rounded-full">
-                More
-              </Button>
-            </div>
-          </div>
         </div>
-
-        {/* Fixed Elements */}
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-gray-500">
-          <div className="w-4 h-4 animate-bounce">↓</div>
-          Scroll to explore
-        </div>
-
-        <div
-          className="fixed bottom-0 left-0 right-0 h-[300px] bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-yellow-500/20 blur-3xl -z-10"/>
       </main>
     </div>
   )
