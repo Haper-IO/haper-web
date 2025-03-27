@@ -1,57 +1,54 @@
-import { reqHandler } from "@/lib/requests/server/base";
 import { useState, useEffect } from "react";
-import { GET_USER_INFO_URI } from "@/hooks/base";
-
-interface UserInfo {
-  data: {
-    user: {
-      id: string;
-      name: string;
-      image: string;
-      email: string;
-      email_verified: boolean;
-      created_at: string;
-    }
-  };
-  elapsed: number;
-  message: string;
-  status: number;
-  uri: string;
-}
-
-// interface User {
-//   id: string;
-//   name: string;
-//   image: string;
-//   email: string;
-//   email_verified: boolean;
-//   created_at: string;
-// }
-
-interface UserError {
-  error: string;
-  message: string;
-  isAuthFail: boolean;
-}
+import { getUserInfo, UserInfo } from "@/lib/requests/client/user-info";
 
 export function useUserInfo() {
-  const [userInfo, setUser] = useState<UserInfo | null>(null);
-  const [error, setError] = useState<UserError | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    let mounted = true;
+
+    const fetchData = async () => {
       try {
-        const userData = await reqHandler.get<UserInfo>(GET_USER_INFO_URI);
-        setUser(userData.data as UserInfo);
+        console.log('Fetching user info...');
+        setLoading(true);
+        const response = await getUserInfo();
+        console.log('User info response:', response);
+        
+        // The reqHandler.interceptors.response already transforms the response
+        // to response.data.data, so we just need to check if we have user
+        if (response && response.user) {
+          if (mounted) {
+            setUserInfo({
+              uri: '',
+              elapsed: 0,
+              status: 0,
+              message: '',
+              data: {
+                user: response.user
+              }
+            });
+            setLoading(false);
+          }
+        } else {
+          throw new Error('Invalid response structure');
+        }
       } catch (err) {
-        setError(err as UserError);
+        console.error('Error fetching user info:', err);
+        if (mounted) {
+          setError(err instanceof Error ? err : new Error('Failed to fetch user info'));
+          setLoading(false);
+        }
       }
     };
-    fetchUser().catch(err => {
-      console.error("Failed to fetch user:", err);
-      setError(err as UserError);
-    });
-}, []);
 
-  return { userInfo, error };
+    fetchData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return { userInfo, loading, error };
 }
