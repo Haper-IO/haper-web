@@ -8,21 +8,108 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { FadeInWhenVisible } from "@/components/background-effect/fade-in-when-visible"
 import { AlertCircle, CheckCircle } from 'lucide-react'
-import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react"
 import { 
-  getUserSettings, 
-  createUserSettings, 
-  updateUserSettings, 
-  UserSettings 
+  getUserSettings,
+  createUserSettings,
+  updateUserSettings,
+  UserSettings,
+  UserSettingsResponse
 } from "@/lib/requests/client/user-settings"
 
-export default function UserProfilePage() {
-  const { userInfo, loading: userLoading, error: userError } = useUserInfo();
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [settingsLoading, setSettingsLoading] = useState(true);
-  const [settingsError, setSettingsError] = useState<Error | null>(null);
+interface UserSettingState {
+  data: UserSettingsResponse | null
+  error: Error | null
+  loading: boolean
+}
 
+export function useUserSetting() {
+  const [state, setState] = useState<UserSettingState>({
+    data: null,
+    error: null,
+    loading: true
+  })
+
+  const fetchSettings = async () => {
+    try {
+      setState(prev => ({ ...prev, loading: true }))
+      const response = await getUserSettings()
+      console.log('Settings response:', response);
+      
+      setState({
+        data: response,
+        error: null,
+        loading: false
+      })
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      setState({
+        data: null,
+        error: error instanceof Error ? error : new Error('Failed to fetch settings'),
+        loading: false
+      })
+    }
+  }
+
+  const createSetting = async (settings: UserSettings) => {
+    try {
+      setState(prev => ({ ...prev, loading: true }))
+      const response = await createUserSettings(settings)
+      setState({
+        data: response.data,
+        error: null,
+        loading: false
+      })
+      return true
+    } catch (error) {
+      setState({
+        data: null,
+        error: error instanceof Error ? error : new Error('Failed to create settings'),
+        loading: false
+      })
+      return false
+    }
+  }
+
+  const updateSetting = async (settings: UserSettings) => {
+    try {
+      setState(prev => ({ ...prev, loading: true }))
+      const response = await updateUserSettings(settings)
+      setState({
+        data: response.data,
+        error: null,
+        loading: false
+      })
+      return true
+    } catch (error) {
+      setState({
+        data: null,
+        error: error instanceof Error ? error : new Error('Failed to update settings'),
+        loading: false
+      })
+      return false
+    }
+  }
+
+  useEffect(() => {
+    fetchSettings()
+  }, [])
+
+  return {
+    userSetting: state.data,
+    error: state.error,
+    loading: state.loading,
+    createUserSetting: createSetting,
+    updateUserSetting: updateSetting,
+    refreshSettings: fetchSettings
+  }
+}
+
+export default function TestProfilePage() {
+  const { userInfo, loading: userLoading, error: userError } = useUserInfo();
+  const { userSetting, loading: settingsLoading, error: settingsError, createUserSetting, updateUserSetting, refreshSettings } = useUserSetting();
+  
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
@@ -31,34 +118,19 @@ export default function UserProfilePage() {
     success?: boolean;
     message?: string;
   }>({ loading: true });
+  const [showStatus, setShowStatus] = useState(true);
 
-  // Fetch settings
-  const fetchSettings = async () => {
-    try {
-      setSettingsLoading(true);
-      const response = await getUserSettings();
-      if (response?.data?.data?.setting) {
-        setSettings(response.data.data.setting);
-      }
-    } catch (err) {
-      console.error('Error fetching settings:', err);
-      setSettingsError(err instanceof Error ? err : new Error('Failed to fetch settings'));
-    } finally {
-      setSettingsLoading(false);
-    }
-  };
-
-  // Initialize settings on mount
+  // Initialize selected tags when userSetting loads
   useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  // Initialize selected tags when settings loads
-  useEffect(() => {
-    if (settings?.key_message_tags) {
-      setSelectedTags([...settings.key_message_tags]);
+    console.log('Current userSetting:', {
+      fullUserSetting: userSetting,
+      setting: userSetting?.data?.setting,
+      tags: userSetting?.data?.setting?.key_message_tags
+    });
+    if (userSetting?.data?.setting?.key_message_tags) {
+      setSelectedTags([...userSetting.data.setting.key_message_tags]);
     }
-  }, [settings]);
+  }, [userSetting]);
 
   // Toggle tag selection
   const toggleTag = (tag: string) => {
@@ -72,29 +144,68 @@ export default function UserProfilePage() {
   // Save changes
   const saveTagChanges = async () => {
     try {
-      setSettingsLoading(true);
-      const newSettings: UserSettings = {
+      // Add validation for empty array
+      if (!selectedTags || selectedTags.length === 0) {
+        setApiStatus({
+          loading: false,
+          success: false,
+          message: 'Please select at least one interest'
+        });
+        setShowStatus(true);
+        return;
+      }
+
+      setApiStatus({
+        loading: true,
+        message: 'Saving changes...'
+      });
+      setShowStatus(true);
+
+      // Debug log to see what we're sending
+      console.log('Sending tags:', selectedTags);
+
+      const requestBody: UserSettings = {
         key_message_tags: selectedTags
       };
 
-      const response = settings
-        ? await updateUserSettings(newSettings)
-        : await createUserSettings(newSettings);
+      console.log('Request body matches UserSettings interface:', requestBody);
 
-      if (response?.data?.data?.setting) {
-        setSettings(response.data.data.setting);
+      // Fix the check for existing settings
+      const success = userSetting?.setting
+        ? await updateUserSetting(requestBody)
+        : await createUserSetting(requestBody);
+
+      if (success) {
         setIsEditingTags(false);
+        setApiStatus({
+          loading: false,
+          success: true,
+          message: 'Settings saved successfully!'
+        });
+        
+        // Refresh settings to get the latest data
+        await refreshSettings();
+        
+        // Hide success message after 2 seconds
+        setTimeout(() => {
+          setShowStatus(false);
+        }, 2000);
+      } else {
+        throw new Error('Failed to save settings');
       }
     } catch (error) {
       console.error('Error saving tags:', error);
-      setSettingsError(error instanceof Error ? error : new Error('Failed to save settings'));
-    } finally {
-      setSettingsLoading(false);
+      setApiStatus({
+        loading: false,
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to save settings'
+      });
+      setShowStatus(true);
     }
   };
 
   // Add custom tag
-  const handleAddCustomTag = (e: React.FormEvent) => {
+  const addCustomTag = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTag.trim()) {
       setSelectedTags([...selectedTags, newTag.trim()]);
@@ -105,25 +216,18 @@ export default function UserProfilePage() {
   // Update API status based on loading and error states
   useEffect(() => {
     if (userLoading || settingsLoading) {
-      setApiStatus({ loading: true });
+      setApiStatus({ loading: true, message: 'Loading...' });
+      setShowStatus(true);
       return;
     }
 
-    if (userError) {
+    if (userError || settingsError) {
       setApiStatus({
         loading: false,
         success: false,
-        message: userError.message
+        message: (userError || settingsError)?.message || 'An error occurred'
       });
-      return;
-    }
-
-    if (settingsError) {
-      setApiStatus({
-        loading: false,
-        success: false,
-        message: settingsError.message
-      });
+      setShowStatus(true);
       return;
     }
 
@@ -131,29 +235,18 @@ export default function UserProfilePage() {
       setApiStatus({
         loading: false,
         success: true,
-        message: 'Data loaded successfully!'
+        message: 'Profile loaded successfully!'
       });
-    } else {
-      setApiStatus({
-        loading: false,
-        success: false,
-        message: 'No user data available'
-      });
-    }
-  }, [userLoading, settingsLoading, userError, settingsError, userInfo]);
+      setShowStatus(true);
+      
+      // Hide status after 2 seconds if successful
+      const timer = setTimeout(() => {
+        setShowStatus(false);
+      }, 2000);
 
-  // Update the debug useEffect
-  useEffect(() => {
-    console.log('Debug Info:', {
-      userInfo: userInfo,
-      userLoading,
-      userError,
-      userSetting: settings,
-      settingsLoading,
-      settingsError,
-      apiStatus
-    });
-  }, [userInfo, settings, userLoading, settingsLoading, userError, settingsError, apiStatus]);
+      return () => clearTimeout(timer);
+    }
+  }, [userInfo, userError, settingsError, userLoading, settingsLoading]);
 
   if (userLoading) {
     return (
@@ -171,69 +264,39 @@ export default function UserProfilePage() {
     );
   }
 
-  if (settingsLoading) {
-    return (
-      <div className="relative w-full min-h-screen bg-gray-50 justify-center">
-        <NavigationUnauthenticated />
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <Alert>
-            <div className="flex items-center">
-              <div className="h-4 w-4 mr-2 rounded-full bg-blue-500 animate-pulse"></div>
-              <AlertDescription>Loading user settings...</AlertDescription>
-            </div>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
-
-  if (userError || settingsError) {
-    return (
-      <div className="relative w-full min-h-screen bg-gray-50 justify-center">
-        <NavigationUnauthenticated />
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            <AlertDescription>
-              {userError?.message || settingsError?.message || 'Failed to load user profile'}
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full min-h-screen bg-gray-50 justify-center">
       <NavigationUnauthenticated />
 
-      {/* API Status Banner */}
-      <div className="max-w-6xl mx-auto px-4 py-4">
-        <Alert variant={apiStatus.success ? "default" : apiStatus.loading ? "default" : "destructive"}>
-          {apiStatus.loading ? (
-            <div className="flex items-center">
-              <div className="h-4 w-4 mr-2 rounded-full bg-blue-500 animate-pulse"></div>
-              <AlertDescription>Loading data...</AlertDescription>
-            </div>
-          ) : apiStatus.success ? (
-            <div className="flex items-center">
-              <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-              <AlertDescription className="text-green-700">{apiStatus.message}</AlertDescription>
-            </div>
-          ) : (
-            <div className="flex items-center">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              <AlertDescription>{apiStatus.message}</AlertDescription>
-            </div>
-          )}
-        </Alert>
-      </div>
+      {/* API Status Banner - Only show if showStatus is true */}
+      {showStatus && (
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <Alert variant={apiStatus.success ? "default" : apiStatus.loading ? "default" : "destructive"}>
+            {apiStatus.loading ? (
+              <div className="flex items-center">
+                <div className="h-4 w-4 mr-2 rounded-full bg-blue-500 animate-pulse"></div>
+                <AlertDescription>{apiStatus.message}</AlertDescription>
+              </div>
+            ) : apiStatus.success ? (
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                <AlertDescription className="text-green-700">{apiStatus.message}</AlertDescription>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                <AlertDescription>{apiStatus.message}</AlertDescription>
+              </div>
+            )}
+          </Alert>
+        </div>
+      )}
 
-      {/* Profile Content */}
+      {/* Profile Content - Only shown when data is loaded */}
       {userInfo?.data?.user && (
         <>
           {/* Profile Header */}
-          <section className="py-4 bg-slate-50/75">
+          <section className="py-2 mt-4 bg-slate-50/75 md:mt-16">
             <div className="max-w-6xl mx-auto px-4">
               <FadeInWhenVisible>
                 <div className="flex items-center gap-6">
@@ -241,7 +304,7 @@ export default function UserProfilePage() {
                     className="h-24 w-24 rounded-full bg-gray-100 border-4 border-white shadow-lg"
                     whileHover={{ scale: 1.05 }}
                   >
-                    {userInfo.data.user.image && (
+                    {userInfo?.data?.user?.image && (
                       <img
                         src={userInfo.data.user.image}
                         alt={userInfo.data.user.name}
@@ -249,24 +312,23 @@ export default function UserProfilePage() {
                       />
                     )}
                   </motion.div>
-
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-medium">{userInfo.data.user.name}</h1>
-                      <div className="flex items-center gap-2">
-                        {userInfo.data.user.email_verified ? (
-                          <Badge variant="outline" className="border-green-100 bg-green-50 text-green-600">
-                            <CheckCircle className="h-3 w-3 mr-1"/> Verified
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="border-yellow-100 bg-yellow-50 text-yellow-600">
-                            <AlertCircle className="h-3 w-3 mr-1"/> Unverified
-                          </Badge>
-                        )}
-                      </div>
+                      <h1 className="text-xl font-medium">
+                        {userInfo?.data?.user?.name || 'Unknown User'}
+                      </h1>
+                      <Badge variant="outline" className={
+                        userInfo?.data?.user?.email_verified 
+                          ? "border-green-100 bg-green-50 text-green-600" 
+                          : "border-yellow-100 bg-yellow-50 text-yellow-600"
+                      }>
+                        {userInfo?.data?.user?.email_verified ? "Verified" : "Unverified"}
+                      </Badge>
                     </div>
                     <p className="text-sm text-gray-500">
-                      Member since {new Date(userInfo.data.user.created_at).toLocaleDateString()}
+                      Member since {new Date(
+                        userInfo?.data?.user?.created_at || Date.now()
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -274,7 +336,7 @@ export default function UserProfilePage() {
             </div>
           </section>
 
-          {/* User Interests/Tags */}
+          {/* User Interests/Tags Section */}
           <section className="py-4">
             <div className="max-w-6xl mx-auto px-4">
               <FadeInWhenVisible delay={0.4}>
@@ -284,16 +346,44 @@ export default function UserProfilePage() {
                     <button
                       className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
                       onClick={() => setIsEditingTags(!isEditingTags)}
+                      disabled={settingsLoading}
                     >
                       {isEditingTags ? "Cancel" : "Edit"}
                     </button>
                   </div>
 
-                  {isEditingTags ? (
+                  {!isEditingTags ? (
                     <div>
-                      {/* Predefined tags */}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {userSetting?.setting?.key_message_tags?.map((tag: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="px-3 py-1 bg-blue-50 text-blue-700"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                        {(!userSetting?.setting?.key_message_tags?.length) && (
+                          <p className="text-gray-500 italic">No tags selected yet</p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {['Work Communications', 'Personal Messages', 'Financial Notification', 'Social Media', 'Administrative Updates', 'Calendar Invites', 'Travel Related'].map((tag) => (
+                        {[
+                          'Work communications',
+                          'Personal messages',
+                          'Financial notifications',
+                          'Administrative updates',
+                          'Promotional content',
+                          'Newsletters and subscriptions',
+                          'Social media notifications',
+                          'Calendar invites and event updates',
+                          'Travel-related emails',
+                          'Shopping and order updates'
+                        ].map((tag) => (
                           <button
                             key={tag}
                             className={`px-3 py-1 rounded-md text-sm ${
@@ -308,13 +398,12 @@ export default function UserProfilePage() {
                         ))}
                       </div>
 
-                      {/* Custom tag input */}
-                      <form onSubmit={handleAddCustomTag} className="mb-4 flex gap-2">
+                      <form onSubmit={addCustomTag} className="mb-4 flex gap-2">
                         <Input
                           type="text"
                           value={newTag}
                           onChange={(e) => setNewTag(e.target.value)}
-                          placeholder="Add custom interest..."
+                          placeholder="Type a custom interest..."
                           className="flex-1"
                         />
                         <button
@@ -326,7 +415,6 @@ export default function UserProfilePage() {
                         </button>
                       </form>
 
-                      {/* Selected tags */}
                       <div className="mb-4">
                         <Label className="text-sm text-gray-500 mb-2">Selected Interests:</Label>
                         <div className="flex flex-wrap gap-2">
@@ -348,29 +436,27 @@ export default function UserProfilePage() {
                         </div>
                       </div>
 
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors"
+                          onClick={() => {
+                            const existingTags = userSetting?.data?.setting?.key_message_tags || [];
+                            if (existingTags.length > 0) {
+                              setSelectedTags(existingTags);
+                            }
+                            setIsEditingTags(false);
+                          }}
+                        >
+                          Cancel
+                        </button>
                         <button
                           className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
                           onClick={saveTagChanges}
+                          disabled={settingsLoading}
                         >
-                          Save
+                          {settingsLoading ? 'Saving...' : 'Save'}
                         </button>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {settings?.key_message_tags?.map((tag: string, index: number) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="px-3 py-1 bg-blue-50 text-blue-700"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                      {(!settings?.key_message_tags || settings.key_message_tags.length === 0) && (
-                        <p className="text-gray-500 italic">No interests selected yet</p>
-                      )}
                     </div>
                   )}
                 </div>
@@ -378,8 +464,8 @@ export default function UserProfilePage() {
             </div>
           </section>
 
-          {/* Connected Platforms */}
-          <section className="py-4">
+           {/* Connected Platforms */}
+           <section className="py-2">
             <div className="max-w-6xl mx-auto px-4">
               <FadeInWhenVisible delay={0.2}>
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -398,7 +484,7 @@ export default function UserProfilePage() {
                         </div>
                         <div>
                           <div className="font-medium">Gmail</div>
-                          <div className="text-sm text-gray-500">{userInfo.data.user.email}</div>
+                          <div className="text-sm text-gray-500">{userInfo?.data?.user?.email}</div>
                         </div>
                       </div>
                       <div className="flex flex-col items-end">
@@ -406,12 +492,12 @@ export default function UserProfilePage() {
                           <CheckCircle className="h-3 w-3 mr-1"/> Connected
                         </Badge>
                         <span className="text-xs text-gray-400 mt-1">
-                          Since {new Date(userInfo.data.user.created_at).toLocaleDateString()}
+                          Since {new Date(userInfo?.data?.user?.created_at || '').toLocaleDateString()}
                         </span>
                       </div>
                     </div>
 
-                    {/* Outlook Connection */}
+                    {/* Outlook Connection - Example of not connected platform */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
