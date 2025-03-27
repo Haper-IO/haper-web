@@ -8,12 +8,17 @@ import {
   PanelLeft,
   LayoutDashboard,
   History,
-  LucideIcon
+  LucideIcon,
+  Loader2,
+  PlayCircle,
+  StopCircle,
+  AlertCircle
 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
-import {EmailSummaryWithStats, EmailSummaryHistory} from "@/components/dashboard-cards"
-import texture from "@/assets/images/texture_flows.webp"
+import { useState, useEffect } from "react"
+import { EmailSummaryWithStats, EmailSummaryHistory } from "@/components/dashboard-cards"
+import { startTracking, stopTracking, getTrackingStatus, TrackingStatus } from "@/lib/requests/client/message-tracking"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface SidebarLinkProps {
   href: string
@@ -33,6 +38,56 @@ const SidebarLink = ({ href, icon: Icon, children }: SidebarLinkProps) => (
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [trackingStatus, setTrackingStatus] = useState<TrackingStatus | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchTrackingStatus = async () => {
+    try {
+      setIsLoading(true)
+      const response = await getTrackingStatus()
+      setTrackingStatus(Array.isArray(response) ? response[0] : response)
+    } catch (err) {
+      console.error('Error fetching tracking status:', err)
+      setError('Failed to fetch tracking status')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleStartTracking = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await startTracking()
+      setTrackingStatus(Array.isArray(response) ? response[0] : response)
+    } catch (err) {
+      console.error('Error starting tracking:', err)
+      setError('Failed to start message tracking')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleStopTracking = async () => {
+    if (!trackingStatus?.account_id) return
+    
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await stopTracking(trackingStatus.account_id)
+      setTrackingStatus(Array.isArray(response) ? response[0] : response)
+    } catch (err) {
+      console.error('Error stopping tracking:', err)
+      setError('Failed to stop message tracking')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTrackingStatus()
+  }, [])
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -76,6 +131,55 @@ export default function DashboardPage() {
           isSidebarOpen ? "md:pl-60" : "md:pl-0"
         }`}
       >
+        {/* Message Tracking Status Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Message Processing Status</h2>
+            {trackingStatus?.status === "Ongoing" ? (
+              <Button
+                onClick={handleStopTracking}
+                disabled={isLoading}
+                variant="destructive"
+                className="flex items-center gap-2"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <StopCircle className="h-4 w-4" />}
+                Stop Processing
+              </Button>
+            ) : (
+              <Button
+                onClick={handleStartTracking}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                Start Processing
+              </Button>
+            )}
+          </div>
+
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-gray-500">Status</p>
+              <p className="font-medium">{trackingStatus?.status || 'Not Started'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Last Updated</p>
+              <p className="font-medium">
+                {trackingStatus?.updated_at 
+                  ? new Date(trackingStatus.updated_at).toLocaleString()
+                  : 'Never'}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Dashboard Content */}
         <div className="container p-5 center mx-auto">
           <div className="grid gap-6">
