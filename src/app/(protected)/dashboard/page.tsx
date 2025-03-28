@@ -15,10 +15,8 @@ import {
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { EmailSummaryWithStats, EmailSummaryHistory } from "@/components/dashboard-cards"
-import { startTracking, stopTracking, getTrackingStatus, TrackingStatus } from "@/lib/requests/client/message-tracking"
+import { startTracking, stopTracking, getTrackingStatus } from "@/lib/requests/client/message-tracking"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-import { getNewestReport } from "@/lib/requests/client/report";
 
 interface SidebarLinkProps {
   href: string
@@ -36,9 +34,18 @@ const SidebarLink = ({ href, icon: Icon, children }: SidebarLinkProps) => (
   </Link>
 )
 
+interface TrackingStatus {
+  account_id: string;
+  email: string;
+  provider: string;
+  status: "NotStarted" | "Ongoing" | "Stopped" | "Error";
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [trackingStatus, setTrackingStatus] = useState<TrackingStatus | null>(null)
+  const [trackingStatuses, setTrackingStatuses] = useState<TrackingStatus[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -46,7 +53,9 @@ export default function DashboardPage() {
     try {
       setIsLoading(true)
       const response = await getTrackingStatus()
-      setTrackingStatus(Array.isArray(response) ? response[0] : response)
+      console.log('Tracking status response:', response)
+      // The response structure is { data: { tracking_status: [...] } }
+      setTrackingStatuses(response.tracking_status)
     } catch (err) {
       console.error('Error fetching tracking status:', err)
       setError('Failed to fetch tracking status')
@@ -55,12 +64,21 @@ export default function DashboardPage() {
     }
   }
 
+  // Fix by adding dependency array
+  useEffect(() => {
+    const loadTrackingStatus = async () => {
+      await fetchTrackingStatus();
+    };
+    loadTrackingStatus();
+  }, []);
+
   const handleStartTracking = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await startTracking()
-      setTrackingStatus(Array.isArray(response) ? response[0] : response)
+      await startTracking()
+      // Refresh status after starting
+      await fetchTrackingStatus()
     } catch (err) {
       console.error('Error starting tracking:', err)
       setError('Failed to start message tracking')
@@ -69,14 +87,13 @@ export default function DashboardPage() {
     }
   }
 
-  const handleStopTracking = async () => {
-    if (!trackingStatus?.account_id) return
-
+  const handleStopTracking = async (accountId: string) => {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await stopTracking(trackingStatus.account_id)
-      setTrackingStatus(Array.isArray(response) ? response[0] : response)
+      await stopTracking(accountId)
+      // Refresh status after stopping
+      await fetchTrackingStatus()
     } catch (err) {
       console.error('Error stopping tracking:', err)
       setError('Failed to stop message tracking')
@@ -85,21 +102,14 @@ export default function DashboardPage() {
     }
   }
 
-  useEffect(() => {
-    fetchTrackingStatus()
-  }, [])
-
-  // const [report, setReport] = useState<Report | null>(null);
-  // useEffect(() => {
-  //   const fetchNewestReport = async () => {
-  //     getNewestReport((response: Report) => {
-  //       setReport(response);
-  //     });
-  //   };
-  //   fetchNewestReport();
-  //   console.log(report);
-  // }, []);
-
+  // Helper function to get provider display name
+  const getProviderName = (provider: string) => {
+    const providers: Record<string, string> = {
+      'google': 'Gmail',
+      'microsoft': 'Outlook'
+    }
+    return providers[provider] || provider
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -143,66 +153,94 @@ export default function DashboardPage() {
         }`}
       >
         {/* Message Tracking Status Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Message Processing Status</h2>
-            {trackingStatus?.status === "Ongoing" ? (
-              <Button
-                onClick={handleStopTracking}
-                disabled={isLoading}
-                variant="destructive"
-                className="flex items-center gap-2"
-              >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <StopCircle className="h-4 w-4" />}
-                Stop Processing
-              </Button>
-            ) : (
+        <div className="container p-5 mx-auto">
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Message Processing Status</h2>
               <Button
                 onClick={handleStartTracking}
+                //disabled={isLoading || trackingStatuses.tracking_status === "Ongoing"}
                 disabled={isLoading}
                 className="flex items-center gap-2"
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
                 Start Processing
               </Button>
+            </div>
+
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
+
+            {/* Per-Email Tracking Status */}
+            <div className="space-y-4">
+              {trackingStatuses.map((status) => (
+                <div
+                  key={status.account_id}
+                  className="border rounded-lg p-4 bg-gray-50"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        status.status === "Ongoing" ? "bg-green-500" :
+                        status.status === "Error" ? "bg-red-500" :
+                        "bg-gray-500"
+                      }`} />
+                      <span className="font-medium">{getProviderName(status.provider)}</span>
+                    </div>
+                    {status.status === "Ongoing" && (
+                      <Button
+                        onClick={() => handleStopTracking(status.account_id)}
+                        variant="destructive"
+                        size="sm"
+                        className="flex items-center gap-2"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <StopCircle className="h-3 w-3" />}
+                        Stop
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Status</p>
+                      <p className="font-medium">{status.status}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Last Updated</p>
+                      <p className="font-medium">
+                        {status.updated_at
+                          ? new Date(status.updated_at).toLocaleString()
+                          : 'Never'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {trackingStatuses.length === 0 && !isLoading && (
+                <div className="text-center py-6 text-gray-500">
+                  No email accounts connected for tracking
+                </div>
+              )}
+
+              {isLoading && trackingStatuses.length === 0 && (
+                <div className="text-center py-6">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
+                  <p className="text-gray-500 mt-2">Loading tracking status...</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-gray-500">Status</p>
-              <p className="font-medium">{trackingStatus?.status || 'Not Started'}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Last Updated</p>
-              <p className="font-medium">
-                {trackingStatus?.updated_at
-                  ? new Date(trackingStatus.updated_at).toLocaleString()
-                  : 'Never'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Dashboard Content */}
-        <div className="container p-5 center mx-auto">
+          {/* Keep existing EmailSummaryWithStats and EmailSummaryHistory components */}
           <div className="grid gap-6">
             <EmailSummaryWithStats/>
             <EmailSummaryHistory/>
           </div>
-        </div>
-
-        <div>
-          <>
-
-          </>
         </div>
       </main>
     </div>
