@@ -12,9 +12,23 @@ import {
   StopCircle,
 } from "lucide-react"
 import Link from "next/link"
-import {useState, useEffect} from "react"
+import React, {useState, useEffect} from "react"
 import {EmailSummaryWithStats, EmailSummaryHistory} from "@/components/dashboard-cards"
-import {stopTracking, getTrackingStatus} from "@/lib/requests/client/message-tracking"
+import {
+  stopMessageTracking,
+  listMessageTrackingStatus,
+  startMessageTrackingByAccountID
+} from "@/lib/requests/client/message-tracking"
+import {oauthRedirect} from "@/app/actions/oauth";
+import {cn} from "@/lib/utils";
+import { useSearchParams } from "next/navigation"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 
 interface SidebarLinkProps {
   href: string
@@ -41,19 +55,32 @@ interface TrackingStatus {
   updated_at?: string | null;
 }
 
+const SupportedProviders = ["google", "microsoft"]
+
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [trackingStatuses, setTrackingStatuses] = useState<TrackingStatus[]>([])
+  const [trackingStatuses, setTrackingStatuses] = useState<Record<string/*provider name*/, TrackingStatus[]>>({})
   const [isFetchingTrackingStatus, setIsFetchingTrackingStatus] = useState(false)
   const [isStoppingTracking, setIsStoppingTracking] = useState(false)
+  const [isStartingTracking, setIsStartingTracking] = useState(false)
+  const searchParams = useSearchParams()
+  const [alterOpen, setAlterOpen] = useState(searchParams.has("error_msg"))
 
   const fetchTrackingStatus = () => {
     if (isFetchingTrackingStatus) {
       return
     }
     setIsFetchingTrackingStatus(true)
-    getTrackingStatus().then((resp: any) => {
-      setTrackingStatuses(resp.tracking_status)
+    listMessageTrackingStatus().then((resp: any) => {
+      const trackingStatusMap: Record<string, TrackingStatus[]> = {}
+      for (const t of resp.tracking_status) {
+        const provider = t.provider
+        if (!trackingStatusMap[provider]) {
+          trackingStatusMap[provider] = []
+        }
+        trackingStatusMap[provider].push(t)
+      }
+      setTrackingStatuses(trackingStatusMap)
     }).finally(() => {
       setIsFetchingTrackingStatus(false)
     })
@@ -64,8 +91,20 @@ export default function DashboardPage() {
     fetchTrackingStatus()
   }, []);
 
-  const handleStartTracking = () => {
+  const handleStartTrackingToOAuth = (provider: string) => {
+    oauthRedirect(provider, "authorize")
+  }
 
+  const handleStartTracking = (accountId: string) => {
+    if (isStartingTracking) {
+      return
+    }
+    setIsStartingTracking(true)
+    startMessageTrackingByAccountID(accountId).then(() => {
+      fetchTrackingStatus()
+    }).finally(() => {
+      setIsStartingTracking(false)
+    })
   }
 
   const handleStopTracking = (accountId: string) => {
@@ -73,7 +112,7 @@ export default function DashboardPage() {
       return
     }
     setIsStoppingTracking(true)
-    stopTracking(accountId).then(() => {
+    stopMessageTracking(accountId).then(() => {
       fetchTrackingStatus()
     }).finally(() => {
       setIsStoppingTracking(false)
@@ -98,10 +137,23 @@ export default function DashboardPage() {
     return statusText[status] || status
   }
 
-  const hasOngoingTracking = trackingStatuses.some(status => status.status === "Ongoing");
-
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50/10">
+      {searchParams.get("error_msg") && (
+        <AlertDialog open={alterOpen} onOpenChange={setAlterOpen}>
+          <AlertDialogContent className="bg-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Start Message Tracking Failed</AlertDialogTitle>
+              <AlertDialogDescription>
+                {searchParams.get("error_msg")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction>OK</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b">
         <div className="px-5 py-3">
@@ -136,103 +188,91 @@ export default function DashboardPage() {
       </aside>
 
       {/* Main Content */}
-      <main
-        className={`min-h-screen pt-[61px] transition-[padding] duration-300 ${
-          isSidebarOpen ? "md:pl-60" : "md:pl-0"
-        }`}
+      <section
+        className={cn("min-h-screen pt-[61px] transition-[padding] duration-300", isSidebarOpen ? "md:pl-60" : "md:pl-0")}
       >
         {/* Message Tracking Status Section */}
         <div className="container p-5 mx-auto">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div className="flex items-center justify-between mb-4 flex-wrap space-y-2">
-              <h2 className="text-xl font-semibold">Message Processing Status</h2>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleStartTracking}
-                  disabled={hasOngoingTracking || isFetchingTrackingStatus || isStoppingTracking}
-                  className="flex items-center gap-2"
-                >
-                  {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                    <PlayCircle className="h-4 w-4"/>}
-                  Start Processing
-                </Button>
-                {/*hasOngoingTracking &&*/(
-                  <Button
-                    onClick={() => {
-                      // Stop tracking for all ongoing accounts
-                      trackingStatuses
-                        .filter(status => status.status === "Ongoing")
-                        .forEach(status => handleStopTracking(status.account_id));
-                    }}
-                    variant="destructive"
-                    disabled={isFetchingTrackingStatus}
-                    className="flex items-center gap-2"
-                  >
-                    {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                      <StopCircle className="h-4 w-4"/>}
-                    End All Tracking
-                  </Button>
-                )}
-              </div>
-            </div>
+            <h2 className="text-xl font-semibold">Message Processing Status</h2>
 
             {/* Per-Email Tracking Status */}
             <div className="space-y-4">
-              {trackingStatuses.map((status) => (
-                <div
-                  key={status.account_id}
-                  className="border rounded-lg p-4 bg-gray-50"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        status.status === "Ongoing" ? "bg-green-500" :
-                          status.status === "Error" ? "bg-red-500" :
-                            "bg-gray-500"
-                      }`}/>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{getProviderName(status.provider)}</span>
-                        <p className="text-sm text-gray-500">{status.email}</p>
+              {SupportedProviders.map((provider, index) => {
+                // TODO: support show multiple accounts for the same provider
+                let t: TrackingStatus
+                if (trackingStatuses[provider] && trackingStatuses[provider].length > 0) {
+                  t = trackingStatuses[provider][0]
+                } else {
+                  t = {
+                    account_id: "",
+                    email: "",
+                    provider: provider,
+                    status: "NotStarted",
+                    created_at: null,
+                    updated_at: null,
+                  }
+                }
+                return (
+                  <div
+                    key={index}
+                    className="flex justify-between border rounded-lg p-4 bg-gray-50"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            t.status === "Ongoing" ? "bg-green-500" :
+                              t.status === "Error" ? "bg-red-500" :
+                                "bg-gray-500"
+                          }`}/>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{getProviderName(t.provider)}</span>
+                            <p className="text-sm text-gray-500">{t.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm mt-3">
+                        <div>
+                          <p className="text-gray-500">Status</p>
+                          <p className="font-medium">{getStatusText(t.status)}</p>
+                        </div>
                       </div>
                     </div>
-                    {status.status === "Ongoing" && (
+                    <div className="space-y-2">
                       <Button
-                        onClick={() => handleStopTracking(status.account_id)}
-                        variant="destructive"
-                        size="sm"
+                        onClick={() => {
+                          if (t.account_id) {
+                            handleStartTracking(t.account_id)
+                          } else {
+                            handleStartTrackingToOAuth(t.provider)
+                          }
+                        }}
+                        disabled={t.status == "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
                         className="flex items-center gap-2"
-                        disabled={isFetchingTrackingStatus}
                       >
-                        {isFetchingTrackingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> :
-                          <StopCircle className="h-3 w-3"/>}
-                        Stop
+                        {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                          <PlayCircle className="h-4 w-4"/>}
+                        Start Synchronization
                       </Button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm mt-3">
-                    <div>
-                      <p className="text-gray-500">Status</p>
-                      <p className="font-medium">{getStatusText(status.status)}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Last Updated</p>
-                      <p className="font-medium">
-                        {status.updated_at
-                          ? new Date(status.updated_at).toLocaleString()
-                          : 'Never'}
-                      </p>
+                      <Button
+                        onClick={() => {
+                          handleStopTracking(t.account_id)
+                        }}
+                        variant="destructive"
+                        disabled={t.status != "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
+                        className="flex items-center gap-2"
+                      >
+                        {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                          <StopCircle className="h-4 w-4"/>}
+                        End Tracking
+                      </Button>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
 
-              {trackingStatuses.length === 0 && !isFetchingTrackingStatus && (
-                <div className="text-center py-6 text-gray-500">
-                  No email accounts connected for tracking
-                </div>
-              )}
-
-              {isFetchingTrackingStatus && trackingStatuses.length === 0 && (
+              {isFetchingTrackingStatus && (
                 <div className="text-center py-6">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400"/>
                   <p className="text-gray-500 mt-2">Loading tracking status...</p>
@@ -247,7 +287,7 @@ export default function DashboardPage() {
             <EmailSummaryHistory/>
           </div>
         </div>
-      </main>
+      </section>
     </div>
   )
 }

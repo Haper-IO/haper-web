@@ -71,11 +71,10 @@ export class Microsoft extends OAuthProvider {
     }
 
     const responseJson = await response.json();
-    console.log(responseJson);
     return {
       accountId: responseJson.id,
       email: responseJson.mail,
-      name: responseJson.userPrincipalName,
+      name: responseJson.displayName,
       picture: undefined,
     }
   }

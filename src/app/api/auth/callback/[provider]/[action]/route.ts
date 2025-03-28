@@ -1,32 +1,37 @@
 import {redirect} from 'next/navigation'
 import {NextRequest, NextResponse} from "next/server";
-import {loginByOAuth, signupByOAuth, startMessageTrackingWithNewAccount} from "@/lib/requests/server/user";
+import {loginByOAuth, signupByOAuth} from "@/lib/requests/server/user";
 import {oauthClients} from "@/oauth-config";
 import {ActionType, OAuthError} from "@/lib/oauth/types";
 import {AxiosError} from "axios";
+import {startMessageTrackingWithNewAccount} from "@/lib/requests/server/message-tracking";
+import {cookies} from "next/headers";
 
 export async function GET(
   req: NextRequest,
   {params}: { params: Promise<{ provider: string, action: string }> },
 ) {
+  const cookieStore = await cookies()
   const {searchParams} = req.nextUrl
   const {provider, action} = await params
   const proto = req.headers.get("x-forwarded-proto") || "http";  // Default to 'http' if not found
   const host = req.headers.get("x-forwarded-host") || req.headers.get("host")
 
+  const errorRedirectPath = action === "authorize" ? "/dashboard" : "/error"
+
   const client = oauthClients[provider]
   if (!client) {
-    return redirect("/error?error_msg=unknown provider")
+    return redirect(`${errorRedirectPath}?error_msg=unknown provider`)
   }
 
   if (provider === "google") {
     const scope = searchParams.get('scope')
     if (!scope) {
-      return redirect("/error?error_msg=missing_scope")
+      return redirect(`${errorRedirectPath}/error?error_msg=missing_scope`)
     }
 
     if (!client.verifyScopes(scope.split(' '))) {
-      return redirect("/error?error_msg=please make sure choose all necessary permission")
+      return redirect(`${errorRedirectPath}?error_msg=please make sure choose all necessary permission`)
     }
   }
 
@@ -89,8 +94,8 @@ export async function GET(
         refreshToken,
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         email: userProfile.email,
-      })
-      return redirect("/dashboard")
+      }, cookieStore.toString())
+      return NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
     } else {
       throw new Error("unknown action")
     }
@@ -98,20 +103,20 @@ export async function GET(
   } catch (e) {
     //TODO redirect to different error page based on action
     if (e instanceof OAuthError) {
-      return redirect(`/error?error_msg=${e.message}`)
+      return redirect(`${errorRedirectPath}?error_msg=${e.message}`)
     } else if (e instanceof AxiosError) {
       if (e.response && e.response.data && e.response.data.message
         && e.response.data.status && e.response.data.status != 9999) {
-        return redirect(`/error?error_msg=${e.response.data.message}`)
+        return redirect(`${errorRedirectPath}?error_msg=${e.response.data.message}`)
       } else {
         console.error(e)
-        return redirect(`/error?error_msg=unknown error happened when request backend`)
+        return redirect(`${errorRedirectPath}?error_msg=unknown error happened when request backend`)
       }
     } else if (e instanceof Error) {
       console.error(e)
-      return redirect(`/error?error_msg=${e.message}`)
+      return redirect(`${errorRedirectPath}?error_msg=${e.message}`)
     } else {
-      return redirect(`/error?error_msg=unknown error happened`)
+      return redirect(`${errorRedirectPath}?error_msg=unknown error happened`)
     }
   }
 }

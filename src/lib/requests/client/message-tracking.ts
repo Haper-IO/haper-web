@@ -1,4 +1,4 @@
-import { reqHandler } from "@/lib/requests/client/base";
+import {reqHandler} from "@/lib/requests/client/base";
 
 // Define interfaces
 export interface TrackingStatus {
@@ -24,7 +24,7 @@ export interface AccountInfo {
  *
  * @returns - A promise that resolves to an array of tracking status information.
  */
-export const getTrackingStatus = async () => {
+export const listMessageTrackingStatus = async () => {
   return reqHandler.get(`/message/tracking/status`);
 }
 
@@ -34,7 +34,7 @@ export const getTrackingStatus = async () => {
  * @param accountId - The unique identifier of the account to stop tracking.
  * @returns - A promise that resolves to the new tracking status.
  */
-export const stopTracking = async (accountId: string) => {
+export const stopMessageTracking = async (accountId: string) => {
   return reqHandler.post(`/message/tracking/stop`, {
     account_id: accountId
   });
@@ -44,15 +44,10 @@ export const stopTracking = async (accountId: string) => {
  * Start tracking messages for an account.
  *
  * @param accountId - The existing account id for the user.
- * @param accountInfo - The new account information (optional).
  * @returns - A promise that resolves to the new tracking status.
  */
-export const startTracking = async (
-  accountId?: string,
-  accountInfo?: AccountInfo
-) => {
+export const startMessageTrackingByAccountID = async (accountId: string) => {
   return reqHandler.post(`/message/tracking/start`, {
-    account_id: accountId,
-    account: accountInfo
+    account_id: accountId
   });
 }

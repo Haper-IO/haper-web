@@ -28,7 +28,7 @@ export default function RootLayout({
 
     <main>
       <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-9999]"
         style={{
           backgroundImage: `url(${texture.src})`,
           opacity: 0.16

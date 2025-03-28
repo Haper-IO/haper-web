@@ -1,9 +1,9 @@
-import { Mail } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import {Mail} from "lucide-react"
+import {Button} from "@/components/ui/button"
+import {Card, CardContent, CardHeader} from "@/components/ui/card"
+import {Badge} from "@/components/ui/badge"
+import {useRouter} from "next/navigation"
+import {useState, useEffect} from "react"
 
 // Types for backend data
 export interface MessageStatsData {
@@ -18,7 +18,7 @@ export interface EmailSummaryData {
   title: string;
   updateTime: string;
   content: string;
-  highlightedPeople: Array<{name: string, context: string}>;
+  highlightedPeople: Array<{ name: string, context: string }>;
 }
 
 export interface UserData {
@@ -29,43 +29,6 @@ export interface UserData {
   email_verified: boolean;
   created_at: string;
 }
-
-// API service for user data
-const fetchUserInfo = async (): Promise<UserData> => {
-  try {
-    // API call to get user info
-    const response = await fetch('/api/v1/user/info', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Assuming token is stored in localStorage
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    if (result.status !== 0) {
-      throw new Error(result.message || 'Failed to fetch user info');
-    }
-
-    return result.data.user;
-  } catch (error) {
-    console.error('Error fetching user info:', error);
-    // Return default user data in case of error
-    return {
-      id: '',
-      name: 'Guest User',
-      image: '',
-      email: '',
-      email_verified: false,
-      created_at: ''
-    };
-  }
-};
 
 // Email Summary Component
 export function EmailSummaryWithStats({
@@ -97,24 +60,11 @@ export function EmailSummaryWithStats({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user data when component mounts
-    const getUserData = async () => {
-      setLoading(true);
-      try {
-        const userData = await fetchUserInfo();
-        setUser(userData);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    getUserData();
   }, []);
 
   // Function to highlight names
-  const renderHighlightedContent = (content: string, highlights: Array<{name: string}>) => {
+  const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
     let result = content;
     highlights.forEach(person => {
       result = result.replace(
@@ -123,7 +73,7 @@ export function EmailSummaryWithStats({
       );
     });
 
-    return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: result }} />;
+    return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{__html: result}}/>;
   };
 
   const handleBatchAction = () => {
@@ -155,7 +105,7 @@ export function EmailSummaryWithStats({
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="emphasis" size="md">Summary</Badge>
         <Badge variant="secondary" size="md">Updated {summaryData.updateTime}</Badge>
-        <Mail className="ml-auto h-4 w-4 text-gray-400" />
+        <Mail className="ml-auto h-4 w-4 text-gray-400"/>
       </CardHeader>
       <div>
         {loading ? (
@@ -198,7 +148,7 @@ export function EmailSummaryWithStats({
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 <div className="relative h-40 w-40">
                   <svg className="h-full w-full" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
+                    <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4"/>
                     <circle
                       cx="18"
                       cy="18"
@@ -223,12 +173,12 @@ export function EmailSummaryWithStats({
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[#92bfff]" />
+                    <div className="h-3 w-3 rounded-full bg-[#92bfff]"/>
                     <span className="text-sm text-gray-600">Essential ({statsData.essentialCount})</span>
                     <span className="ml-auto text-sm font-medium">{statsData.essentialPercentage}%</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[#94e9b8]" />
+                    <div className="h-3 w-3 rounded-full bg-[#94e9b8]"/>
                     <span className="text-sm text-gray-600">Non-essential ({statsData.nonEssentialCount})</span>
                     <span className="ml-auto text-sm font-medium">{statsData.nonEssentialPercentage}%</span>
                   </div>
@@ -251,45 +201,32 @@ export function EmailSummaryWithStats({
   );
 }
 
-export function EmailSummaryHistory({
-                                      summaryData = {
-                                        title: "You received 3 Essential Emails in the Past 3 hours",
-                                        updateTime: "3 mins ago",
-                                        content: "In the past 3 hours, You have received 1 invitation from Grant about your upcoming trip, 1 reply from Alice about your car rental project, 1 email from your instructor Dr. Bieler discussing your essay topics.",
-                                        highlightedPeople: [
-                                          {name: "Grant", context: "invitation"},
-                                          {name: "Alice", context: "car rental project"},
-                                          {name: "Dr. Bieler", context: "essay topics"}
-                                        ]
-                                      },
-                                      onCheckLastReport
-                                    }: {
-  summaryData?: EmailSummaryData,
-  onCheckLastReport?: () => void
-}) {
+export function EmailSummaryHistory(
+  {
+    summaryData = {
+      title: "You received 3 Essential Emails in the Past 3 hours",
+      updateTime: "3 mins ago",
+      content: "In the past 3 hours, You have received 1 invitation from Grant about your upcoming trip, 1 reply from Alice about your car rental project, 1 email from your instructor Dr. Bieler discussing your essay topics.",
+      highlightedPeople: [
+        {name: "Grant", context: "invitation"},
+        {name: "Alice", context: "car rental project"},
+        {name: "Dr. Bieler", context: "essay topics"}
+      ]
+    },
+    onCheckLastReport
+  }: {
+    summaryData?: EmailSummaryData,
+    onCheckLastReport?: () => void
+  }) {
   const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user data when component mounts
-    const getUserData = async () => {
-      setLoading(true);
-      try {
-        const userData = await fetchUserInfo();
-        setUser(userData);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUserData();
   }, []);
 
   // Function to highlight names
-  const renderHighlightedContent = (content: string, highlights: Array<{name: string}>) => {
+  const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
     let result = content;
     highlights.forEach(person => {
       result = result.replace(
@@ -298,7 +235,7 @@ export function EmailSummaryHistory({
       );
     });
 
-    return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: result }} />;
+    return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{__html: result}}/>;
   };
 
   const handleCheckLastReport = () => {
@@ -330,7 +267,7 @@ export function EmailSummaryHistory({
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="default" size="md">Summary</Badge>
         <Badge variant="secondary" size="md">Updated {summaryData.updateTime}</Badge>
-        <Mail className="ml-auto h-4 w-4 text-gray-400" />
+        <Mail className="ml-auto h-4 w-4 text-gray-400"/>
       </CardHeader>
       <CardContent className="container space-y-4">
         {loading ? (
