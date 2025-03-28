@@ -102,7 +102,6 @@ export default function DashboardPage() {
     }
   }
 
-  // Helper function to get provider display name
   const getProviderName = (provider: string) => {
     const providers: Record<string, string> = {
       'google': 'Gmail',
@@ -110,6 +109,18 @@ export default function DashboardPage() {
     }
     return providers[provider] || provider
   }
+
+  const getStatusText = (status: string) => {
+    const statusText: Record<string, string> = {
+      "NotStarted": "Not Started",
+      "Ongoing": "Ongoing",
+      "Stopped": "Stopped",
+      "Error": "Error"
+    }
+    return statusText[status] || status
+  }
+
+  const hasOngoingTracking = trackingStatuses.some(status => status.status === "Ongoing");
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -157,15 +168,32 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Message Processing Status</h2>
-              <Button
-                onClick={handleStartTracking}
-                //disabled={isLoading || trackingStatuses.tracking_status === "Ongoing"}
-                disabled={isLoading}
-                className="flex items-center gap-2"
-              >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
-                Start Processing
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleStartTracking}
+                  disabled={isLoading || hasOngoingTracking}
+                  className="flex items-center gap-2"
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                  Start Processing
+                </Button>
+                {hasOngoingTracking && (
+                  <Button
+                    onClick={() => {
+                      // Stop tracking for all ongoing accounts
+                      trackingStatuses
+                        .filter(status => status.status === "Ongoing")
+                        .forEach(status => handleStopTracking(status.account_id));
+                    }}
+                    variant="destructive"
+                    disabled={isLoading}
+                    className="flex items-center gap-2"
+                  >
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <StopCircle className="h-4 w-4" />}
+                    End All Tracking
+                  </Button>
+                )}
+              </div>
             </div>
 
             {error && (
@@ -189,7 +217,10 @@ export default function DashboardPage() {
                         status.status === "Error" ? "bg-red-500" :
                         "bg-gray-500"
                       }`} />
-                      <span className="font-medium">{getProviderName(status.provider)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{getProviderName(status.provider)}</span>
+                        <p className="text-sm text-gray-500">{status.email}</p>
+                      </div>
                     </div>
                     {status.status === "Ongoing" && (
                       <Button
@@ -204,10 +235,10 @@ export default function DashboardPage() {
                       </Button>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm mt-3">
                     <div>
                       <p className="text-gray-500">Status</p>
-                      <p className="font-medium">{status.status}</p>
+                      <p className="font-medium">{getStatusText(status.status)}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Last Updated</p>
