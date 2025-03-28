@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
-import { Logo_md } from "@/icons/logo-md"
+import { Logo_md } from "@/icons/logo"
 import { useState } from "react"
 
 const NavigationLinks = () => (

@@ -17,8 +17,7 @@ import {
   UserSettings,
   UserSettingsResponse
 } from "@/lib/requests/client/user-settings"
-import { GmailIcon } from "@/icons/gmail-icon";
-import { OutlookIcon } from "@/icons/outlook-icon";
+import { GmailIcon, OutlookIcon } from "@/icons/provider-icons";
 
 interface UserSettingState {
   data: UserSettingsResponse | null

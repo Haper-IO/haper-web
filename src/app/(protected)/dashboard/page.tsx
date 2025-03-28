@@ -1,9 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
-  ArrowUp,
   PanelLeftClose,
   PanelLeft,
   LayoutDashboard,
@@ -19,6 +17,8 @@ import { useState, useEffect } from "react"
 import { EmailSummaryWithStats, EmailSummaryHistory } from "@/components/dashboard-cards"
 import { startTracking, stopTracking, getTrackingStatus, TrackingStatus } from "@/lib/requests/client/message-tracking"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+
+import { getNewestReport } from "@/lib/requests/client/report";
 
 interface SidebarLinkProps {
   href: string
@@ -88,6 +88,18 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchTrackingStatus()
   }, [])
+
+  // const [report, setReport] = useState<Report | null>(null);
+  // useEffect(() => {
+  //   const fetchNewestReport = async () => {
+  //     getNewestReport((response: Report) => {
+  //       setReport(response);
+  //     });
+  //   };
+  //   fetchNewestReport();
+  //   console.log(report);
+  // }, []);
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -185,8 +197,12 @@ export default function DashboardPage() {
             <EmailSummaryWithStats/>
             <EmailSummaryHistory/>
           </div>
+        </div>
 
+        <div>
+          <>
 
+          </>
         </div>
       </main>
     </div>

@@ -1,4 +1,4 @@
-import { Logo_lg } from "@/icons/logo-lg";
+import { Logo_lg } from "@/icons/logo";
 
 
 interface HeaderProps {
