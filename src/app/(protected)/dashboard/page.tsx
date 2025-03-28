@@ -166,7 +166,7 @@ export default function DashboardPage() {
         {/* Message Tracking Status Section */}
         <div className="container p-5 mx-auto">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-wrap space-y-2">
               <h2 className="text-xl font-semibold">Message Processing Status</h2>
               <div className="flex gap-2">
                 <Button
