@@ -177,7 +177,7 @@ export default function DashboardPage() {
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
                   Start Processing
                 </Button>
-                {hasOngoingTracking && (
+                {/*hasOngoingTracking &&*/(
                   <Button
                     onClick={() => {
                       // Stop tracking for all ongoing accounts
