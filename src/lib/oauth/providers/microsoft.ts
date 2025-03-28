@@ -1,17 +1,18 @@
 import * as arctic from "arctic";
-import {redirect} from "next/navigation";
 import {getBaseUrl, OAuthProvider} from "@/lib/oauth/providers/base";
 import {ActionType, OAuthError, OAuthProviderConfig, Profile} from "@/lib/oauth/types";
+import {redirect} from "next/navigation";
 
-const userInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
+const userInfoEndpoint = "https://graph.microsoft.com/v1.0/me";
 
-export class Google extends OAuthProvider {
-  private loginRedirectUrl: string = "/api/auth/callback/google/login"
-  private signupRedirectUrl: string = "/api/auth/callback/google/signup"
-  private authorizeRedirectUrl: string = "/api/auth/callback/google/authorize"
+export class Microsoft extends OAuthProvider {
+  private loginRedirectUrl: string = "/api/auth/callback/microsoft/login"
+  private signupRedirectUrl: string = "/api/auth/callback/microsoft/signup"
+  private authorizeRedirectUrl: string = "/api/auth/callback/microsoft/authorize"
 
   constructor(options: OAuthProviderConfig) {
-    super(options)
+    super(options);
+    this.options = options;
   }
 
   private async constructClient(action: ActionType) {
@@ -28,7 +29,7 @@ export class Google extends OAuthProvider {
         redirectUrl = new URL(this.authorizeRedirectUrl, baseUrl).toString();
         break;
     }
-    return new arctic.Google(this.options.clientId, this.options.clientSecret, redirectUrl);
+    return new arctic.MicrosoftEntraId("common", this.options.clientId, this.options.clientSecret, redirectUrl);
   }
 
   private async redirectOAuthUrl(action: ActionType) {
@@ -70,11 +71,12 @@ export class Google extends OAuthProvider {
     }
 
     const responseJson = await response.json();
+    console.log(responseJson);
     return {
-      accountId: responseJson.sub,
-      email: responseJson.email,
-      name: responseJson.name,
-      picture: responseJson.picture,
+      accountId: responseJson.id,
+      email: responseJson.mail,
+      name: responseJson.userPrincipalName,
+      picture: undefined,
     }
   }
 

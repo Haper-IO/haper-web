@@ -1,6 +1,6 @@
 import {redirect} from 'next/navigation'
 import {NextRequest, NextResponse} from "next/server";
-import {loginByOAuth, signupByOAuth} from "@/lib/requests/server/user";
+import {loginByOAuth, signupByOAuth, startMessageTrackingWithNewAccount} from "@/lib/requests/server/user";
 import {oauthClients} from "@/oauth-config";
 import {ActionType, OAuthError} from "@/lib/oauth/types";
 import {AxiosError} from "axios";
@@ -19,13 +19,15 @@ export async function GET(
     return redirect("/error?error_msg=unknown provider")
   }
 
-  const scope = searchParams.get('scope')
-  if (!scope) {
-    return redirect("/error?error_msg=missing_scope")
-  }
+  if (provider === "google") {
+    const scope = searchParams.get('scope')
+    if (!scope) {
+      return redirect("/error?error_msg=missing_scope")
+    }
 
-  if (client.verifyScopes(scope.split(' ')) === false) {
-    return redirect("/error?error_msg=please make sure choose all necessary permission")
+    if (!client.verifyScopes(scope.split(' '))) {
+      return redirect("/error?error_msg=please make sure choose all necessary permission")
+    }
   }
 
   const code = searchParams.get('code')
@@ -79,11 +81,22 @@ export async function GET(
         }
       }
       return resp
+    } else if (action === 'authorize') {
+      await startMessageTrackingWithNewAccount({
+        provider,
+        providerAccountID: userProfile.accountId,
+        accessToken,
+        refreshToken,
+        expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
+        email: userProfile.email,
+      })
+      return redirect("/dashboard")
     } else {
       throw new Error("unknown action")
     }
 
   } catch (e) {
+    //TODO redirect to different error page based on action
     if (e instanceof OAuthError) {
       return redirect(`/error?error_msg=${e.message}`)
     } else if (e instanceof AxiosError) {

@@ -11,7 +11,7 @@ export interface Profile {
   accountId: string;
   email: string;
   name: string;
-  picture: string;
+  picture: string | undefined;
 }
 
 export interface OAuthProviderConfig {
