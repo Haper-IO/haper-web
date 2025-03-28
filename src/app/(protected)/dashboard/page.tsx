@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import {Button} from "@/components/ui/button"
 import {
   PanelLeftClose,
   PanelLeft,
@@ -10,13 +10,11 @@ import {
   Loader2,
   PlayCircle,
   StopCircle,
-  AlertCircle
 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
-import { EmailSummaryWithStats, EmailSummaryHistory } from "@/components/dashboard-cards"
-import { startTracking, stopTracking, getTrackingStatus } from "@/lib/requests/client/message-tracking"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import {useState, useEffect} from "react"
+import {EmailSummaryWithStats, EmailSummaryHistory} from "@/components/dashboard-cards"
+import {stopTracking, getTrackingStatus} from "@/lib/requests/client/message-tracking"
 
 interface SidebarLinkProps {
   href: string
@@ -24,12 +22,12 @@ interface SidebarLinkProps {
   children: React.ReactNode
 }
 
-const SidebarLink = ({ href, icon: Icon, children }: SidebarLinkProps) => (
+const SidebarLink = ({href, icon: Icon, children}: SidebarLinkProps) => (
   <Link
     href={href}
     className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md group transition-colors"
   >
-    <Icon className="h-4 w-4 text-gray-500 group-hover:text-gray-900" />
+    <Icon className="h-4 w-4 text-gray-500 group-hover:text-gray-900"/>
     <span className="group-hover:text-gray-900">{children}</span>
   </Link>
 )
@@ -46,60 +44,40 @@ interface TrackingStatus {
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [trackingStatuses, setTrackingStatuses] = useState<TrackingStatus[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isFetchingTrackingStatus, setIsFetchingTrackingStatus] = useState(false)
+  const [isStoppingTracking, setIsStoppingTracking] = useState(false)
 
-  const fetchTrackingStatus = async () => {
-    try {
-      setIsLoading(true)
-      const response = await getTrackingStatus()
-      console.log('Tracking status response:', response)
-      // The response structure is { data: { tracking_status: [...] } }
-      setTrackingStatuses(response.tracking_status)
-    } catch (err) {
-      console.error('Error fetching tracking status:', err)
-      setError('Failed to fetch tracking status')
-    } finally {
-      setIsLoading(false)
+  const fetchTrackingStatus = () => {
+    if (isFetchingTrackingStatus) {
+      return
     }
+    setIsFetchingTrackingStatus(true)
+    getTrackingStatus().then((resp: any) => {
+      setTrackingStatuses(resp.tracking_status)
+    }).finally(() => {
+      setIsFetchingTrackingStatus(false)
+    })
   }
 
   // Fix by adding dependency array
   useEffect(() => {
-    const loadTrackingStatus = async () => {
-      await fetchTrackingStatus();
-    };
-    loadTrackingStatus();
+    fetchTrackingStatus()
   }, []);
 
-  const handleStartTracking = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      await startTracking()
-      // Refresh status after starting
-      await fetchTrackingStatus()
-    } catch (err) {
-      console.error('Error starting tracking:', err)
-      setError('Failed to start message tracking')
-    } finally {
-      setIsLoading(false)
-    }
+  const handleStartTracking = () => {
+
   }
 
-  const handleStopTracking = async (accountId: string) => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      await stopTracking(accountId)
-      // Refresh status after stopping
-      await fetchTrackingStatus()
-    } catch (err) {
-      console.error('Error stopping tracking:', err)
-      setError('Failed to stop message tracking')
-    } finally {
-      setIsLoading(false)
+  const handleStopTracking = (accountId: string) => {
+    if (isStoppingTracking) {
+      return
     }
+    setIsStoppingTracking(true)
+    stopTracking(accountId).then(() => {
+      fetchTrackingStatus()
+    }).finally(() => {
+      setIsStoppingTracking(false)
+    })
   }
 
   const getProviderName = (provider: string) => {
@@ -171,10 +149,11 @@ export default function DashboardPage() {
               <div className="flex gap-2">
                 <Button
                   onClick={handleStartTracking}
-                  disabled={isLoading || hasOngoingTracking}
+                  disabled={hasOngoingTracking || isFetchingTrackingStatus || isStoppingTracking}
                   className="flex items-center gap-2"
                 >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                  {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                    <PlayCircle className="h-4 w-4"/>}
                   Start Processing
                 </Button>
                 {/*hasOngoingTracking &&*/(
@@ -186,22 +165,16 @@ export default function DashboardPage() {
                         .forEach(status => handleStopTracking(status.account_id));
                     }}
                     variant="destructive"
-                    disabled={isLoading}
+                    disabled={isFetchingTrackingStatus}
                     className="flex items-center gap-2"
                   >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <StopCircle className="h-4 w-4" />}
+                    {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                      <StopCircle className="h-4 w-4"/>}
                     End All Tracking
                   </Button>
                 )}
               </div>
             </div>
-
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
 
             {/* Per-Email Tracking Status */}
             <div className="space-y-4">
@@ -214,9 +187,9 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
                         status.status === "Ongoing" ? "bg-green-500" :
-                        status.status === "Error" ? "bg-red-500" :
-                        "bg-gray-500"
-                      }`} />
+                          status.status === "Error" ? "bg-red-500" :
+                            "bg-gray-500"
+                      }`}/>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{getProviderName(status.provider)}</span>
                         <p className="text-sm text-gray-500">{status.email}</p>
@@ -228,9 +201,10 @@ export default function DashboardPage() {
                         variant="destructive"
                         size="sm"
                         className="flex items-center gap-2"
-                        disabled={isLoading}
+                        disabled={isFetchingTrackingStatus}
                       >
-                        {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <StopCircle className="h-3 w-3" />}
+                        {isFetchingTrackingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> :
+                          <StopCircle className="h-3 w-3"/>}
                         Stop
                       </Button>
                     )}
@@ -252,15 +226,15 @@ export default function DashboardPage() {
                 </div>
               ))}
 
-              {trackingStatuses.length === 0 && !isLoading && (
+              {trackingStatuses.length === 0 && !isFetchingTrackingStatus && (
                 <div className="text-center py-6 text-gray-500">
                   No email accounts connected for tracking
                 </div>
               )}
 
-              {isLoading && trackingStatuses.length === 0 && (
+              {isFetchingTrackingStatus && trackingStatuses.length === 0 && (
                 <div className="text-center py-6">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400"/>
                   <p className="text-gray-500 mt-2">Loading tracking status...</p>
                 </div>
               )}

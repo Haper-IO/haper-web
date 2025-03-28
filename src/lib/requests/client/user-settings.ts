@@ -5,13 +5,7 @@ export interface UserSettings {
 }
 
 export interface UserSettingsResponse {
-  uri: string;
-  elapsed: number;
-  status: number;
-  message: string;
-  data: {
-    setting: UserSettings;
-  }
+  setting: UserSettings;
 }
 
 /**
