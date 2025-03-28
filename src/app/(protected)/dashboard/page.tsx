@@ -23,11 +23,10 @@ import {oauthRedirect} from "@/app/actions/oauth";
 import {cn} from "@/lib/utils";
 import { useSearchParams } from "next/navigation"
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialog, AlertDialogAction,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 
 interface SidebarLinkProps {
