@@ -1,9 +1,33 @@
-import {Mail} from "lucide-react"
+import {Mail, RefreshCw, PlusCircle} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Badge} from "@/components/ui/badge"
 import {useRouter} from "next/navigation"
 import {useState, useEffect} from "react"
+import { getNewestReport, generateReport, Report, ReportModel } from "@/lib/requests/client/report"
+import { Skeleton } from "@/components/ui/skeleton"
+import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
+
+// Import additional interfaces from report.ts
+interface MailReportItem {
+  id: number;
+  message_id: string;
+  thread_id: string;
+  received_at: string;
+  sender: string;
+  subject: string;
+  summary: string;
+  category: "Essential" | "NonEssential";
+  tags: string[];
+  action: "Read" | "Delete" | "Reply" | "Ignore";
+  action_result: "Success" | "Error" | null;
+}
+
+interface MailMessagesByAccount {
+  account_id: string;
+  email: string;
+  messages: MailReportItem[];
+}
 
 // Types for backend data
 export interface MessageStatsData {
@@ -32,35 +56,131 @@ export interface UserData {
 
 // Email Summary Component
 export function EmailSummaryWithStats({
-                                        summaryData = {
-                                          title: "You received 3 Essential Emails in the Past 3 hours",
-                                          updateTime: "3 mins ago",
-                                          content: "In the past 3 hours, You have received 1 invitation from Grant about your upcoming trip, 1 reply from Alice about your car rental project, 1 email from your instructor Dr. Bieler discussing your essay topics.",
-                                          highlightedPeople: [
-                                            {name: "Grant", context: "invitation"},
-                                            {name: "Alice", context: "car rental project"},
-                                            {name: "Dr. Bieler", context: "essay topics"}
-                                          ]
-                                        },
-                                        statsData = {
-                                          timeRange: "3 hours",
-                                          essentialCount: 39,
-                                          essentialPercentage: 13.9,
-                                          nonEssentialCount: 69,
-                                          nonEssentialPercentage: 22.8
-                                        },
-                                        onBatchAction
-                                      }: {
-  summaryData?: EmailSummaryData,
-  statsData?: MessageStatsData,
+  onBatchAction
+}: {
   onBatchAction?: () => void
 }) {
   const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [report, setReport] = useState<Report | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Helper functions to calculate stats from report
+  function calculateEssentialCount(content: ReportModel): number {
+    let count = 0;
+    if (content.content && content.content.gmail) {
+      content.content.gmail.forEach((account: MailMessagesByAccount) => {
+        count += account.messages.filter((msg: MailReportItem) => msg.category === "Essential").length;
+      });
+    }
+    if (content.content && content.content.outlook) {
+      content.content.outlook.forEach((account: MailMessagesByAccount) => {
+        count += account.messages.filter((msg: MailReportItem) => msg.category === "Essential").length;
+      });
+    }
+    return count;
+  }
+
+  function calculateNonEssentialCount(content: ReportModel): number {
+    let count = 0;
+    if (content.content && content.content.gmail) {
+      content.content.gmail.forEach((account: MailMessagesByAccount) => {
+        count += account.messages.filter((msg: MailReportItem) => msg.category === "NonEssential").length;
+      });
+    }
+    if (content.content && content.content.outlook) {
+      content.content.outlook.forEach((account: MailMessagesByAccount) => {
+        count += account.messages.filter((msg: MailReportItem) => msg.category === "NonEssential").length;
+      });
+    }
+    return count;
+  }
+
+  function calculateEssentialPercentage(content: ReportModel): number {
+    const essential = calculateEssentialCount(content);
+    const total = essential + calculateNonEssentialCount(content);
+    return total > 0 ? Math.round((essential / total) * 100) : 0;
+  }
+
+  function calculateNonEssentialPercentage(content: ReportModel): number {
+    const nonEssential = calculateNonEssentialCount(content);
+    const total = nonEssential + calculateEssentialCount(content);
+    return total > 0 ? Math.round((nonEssential / total) * 100) : 0;
+  }
+
+  // Determine which email providers are present in the report
+  const hasGmail = report?.content?.content?.gmail && report?.content?.content?.gmail.length > 0;
+  const hasOutlook = report?.content?.content?.outlook && report?.content?.content?.outlook.length > 0;
+
+  // Generate report summary from real data
+  const reportSummaryData = report ? {
+    title: "Email Summary Report",
+    updateTime: new Date(report.created_at).toLocaleString(),
+    content: report.content.summary.map(rt => rt.plain_text).join(" "),
+    highlightedPeople: report.content.summary
+      .filter(rt => rt.type === "email" && rt.email)
+      .map(rt => ({
+        name: rt.email?.name || "",
+        context: ""
+      }))
+  } : null;
+
+  // Generate stats from real data
+  const reportStatsData = report ? {
+    timeRange: "Latest Report",
+    essentialCount: calculateEssentialCount(report.content),
+    essentialPercentage: calculateEssentialPercentage(report.content),
+    nonEssentialCount: calculateNonEssentialCount(report.content),
+    nonEssentialPercentage: calculateNonEssentialPercentage(report.content)
+  } : null;
+
+  const fetchReport = () => {
+    if (reportLoading) {
+      return;
+    }
+    setReportLoading(true);
+    setReportError(null);
+    getNewestReport()
+      .then((response) => {
+        if (response.data && response.data.report) {
+          setReport(response.data.report);
+          console.log("Report fetched:", response.data.report);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching report:", error);
+        setReportError("Failed to load report data");
+      })
+      .finally(() => {
+        setReportLoading(false);
+      });
+  };
+
+  const handleGenerateReport = () => {
+    if (isGenerating) {
+      return;
+    }
+    setIsGenerating(true);
+    setReportError(null);
+
+    generateReport()
+      .then((response) => {
+        console.log("Report generation started:", response);
+        // After generating, fetch the newest report to display it
+        fetchReport();
+      })
+      .catch((error) => {
+        console.error("Error generating report:", error);
+        setReportError("Failed to generate new report");
+      })
+      .finally(() => {
+        setIsGenerating(false);
+      });
+  };
 
   useEffect(() => {
-
+    fetchReport();
   }, []);
 
   // Function to highlight names
@@ -84,67 +204,127 @@ export function EmailSummaryWithStats({
     }
   };
 
-  // Personalize title if user data is available
-  const personalizedTitle = user && user.name
-    ? summaryData.title.replace("You received", `${user.name} received`)
-    : summaryData.title;
+  // Render appropriate email provider icons
+  const renderEmailProviderIcons = () => {
+    if (!report || (!hasGmail && !hasOutlook)) {
+      return <Mail className="h-4 w-4 text-gray-400"/>;
+    }
 
-  // Personalize content if user data is available
-  const personalizedContent = user && user.name
-    ? summaryData.content.replace("You have received", `${user.name} has received`)
-    : summaryData.content;
-
-  const userSummaryData = {
-    ...summaryData,
-    title: personalizedTitle,
-    content: personalizedContent
+    return (
+      <div className="flex gap-1">
+        {hasGmail && (
+          <div className="relative h-5 w-5" title="Gmail">
+            <GmailIcon className="h-5 w-5" />
+          </div>
+        )}
+        {hasOutlook && (
+          <div className="relative h-5 w-5" title="Outlook">
+            <OutlookIcon className="h-5 w-5" />
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <Card className="bg-slate-200/50">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="emphasis" size="md">Summary</Badge>
-        <Badge variant="secondary" size="md">Updated {summaryData.updateTime}</Badge>
-        <Mail className="ml-auto h-4 w-4 text-gray-400"/>
+        {report ? (
+          <Badge variant="secondary" size="md">
+            Updated {new Date(report.created_at).toLocaleString()}
+          </Badge>
+        ) : reportLoading ? (
+          <Skeleton className="h-6 w-32" />
+        ) : (
+          <Badge variant="secondary" size="md">No data available</Badge>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={fetchReport}
+            disabled={reportLoading || isGenerating}
+            title="Refresh report"
+          >
+            <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`} />
+            <span className="sr-only">Refresh</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={handleGenerateReport}
+            disabled={isGenerating || reportLoading}
+            title="Generate new report"
+          >
+            <PlusCircle className={`h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
+            <span className="sr-only">Generate New Report</span>
+          </Button>
+          {renderEmailProviderIcons()}
+        </div>
       </CardHeader>
       <div>
-        {/*{loading ? (*/}
-        {/*  <CardContent>*/}
-        {/*    <p className="text-gray-500">Loading user data...</p>*/}
-        {/*  </CardContent>*/}
-        {/*) : (*/}
-          <div className="flex flex-col lg:flex-row flex-wrap gap-4">
-            {/* User Info (if available) */}
-            {user && (
-              <CardContent className="w-full">
-                <div className="flex items-center gap-3">
-                  {user.image && (
-                    <img
-                      src={user.image}
-                      alt={user.name || "User"}
-                      className="h-10 w-10 rounded-full"
-                    />
-                  )}
-                  <div>
-                    <p className="font-medium">{user.name || "Guest User"}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                </div>
-              </CardContent>
-            )}
-
-            {/* Email Summary */}
-            <CardContent className="flex-1 min-w-[300px] lg:min-w-[420px] space-y-4 lg:w-3/5 ">
-              <h3 className="font-medium text-gray-900">
-                {userSummaryData.title}
-              </h3>
-              <div className="px-3 py-3 bg-slate-50/70 rounded-md">
-                {renderHighlightedContent(userSummaryData.content, summaryData.highlightedPeople)}
+        <div className="flex flex-col lg:flex-row flex-wrap gap-4">
+          {/* Email Summary */}
+          <CardContent className="flex-1 min-w-[300px] lg:min-w-[420px] space-y-4 lg:w-3/5 ">
+            {reportLoading || isGenerating ? (
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-64" />
+                <Skeleton className="h-24 w-full" />
+                {isGenerating && (
+                  <p className="text-xs text-blue-600">Generating new report...</p>
+                )}
               </div>
-            </CardContent>
+            ) : reportError ? (
+              <div className="px-3 py-3 bg-red-50 text-red-800 rounded-md">
+                <p className="text-sm">{reportError}</p>
+                <div className="flex gap-2 mt-2">
+                  <Button variant="outline" size="sm" onClick={fetchReport}>
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            ) : report && reportSummaryData ? (
+              <>
+                <h3 className="font-medium text-gray-900">{reportSummaryData.title}</h3>
+                <div className="px-3 py-3 bg-slate-50/70 rounded-md">
+                  {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
+                </div>
+                {/* Display provider information if available */}
+                {(hasGmail || hasOutlook) && (
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span>Data sources:</span>
+                    {hasGmail && (
+                      <span className="flex items-center gap-1">
+                        <GmailIcon className="h-3 w-3" />
+                        Gmail
+                      </span>
+                    )}
+                    {hasOutlook && (
+                      <span className="flex items-center gap-1">
+                        <OutlookIcon className="h-3 w-3" />
+                        Outlook
+                      </span>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="px-3 py-3 bg-slate-50/70 rounded-md">
+                <p className="text-sm text-gray-600">No report data available. Click the + button generate a new report for testing.</p>
+              </div>
+            )}
+          </CardContent>
 
-            {/* Message Stats Statistics */}
-            <CardContent className="flex-1 min-w-[300px] lg:min-w-[400px] lg:w-2/5">
+          {/* Message Stats Statistics */}
+          <CardContent className="flex-1 min-w-[300px] lg:min-w-[400px] lg:w-2/5">
+            {reportLoading || isGenerating ? (
+              <div className="flex justify-center">
+                <Skeleton className="h-40 w-40 rounded-full" />
+              </div>
+            ) : report && reportStatsData ? (
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 <div className="relative h-40 w-40">
                   <svg className="h-full w-full" viewBox="0 0 36 36">
@@ -166,7 +346,7 @@ export function EmailSummaryWithStats({
                       fill="none"
                       stroke="#94e9b8"
                       strokeWidth="4"
-                      strokeDasharray={`${statsData.essentialPercentage} 100`}
+                      strokeDasharray={`${reportStatsData.essentialPercentage} 100`}
                       transform="rotate(-90 18 18)"
                     />
                   </svg>
@@ -174,24 +354,40 @@ export function EmailSummaryWithStats({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-[#92bfff]"/>
-                    <span className="text-sm text-gray-600">Essential ({statsData.essentialCount})</span>
-                    <span className="ml-auto text-sm font-medium">{statsData.essentialPercentage}%</span>
+                    <span className="text-sm text-gray-600">
+                      Essential ({reportStatsData.essentialCount})
+                    </span>
+                    <span className="ml-auto text-sm font-medium">
+                      {reportStatsData.essentialPercentage}%
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-[#94e9b8]"/>
-                    <span className="text-sm text-gray-600">Non-essential ({statsData.nonEssentialCount})</span>
-                    <span className="ml-auto text-sm font-medium">{statsData.nonEssentialPercentage}%</span>
+                    <span className="text-sm text-gray-600">
+                      Non-essential ({reportStatsData.nonEssentialCount})
+                    </span>
+                    <span className="ml-auto text-sm font-medium">
+                      {reportStatsData.nonEssentialPercentage}%
+                    </span>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </div>
-        {/*)}*/}
+            ) : (
+              <div className="flex justify-center items-center h-40">
+                <p className="text-sm text-gray-500">No statistics available</p>
+              </div>
+            )}
+          </CardContent>
+        </div>
 
         {/* Button Section */}
         <CardContent>
           <div className="pt-3 flex justify-center sm:justify-start">
-            <Button variant="default" onClick={handleBatchAction}>
+            <Button
+              variant="default"
+              onClick={handleBatchAction}
+              disabled={!report || reportLoading || isGenerating}
+            >
               Quick Batch Actions
             </Button>
           </div>
@@ -201,28 +397,57 @@ export function EmailSummaryWithStats({
   );
 }
 
-export function EmailSummaryHistory(
-  {
-    summaryData = {
-      title: "You received 3 Essential Emails in the Past 3 hours",
-      updateTime: "3 mins ago",
-      content: "In the past 3 hours, You have received 1 invitation from Grant about your upcoming trip, 1 reply from Alice about your car rental project, 1 email from your instructor Dr. Bieler discussing your essay topics.",
-      highlightedPeople: [
-        {name: "Grant", context: "invitation"},
-        {name: "Alice", context: "car rental project"},
-        {name: "Dr. Bieler", context: "essay topics"}
-      ]
-    },
-    onCheckLastReport
-  }: {
-    summaryData?: EmailSummaryData,
-    onCheckLastReport?: () => void
-  }) {
+export function EmailSummaryHistory({
+  onCheckLastReport
+}: {
+  onCheckLastReport?: () => void
+}) {
   const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [report, setReport] = useState<Report | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+
+  // Determine which email providers are present in the report
+  const hasGmail = report?.content?.content?.gmail && report?.content?.content?.gmail.length > 0;
+  const hasOutlook = report?.content?.content?.outlook && report?.content?.content?.outlook.length > 0;
+
+  // Get data from report if available
+  const reportSummaryData = report ? {
+    title: "Previous Email Report",
+    updateTime: new Date(report.created_at).toLocaleString(),
+    content: report.content.summary.map(rt => rt.plain_text).join(" "),
+    highlightedPeople: report.content.summary
+      .filter(rt => rt.type === "email" && rt.email)
+      .map(rt => ({
+        name: rt.email?.name || "",
+        context: ""
+      }))
+  } : null;
+
+  const fetchHistoryReport = () => {
+    if (reportLoading) {
+      return;
+    }
+    setReportLoading(true);
+    setReportError(null);
+    getNewestReport()
+      .then((response) => {
+        if (response.data && response.data.report) {
+          setReport(response.data.report);
+          console.log("History report fetched:", response.data.report);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching history report:", error);
+        setReportError("Failed to load report history");
+      })
+      .finally(() => {
+        setReportLoading(false);
+      });
+  };
 
   useEffect(() => {
+    fetchHistoryReport();
   }, []);
 
   // Function to highlight names
@@ -246,61 +471,105 @@ export function EmailSummaryHistory(
     }
   };
 
-  // Personalize title if user data is available
-  const personalizedTitle = user && user.name
-    ? summaryData.title.replace("You received", `${user.name} received`)
-    : summaryData.title;
+  // Render appropriate email provider icons
+  const renderEmailProviderIcons = () => {
+    if (!report || (!hasGmail && !hasOutlook)) {
+      return <Mail className="h-4 w-4 text-gray-400"/>;
+    }
 
-  // Personalize content if user data is available
-  const personalizedContent = user && user.name
-    ? summaryData.content.replace("You have received", `${user.name} has received`)
-    : summaryData.content;
-
-  const userSummaryData = {
-    ...summaryData,
-    title: personalizedTitle,
-    content: personalizedContent
+    return (
+      <div className="flex gap-1">
+        {hasGmail && (
+          <div className="relative h-5 w-5" title="Gmail">
+            <GmailIcon className="h-5 w-5" />
+          </div>
+        )}
+        {hasOutlook && (
+          <div className="relative h-5 w-5" title="Outlook">
+            <OutlookIcon className="h-5 w-5" />
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <Card className="bg-slate-200/50">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="default" size="md">Summary</Badge>
-        <Badge variant="secondary" size="md">Updated {summaryData.updateTime}</Badge>
-        <Mail className="ml-auto h-4 w-4 text-gray-400"/>
+        {report ? (
+          <Badge variant="secondary" size="md">
+            Updated {new Date(report.created_at).toLocaleString()}
+          </Badge>
+        ) : reportLoading ? (
+          <Skeleton className="h-6 w-32" />
+        ) : (
+          <Badge variant="secondary" size="md">No data available</Badge>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={fetchHistoryReport}
+            disabled={reportLoading}
+          >
+            <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`} />
+            <span className="sr-only">Refresh</span>
+          </Button>
+          {renderEmailProviderIcons()}
+        </div>
       </CardHeader>
       <CardContent className="container space-y-4">
-        {/*{loading ? (*/}
-        {/*  <p className="text-gray-500">Loading user data...</p>*/}
-        {/*) : (*/}
+        {reportLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-64" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        ) : reportError ? (
+          <div className="px-3 py-3 bg-red-50 text-red-800 rounded-md">
+            <p className="text-sm">{reportError}</p>
+            <Button variant="outline" size="sm" className="mt-2" onClick={fetchHistoryReport}>
+              Try Again
+            </Button>
+          </div>
+        ) : report && reportSummaryData ? (
           <>
-            {/* User Info (if available) */}
-            {user && (
-              <div className="flex items-center gap-3 mb-4">
-                {user.image && (
-                  <img
-                    src={user.image}
-                    alt={user.name || "User"}
-                    className="h-10 w-10 rounded-full"
-                  />
+            <h3 className="font-medium text-gray-900">{reportSummaryData.title}</h3>
+            <div className="px-2 py-2 bg-slate-50/80 rounded-md">
+              {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
+            </div>
+            {/* Display provider information if available */}
+            {(hasGmail || hasOutlook) && (
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span>Data sources:</span>
+                {hasGmail && (
+                  <span className="flex items-center gap-1">
+                    <GmailIcon className="h-3 w-3" />
+                    Gmail
+                  </span>
                 )}
-                <div>
-                  <p className="font-medium">{user.name || "Guest User"}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                </div>
+                {hasOutlook && (
+                  <span className="flex items-center gap-1">
+                    <OutlookIcon className="h-3 w-3" />
+                    Outlook
+                  </span>
+                )}
               </div>
             )}
-
-            <h3 className="font-medium text-gray-900">
-              {userSummaryData.title}
-            </h3>
-            <div className="px-2 py-2 bg-slate-50/80 rounded-md">
-              {renderHighlightedContent(userSummaryData.content, summaryData.highlightedPeople)}
-            </div>
           </>
-        {/*)}*/}
+        ) : (
+          <div className="px-2 py-2 bg-slate-50/80 rounded-md">
+            <p className="text-sm text-gray-600">No report history available. Click refresh to check for reports.</p>
+          </div>
+        )}
         <div className="pt-3">
-          <Button variant="outline" className="ml-auto" onClick={handleCheckLastReport}>
+          <Button
+            variant="outline"
+            className="ml-auto"
+            onClick={handleCheckLastReport}
+            disabled={!report || reportLoading}
+          >
             Check Last Report
           </Button>
         </div>
