@@ -23,11 +23,10 @@ import {oauthRedirect} from "@/app/actions/oauth";
 import {cn} from "@/lib/utils";
 import { useSearchParams } from "next/navigation"
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialog, AlertDialogAction,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 
 interface SidebarLinkProps {
@@ -86,7 +85,6 @@ export default function DashboardPage() {
     })
   }
 
-  // Fix by adding dependency array
   useEffect(() => {
     fetchTrackingStatus()
   }, []);
@@ -194,7 +192,7 @@ export default function DashboardPage() {
         {/* Message Tracking Status Section */}
         <div className="container p-5 mx-auto">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h2 className="text-xl font-semibold">Message Processing Status</h2>
+            <h2 className="text-xl font-semibold mb-4">Message Processing Status</h2>
 
             {/* Per-Email Tracking Status */}
             <div className="space-y-4">

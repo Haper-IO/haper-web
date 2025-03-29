@@ -108,11 +108,11 @@ export function EmailSummaryWithStats({
         <Mail className="ml-auto h-4 w-4 text-gray-400"/>
       </CardHeader>
       <div>
-        {loading ? (
-          <CardContent>
-            <p className="text-gray-500">Loading user data...</p>
-          </CardContent>
-        ) : (
+        {/*{loading ? (*/}
+        {/*  <CardContent>*/}
+        {/*    <p className="text-gray-500">Loading user data...</p>*/}
+        {/*  </CardContent>*/}
+        {/*) : (*/}
           <div className="flex flex-col lg:flex-row flex-wrap gap-4">
             {/* User Info (if available) */}
             {user && (
@@ -186,7 +186,7 @@ export function EmailSummaryWithStats({
               </div>
             </CardContent>
           </div>
-        )}
+        {/*)}*/}
 
         {/* Button Section */}
         <CardContent>
@@ -270,9 +270,9 @@ export function EmailSummaryHistory(
         <Mail className="ml-auto h-4 w-4 text-gray-400"/>
       </CardHeader>
       <CardContent className="container space-y-4">
-        {loading ? (
-          <p className="text-gray-500">Loading user data...</p>
-        ) : (
+        {/*{loading ? (*/}
+        {/*  <p className="text-gray-500">Loading user data...</p>*/}
+        {/*) : (*/}
           <>
             {/* User Info (if available) */}
             {user && (
@@ -298,7 +298,7 @@ export function EmailSummaryHistory(
               {renderHighlightedContent(userSummaryData.content, summaryData.highlightedPeople)}
             </div>
           </>
-        )}
+        {/*)}*/}
         <div className="pt-3">
           <Button variant="outline" className="ml-auto" onClick={handleCheckLastReport}>
             Check Last Report

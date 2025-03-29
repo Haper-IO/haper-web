@@ -1,8 +1,58 @@
 import { reqHandler } from "@/lib/requests/client/base";
 
+// Rich Text Related Interfaces
+interface Annotation {
+  bold: boolean;
+}
+
+interface TextContent {
+  content: string;
+}
+
+interface EmailContent {
+  name: string;
+  address: string;
+}
+
+interface RichText {
+  type: "text" | "email";
+  text?: TextContent;
+  email?: EmailContent;
+  annotations: Annotation;
+  plain_text: string;
+}
+
+// Report Related Interfaces
+interface MailReportItem {
+  id: number;
+  message_id: string;
+  thread_id: string;
+  received_at: string;
+  sender: string;
+  subject: string;
+  summary: string;
+  category: "Essential" | "NonEssential";
+  tags: string[];
+  action: "Read" | "Delete" | "Reply" | "Ignore";
+  action_result: "Success" | "Error" | null;
+}
+
 export interface ReportModel {
-  // You'll need to define the content structure based on your needs
-  [key: string]: any;
+  messages_in_queue: Record<string, number>;  // Fixed from list<string, number>
+  summary: RichText[];
+  content: ReportContent;
+}
+
+interface ReportContent {
+  content_source: string[];
+  gmail: MailMessagesByAccount[];
+  outlook: MailMessagesByAccount[];
+}
+
+interface MailMessagesByAccount {
+  account_id: string;
+  email: string;
+  messages: MailReportItem[];
 }
 
 export interface Report {
@@ -64,7 +114,7 @@ export const getReportProcessingStatus = async (reportId: string) => {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to get processing status');
   }
@@ -88,7 +138,7 @@ export const getBatchActionStatus = async (reportId: string) => {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to get batch action status');
   }
@@ -115,7 +165,7 @@ export const generateReply = async (reportId: string, request: GenerateReplyRequ
     },
     body: JSON.stringify(request)
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to generate reply');
   }
