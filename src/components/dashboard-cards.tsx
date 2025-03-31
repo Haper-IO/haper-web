@@ -8,6 +8,104 @@ import { getNewestReport, generateReport, Report, ReportModel } from "@/lib/requ
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 
+const mockReportResponse = {
+  "report": {
+      "content": {
+          "content": {
+              "content_sources": [
+                  "gmail"
+              ],
+              "gmail": [
+                  {
+                      "account_id": "9b5f44cc-af57-4c59-ac53-b4e5a94907cc",
+                      "email": "kaigezhengzz@gmail.com",
+                      "messages": [
+                          {
+                              "action": "Read",
+                              "action_result": null,
+                              "category": "Essential",
+                              "id": 0,
+                              "message_id": "195ee6ac5c01b870",
+                              "receive_at": "2025-03-31T22:55:18+00:00",
+                              "sender": "Kaige Zheng <phantomgran@gmail.com>",
+                              "subject": "Fwd: Talk about Travel Plan for next week",
+                              "summary": "Billy reminds Kaige about their upcoming travel plan with Dr. Bieler, emphasizing the need to schedule the flight and requesting a password number by tomorrow, stressing its urgency.",
+                              "tags": [
+                                  "Travel",
+                                  "Urgent",
+                                  "Planning",
+                                  "Request",
+                                  "Communication"
+                              ],
+                              "thread_id": "195ee5cac52ce2c4"
+                          },
+                          {
+                              "action": "Read",
+                              "action_result": null,
+                              "category": "Essential",
+                              "id": 0,
+                              "message_id": "195ee6b39f055ff1",
+                              "receive_at": "2025-03-31T22:55:47+00:00",
+                              "sender": "Grant Z <phantomgran1@gmail.com>",
+                              "subject": "Fwd: Please fix the direction in your thesis proposal",
+                              "summary": "Grant emphasizes the need for Kaige to adhere to the specified direction in their thesis proposal, focusing on niobium heat treatment topics and requests feedback by tomorrow.",
+                              "tags": [
+                                  "Thesis",
+                                  "Direction",
+                                  "Niobium",
+                                  "Heat Treatment",
+                                  "Urgent"
+                              ],
+                              "thread_id": "195ee58f9ffaee48"
+                          }
+                      ]
+                  }
+              ]
+          },
+          "messages_in_queue": {
+              "gmail": 0
+          },
+          "summary": [
+              {
+                  "text": {
+                      "content": "You have received 1 email from "
+                  },
+                  "type": "text"
+              },
+              {
+                  "email": {
+                      "address": "phantomgran@gmail.com",
+                      "name": "Kaige Zheng"
+                  },
+                  "type": "email"
+              },
+              {
+                  "text": {
+                      "content": " regarding the travel plan for next week, where Billy reminds Kaige about scheduling the flight and requests a password number by tomorrow, stressing its urgency. Additionally, you have received 1 email from "
+                  },
+                  "type": "text"
+              },
+              {
+                  "email": {
+                      "address": "phantomgran1@gmail.com",
+                      "name": "Grant Z"
+                  },
+                  "type": "email"
+              },
+              {
+                  "text": {
+                      "content": " regarding the thesis proposal, emphasizing the need to adhere to the specified direction on niobium heat treatment topics and requesting feedback by tomorrow."
+                  },
+                  "type": "text"
+              }
+          ]
+      },
+      "created_at": "Mon, 31 Mar 2025 22:40:45 GMT",
+      "finalized_at": null,
+      "id": "a402561c-b584-4c31-827b-f00c4578dec0"
+  }
+}
+
 // Import additional interfaces from report.ts
 interface MailReportItem {
   id: number;
@@ -117,7 +215,14 @@ export function EmailSummaryWithStats({
   const reportSummaryData = report ? {
     title: "Email Summary Report",
     updateTime: new Date(report.created_at).toLocaleString(),
-    content: report.content.summary.map(rt => rt.plain_text).join(" "),
+    content: report.content.summary.map(item => {
+      if (item.type === "text" && item.text?.content) {
+        return item.text.content;
+      } else if (item.type === "email" && item.email?.name) {
+        return item.email.name;
+      }
+      return "";
+    }).join(""),
     highlightedPeople: report.content.summary
       .filter(rt => rt.type === "email" && rt.email)
       .map(rt => ({
@@ -172,7 +277,7 @@ export function EmailSummaryWithStats({
       })
       .catch((error) => {
         console.error("Error generating report:", error);
-        setReportError("Failed to generate new report");
+        setReportError(error.message);
       })
       .finally(() => {
         setIsGenerating(false);
@@ -187,13 +292,14 @@ export function EmailSummaryWithStats({
   const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
     let result = content;
     highlights.forEach(person => {
+      const regex = new RegExp(person.name, 'g');
       result = result.replace(
-        person.name,
-        `<span class="text-lime-600">${person.name}</span>`
+        regex,
+        `<span class="text-lime-600 font-medium">${person.name}</span>`
       );
     });
 
-    return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{__html: result}}/>;
+    return <p className="text-sm text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{__html: result}}/>;
   };
 
   const handleBatchAction = () => {
@@ -299,13 +405,11 @@ export function EmailSummaryWithStats({
                     {hasGmail && (
                       <span className="flex items-center gap-1">
                         <GmailIcon className="h-3 w-3" />
-                        Gmail
                       </span>
                     )}
                     {hasOutlook && (
                       <span className="flex items-center gap-1">
                         <OutlookIcon className="h-3 w-3" />
-                        Outlook
                       </span>
                     )}
                   </div>
@@ -412,16 +516,22 @@ export function EmailSummaryHistory({
   const hasOutlook = report?.content?.content?.outlook && report?.content?.content?.outlook.length > 0;
 
   // Get data from report if available
-  const reportSummaryData = report ? {
+  const mockReport = mockReportResponse.report;
+  const reportSummaryData = mockReport ? {
     title: "Previous Email Report",
-    updateTime: new Date(report.created_at).toLocaleString(),
-    content: report.content.summary.map(rt => rt.plain_text).join(" "),
-    highlightedPeople: report.content.summary
-      .filter(rt => rt.type === "email" && rt.email)
-      .map(rt => ({
-        name: rt.email?.name || "",
-        context: ""
-      }))
+    updateTime: new Date(mockReport.created_at).toLocaleString(),
+    content: mockReport.content.summary.map((item, index) => {
+          if (item.type === 'text' && item.text) {
+            return <span key={index}>{item.text.content}</span>;
+          } else if (item.type === 'email' && item.email) {
+            return (
+              <span key={index} className="font-medium text-lime-600">
+                {item.email.name}
+              </span>
+            );
+          }
+          return null;
+        })
   } : null;
 
   const fetchHistoryReport = () => {
@@ -450,18 +560,18 @@ export function EmailSummaryHistory({
     fetchHistoryReport();
   }, []);
 
-  // Function to highlight names
-  const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
-    let result = content;
-    highlights.forEach(person => {
-      result = result.replace(
-        person.name,
-        `<span class="text-lime-600">${person.name}</span>`
-      );
-    });
+  // // Function to highlight names
+  // const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
+  //   let result = content;
+  //   highlights.forEach(person => {
+  //     result = result.replace(
+  //       person.name,
+  //       `<span class="text-lime-600">${person.name}</span>`
+  //     );
+  //   });
 
-    return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{__html: result}}/>;
-  };
+  //   return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{__html: result}}/>;
+  // };
 
   const handleCheckLastReport = () => {
     if (onCheckLastReport) {
@@ -497,9 +607,9 @@ export function EmailSummaryHistory({
     <Card className="bg-slate-200/50">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="default" size="md">Summary</Badge>
-        {report ? (
+        {mockReport ? (
           <Badge variant="secondary" size="md">
-            Updated {new Date(report.created_at).toLocaleString()}
+            Updated {new Date(mockReport.created_at).toLocaleString()}
           </Badge>
         ) : reportLoading ? (
           <Skeleton className="h-6 w-32" />
@@ -533,11 +643,12 @@ export function EmailSummaryHistory({
               Try Again
             </Button>
           </div>
-        ) : report && reportSummaryData ? (
+        ) : mockReport && reportSummaryData ? (
           <>
             <h3 className="font-medium text-gray-900">{reportSummaryData.title}</h3>
             <div className="px-2 py-2 bg-slate-50/80 rounded-md">
-              {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
+              {/*reportSummaryData.content*/}
+              {reportSummaryData.content}
             </div>
             {/* Display provider information if available */}
             {(hasGmail || hasOutlook) && (
