@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  User,
 } from "lucide-react"
 import Link from "next/link"
 import React, {useState, useEffect} from "react"
@@ -39,20 +40,63 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { getReportHistory } from "@/lib/requests/client/report";
+
+// Add custom scrollbar styles
+const SCROLLBAR_STYLES = `
+  /* For Webkit browsers (Chrome, Safari) */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #e2e8f0;
+    border-radius: 20px;
+  }
+  
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 transparent;
+  }
+`;
+
+// Create a type for categorized reports
+type ReportGroup = {
+  date: string;
+  reports: {
+    id: string;
+    title: string;
+    time: string;
+    created_at: string;
+    status?: "processing" | "completed" | "error";
+  }[];
+};
 
 interface SidebarLinkProps {
   href: string
   icon: LucideIcon
   children: React.ReactNode
+  active?: boolean
 }
 
-const SidebarLink = ({href, icon: Icon, children}: SidebarLinkProps) => (
+const SidebarLink = ({href, icon: Icon, children, active = false}: SidebarLinkProps) => (
   <Link
     href={href}
-    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md group transition-colors"
+    className={`flex items-center gap-2 px-2 py-1.5 text-xs ${active ? 'text-slate-900 bg-slate-100 font-medium' : 'text-slate-600'} hover:bg-slate-100 rounded-sm transition-colors`}
   >
-    <Icon className="h-4 w-4 text-gray-500 group-hover:text-gray-900"/>
-    <span className="group-hover:text-gray-900">{children}</span>
+    <Icon className={`h-3.5 w-3.5 ${active ? 'text-slate-900' : 'text-slate-500'}`}/>
+    <span>{children}</span>
   </Link>
 )
 
@@ -79,6 +123,218 @@ const getRunningProviders = (trackingStatuses: Record<string, TrackingStatus[]>)
   return running;
 };
 
+// Enhanced Sidebar Component with report history and user profile
+function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
+  const [reportGroups, setReportGroups] = useState<ReportGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { userInfo, loading: userLoading } = useUserInfo();
+  
+  useEffect(() => {
+    const fetchReportHistory = async () => {
+      try {
+        setLoading(true);
+        // Fetch a reasonable number of reports
+        const response = await getReportHistory(1, 20);
+        
+        if (response.reports && response.reports.length > 0) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          
+          const weekAgo = new Date(today);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          
+          // Group reports by date categories
+          const todayReports: ReportGroup["reports"] = [];
+          const yesterdayReports: ReportGroup["reports"] = [];
+          const weekReports: ReportGroup["reports"] = [];
+          
+          response.reports.forEach(report => {
+            const reportDate = new Date(report.created_at);
+            reportDate.setHours(0, 0, 0, 0);
+            
+            const formattedTime = new Date(report.created_at).toLocaleString('en-US', {
+              hour: 'numeric',
+              minute: 'numeric',
+              hour12: true
+            });
+            
+            // Generate a title from the summary or use a default
+            let title = `Report ${report.id.slice(0, 6)}`;
+            if (report.content && report.content.summary && report.content.summary.length > 0) {
+              const summaryText = report.content.summary
+                .filter(item => item.type === "text" && item.text?.content)
+                .map(item => item.text?.content)
+                .join(" ");
+              
+              if (summaryText) {
+                title = summaryText.slice(0, 24) + (summaryText.length > 24 ? "..." : "");
+              }
+            }
+
+            // Simulate a status for demo purposes
+            const status = Math.random() > 0.8 ? "processing" : "completed";
+            
+            const reportItem = {
+              id: report.id,
+              title: title,
+              time: formattedTime,
+              created_at: report.created_at,
+              status: status as "processing" | "completed" | "error"
+            };
+            
+            // Add to appropriate category
+            if (reportDate.getTime() === today.getTime()) {
+              todayReports.push(reportItem);
+            } else if (reportDate.getTime() === yesterday.getTime()) {
+              yesterdayReports.push(reportItem);
+            } else if (reportDate.getTime() >= weekAgo.getTime()) {
+              weekReports.push(reportItem);
+            }
+          });
+          
+          // Sort reports by time (newest first)
+          const sortByDate = (a: { created_at: string }, b: { created_at: string }) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          
+          todayReports.sort(sortByDate);
+          yesterdayReports.sort(sortByDate);
+          weekReports.sort(sortByDate);
+          
+          // Create final groups
+          const groups: ReportGroup[] = [];
+          
+          if (todayReports.length > 0) {
+            groups.push({ date: "Today", reports: todayReports });
+          }
+          
+          if (yesterdayReports.length > 0) {
+            groups.push({ date: "Yesterday", reports: yesterdayReports });
+          }
+          
+          if (weekReports.length > 0) {
+            groups.push({ date: "Previous 7 Days", reports: weekReports });
+          }
+          
+          setReportGroups(groups);
+        }
+      } catch (error) {
+        console.error("Error fetching report history:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchReportHistory();
+  }, []);
+  
+  return (
+    <aside
+      className={`fixed top-[61px] left-0 bottom-0 w-56 border-r bg-slate-50/80 transition-transform duration-300 z-10 ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      } hidden md:block`}
+    >
+      <div className="flex flex-col h-full">
+        {/* Menu section */}
+        <div className="px-2 py-3 border-b border-slate-200">
+          <div className="mb-2 px-2">
+            <p className="text-xs font-medium text-slate-400 uppercase">Menu</p>
+          </div>
+          <nav className="space-y-1">
+            <SidebarLink href="#" icon={LayoutDashboard} active={true}>
+              Overview
+            </SidebarLink>
+            <SidebarLink href="#" icon={History}>
+              History
+            </SidebarLink>
+          </nav>
+        </div>
+      
+        {/* Reports section */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent px-2 py-3">
+          <div className="mb-2 px-2">
+            <p className="text-xs font-medium text-slate-400 uppercase">Recent Reports</p>
+          </div>
+          {loading ? (
+            <div className="flex justify-center py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            </div>
+          ) : reportGroups.length === 0 ? (
+            <div className="text-xs text-slate-500 text-center py-2">
+              No reports found
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {reportGroups.map((group) => (
+                <Collapsible key={group.date} defaultOpen={group.date === "Today"}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-sm">
+                    <span>{group.date}</span>
+                    <ChevronDown size={14} className="text-slate-500" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-1">
+                    <div className="mt-0.5">
+                      {group.reports.map((report) => (
+                        <Link
+                          key={report.id}
+                          href={`/report/${report.id}`}
+                          className="flex items-start w-full px-2 py-1.5 text-xs text-left text-slate-700 hover:bg-slate-100 rounded-sm"
+                        >
+                          <div className="w-full overflow-hidden pr-1">
+                            <div className="flex items-center gap-1">
+                              <p className="font-medium truncate text-slate-700">
+                                {report.title}
+                              </p>
+                              {report.status === "processing" && (
+                                <span className="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded-sm text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                  <Loader2 className="animate-spin mr-1 h-2 w-2" />
+                                  processing
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-500 truncate">{report.time}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* User profile button */}
+        <div className="mt-auto border-t border-slate-200 px-2 py-2">
+          <button 
+            onClick={() => window.location.href = '/userprofile'} 
+            className="w-full flex items-center gap-2 px-2 py-2 hover:bg-slate-200/70 transition-colors rounded-md"
+          >
+            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
+              {userLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
+              ) : userInfo?.image ? (
+                <img src={userInfo.image} alt={userInfo.name || 'User'} className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-4 w-4 text-slate-600" />
+              )}
+            </div>
+            <div className="overflow-hidden text-left">
+              <p className="text-xs font-medium text-slate-800 truncate">
+                {userLoading ? 'Loading...' : userInfo?.name || 'User Profile'}
+              </p>
+              <p className="text-[10px] text-slate-500 truncate">
+                {userLoading ? '' : userInfo?.email || 'View profile'}
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [trackingStatuses, setTrackingStatuses] = useState<Record<string/*provider name*/, TrackingStatus[]>>({})
@@ -99,7 +355,8 @@ export default function DashboardPage() {
     setIsFetchingTrackingStatus(true)
     listMessageTrackingStatus().then((resp) => {
       const trackingStatusMap: Record<string, TrackingStatus[]> = {}
-      for (const t of resp.tracking_status) {
+      const trackingStatuses = resp?.data?.tracking_status || [];
+      for (const t of trackingStatuses) {
         const provider = t.provider
         if (!trackingStatusMap[provider]) {
           trackingStatusMap[provider] = []
@@ -184,6 +441,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/10">
+      {/* Add a style tag for custom scrollbar styling */}
+      <style dangerouslySetInnerHTML={{ __html: SCROLLBAR_STYLES }} />
+      
       {searchParams.get("error_msg") && (
         <AlertDialog open={alterOpen} onOpenChange={setAlterOpen}>
           <AlertDialogContent className="bg-white">
@@ -254,26 +514,11 @@ export default function DashboardPage() {
       </header>
 
       {/* Sidebar Navigation */}
-      <aside
-        className={`fixed top-[61px] left-0 bottom-0 w-60 border-r bg-slate-50/75 transition-transform duration-300 z-10 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } hidden md:block`}
-      >
-        <div className="p-5">
-          <nav className="space-y-1">
-            <SidebarLink href="#" icon={LayoutDashboard}>
-              Overview
-            </SidebarLink>
-            <SidebarLink href="#" icon={History}>
-              History
-            </SidebarLink>
-          </nav>
-        </div>
-      </aside>
+      <EnhancedSidebar isOpen={isSidebarOpen} />
 
       {/* Main Content */}
       <section
-        className={cn("min-h-screen pt-[61px] transition-[padding] duration-300", isSidebarOpen ? "md:pl-60" : "md:pl-0")}
+        className={cn("min-h-screen pt-[61px] transition-[padding] duration-300", isSidebarOpen ? "md:pl-56" : "md:pl-0")}
       >
         {/* Message Tracking Status Section */}
         <div className="container p-5 mx-auto">
