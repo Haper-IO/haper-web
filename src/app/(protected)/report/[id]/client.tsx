@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ChevronDownIcon, RefreshCw, PanelLeft, PanelLeftClose, Loader2, X, User } from "lucide-react"
+import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ChevronDownIcon, RefreshCw, PanelLeft, PanelLeftClose, Loader2, X, User, LayoutDashboard } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Collapsible,
@@ -207,6 +207,19 @@ function EnhancedSidebar({
       } hidden md:block`}
     >
       <div className="flex flex-col h-full">
+        {/* Menu section */}
+        <div className="px-2 py-3 border-b border-slate-200">
+          <div className="mb-2 px-2">
+            <p className="text-xs font-medium text-slate-400 uppercase">Menu</p>
+          </div>
+          <nav className="space-y-1">
+            <a href="/dashboard" className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-sm transition-colors">
+              <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
+              <span>Dashboard</span>
+            </a>
+          </nav>
+        </div>
+        
         {/* Main scrollable area for reports */}
         <div className="px-2 py-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
           {loading ? (
