@@ -290,7 +290,7 @@ export default function DashboardPage() {
                         ) : provider === 'microsoft' ? (
                           <OutlookIcon className="h-4 w-4" />
                         ) : null}
-                        <span className="text-slate-700">Tracking {count} Email Now</span>
+                        <span className="text-slate-500 font-medium text-sm">Tracking {count} {count === 1 ? "Email" : "Emails"} Now</span>
                       </span>
                     ))}
                   </span>

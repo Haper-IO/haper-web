@@ -623,7 +623,7 @@ export function LastReport() {
                 {reportStats && reportStats.total > 0 && (
                   <div className="flex flex-col gap-2 text-xs bg-slate-50/70 rounded-md p-3">
                     <div className="font-medium text-slate-700 pb-1 border-b border-slate-200/60">
-                      {reportStats.total} Emails Processed
+                      {reportStats.total} {reportStats.total === 1 ? "Email" : "Emails"} Processed
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-2">
                       <div className="flex items-center gap-1.5">
