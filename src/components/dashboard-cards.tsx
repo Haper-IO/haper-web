@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { generateReport, getNewestReport, getReportHistory, Report } from "@/lib/requests/client/report"
+import { generateReport, getNewestReport, getReportHistory, Report, ReportResponse } from "@/lib/requests/client/report"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {AxiosError} from "axios";
@@ -250,6 +250,20 @@ export function LatestSummary() {
                 <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200 max-w-[800px]">
                   {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
                 </div>
+                {/* Button Section */}
+                <CardContent>
+                  <div className="pt-3 flex justify-center sm:justify-start">
+                    <Button
+                      variant="default"
+                      onClick={() => router.push("/report")}
+                      disabled={!report || reportLoading || isGenerating}
+                      size = "sm"
+                    >
+                      Quick Batch Actions
+                    </Button>
+                  </div>
+                </CardContent>
+
                 {/* Display provider information if available */}
                 {(hasGmail || hasOutlook) && (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -333,25 +347,12 @@ export function LatestSummary() {
                 </div>
               </div>
             ) : (
-              <div className="flex justify-center items-center h-40">
+              <div className="flex items-center">
                 <p className="text-sm text-gray-500">No statistics available</p>
               </div>
             )}
           </CardContent>
         </div>
-
-        {/* Button Section */}
-        <CardContent>
-          <div className="pt-3 flex justify-center sm:justify-start">
-            <Button
-              variant="default"
-              onClick={() => router.push("/report")}
-              disabled={!report || reportLoading || isGenerating}
-            >
-              Quick Batch Actions
-            </Button>
-          </div>
-        </CardContent>
       </div>
     </Card>
   );
