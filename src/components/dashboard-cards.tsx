@@ -8,6 +8,7 @@ import { generateReport, getNewestReport, getReportHistory, Report, ReportRespon
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {AxiosError} from "axios";
+import {router} from "next/client";
 
 export function transToReportSummary(report: Report) {
   if (!report) {
@@ -110,7 +111,6 @@ export function LatestSummary() {
 
     generateReport()
       .then((resp) => {
-        console.log("API response:", resp);
         if (resp?.report) {
           setReport(resp.report);
           console.log("New report generated:", resp.report);
@@ -251,18 +251,16 @@ export function LatestSummary() {
                   {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
                 </div>
                 {/* Button Section */}
-                <CardContent>
                   <div className="pt-3 flex justify-center sm:justify-start">
                     <Button
                       variant="default"
-                      onClick={() => router.push("/report")}
+                      onClick={() => router.push("/report?id=${report.id}")}
                       disabled={!report || reportLoading || isGenerating}
                       size = "sm"
                     >
                       Quick Batch Actions
                     </Button>
                   </div>
-                </CardContent>
 
                 {/* Display provider information if available */}
                 {(hasGmail || hasOutlook) && (
@@ -487,6 +485,7 @@ export function LastReport() {
                   <div className="text-xs text-slate-600 truncate">{msg.subject}</div>
                   <p className="text-xs text-slate-700 mt-1">{msg.summary}</p>
                 </div>
+
               ))
             ).slice(0, 2)}
           </div>
@@ -601,7 +600,11 @@ export function LastReport() {
                 <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200">
                   {latestReport.content?.summary && Array.isArray(latestReport.content.summary) && latestReport.content.summary.length > 0 ? (
                     <p className="text-sm text-slate-800 leading-relaxed">
-                      {latestReport.content.summary.map((item: { type: string; text?: { content: string }; email?: { name: string } }, index: number) => {
+                      {latestReport.content.summary.map((item: {
+                        type: string;
+                        text?: { content: string };
+                        email?: { name: string }
+                      }, index: number) => {
                         if (item.type === 'text' && item.text) {
                           return <span key={index}>{item.text.content}</span>;
                         } else if (item.type === 'email' && item.email) {
@@ -617,6 +620,16 @@ export function LastReport() {
                   ) : (
                     generateContent(latestReport)
                   )}
+                  <div className="pt-3 flex justify-center sm:justify-start">
+                    <Button
+                      variant="secondary"
+                      onClick={() => router.push("/report?id=${report.id}")}
+                      disabled={reportLoading}
+                      size="sm"
+                    >
+                      Check Report
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Display stats below content */}
