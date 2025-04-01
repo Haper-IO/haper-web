@@ -29,6 +29,7 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import {
   Card,
@@ -184,7 +185,7 @@ export default function DashboardPage() {
 
       {/* Start Confirmation Dialog */}
       <AlertDialog open={startDialogOpen} onOpenChange={setStartDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-slate-100">
           <AlertDialogHeader>
             <AlertDialogTitle>Start Message Tracking</AlertDialogTitle>
             <AlertDialogDescription>
@@ -193,6 +194,7 @@ export default function DashboardPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleStartConfirm}>
               Start Tracking
             </AlertDialogAction>
@@ -202,7 +204,7 @@ export default function DashboardPage() {
 
       {/* Stop Confirmation Dialog */}
       <AlertDialog open={stopDialogOpen} onOpenChange={setStopDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-slate-100">
           <AlertDialogHeader>
             <AlertDialogTitle>Stop Message Tracking</AlertDialogTitle>
             <AlertDialogDescription>
@@ -211,6 +213,7 @@ export default function DashboardPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleStopConfirm}>
               Stop Tracking
             </AlertDialogAction>
@@ -324,7 +327,7 @@ export default function DashboardPage() {
                             setStartDialogOpen(true)
                           }}
                           disabled={t.status == "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                          className="flex items-center gap-2 h-8 text-sm"
+                          className="flex items-center gap-2 h-8 text-sm bg-slate-700 hover:bg-slate-800 text-white"
                         >
                           {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
                             <PlayCircle className="h-4 w-4"/>}
@@ -335,9 +338,9 @@ export default function DashboardPage() {
                             setSelectedProvider(t)
                             setStopDialogOpen(true)
                           }}
-                          variant="destructive"
+                          variant="outline"
                           disabled={t.status != "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                          className="flex items-center gap-2 h-8 text-sm"
+                          className="flex items-center gap-2 h-8 text-sm border-slate-300 hover:bg-slate-100 text-slate-700"
                         >
                           {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
                             <StopCircle className="h-4 w-4"/>}
