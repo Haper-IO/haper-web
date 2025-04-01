@@ -4,11 +4,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { generateReport, getNewestReport, getReportHistory, Report, ReportResponse } from "@/lib/requests/client/report"
+import { generateReport, getNewestReport, getReportHistory, Report } from "@/lib/requests/client/report"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
-import {AxiosError} from "axios";
-import {router} from "next/client";
+
 
 export function transToReportSummary(report: Report) {
   if (!report) {
@@ -119,12 +118,14 @@ export function LatestSummary() {
           setReportError("Failed to generate report");
         }
       })
-      .catch((error: AxiosError) => {
+      .catch((error) => {
         console.error("Error generating report:", error);
-        setReportError("You do not receive any messages since last updates, please check later!");
-      }).catch((error) => {
-        console.error("Error generating report:", error);
-        setReportError("Failed to generate report");
+        // Check if it's an API error with a specific status
+        if (error?.response?.status === 404 || error?.response?.status === 400) {
+          setReportError("You do not receive any messages since last updates, please check later!");
+        } else {
+          setReportError("Failed to generate report");
+        }
       })
       .finally(() => {
         setIsGenerating(false);
@@ -254,7 +255,7 @@ export function LatestSummary() {
                   <div className="pt-3 flex justify-center sm:justify-start">
                     <Button
                       variant="default"
-                      onClick={() => router.push("/report?id=${report.id}")}
+                      onClick={() => report && router.push(`/report/${report.id}`)}
                       disabled={!report || reportLoading || isGenerating}
                       size = "sm"
                     >
@@ -357,6 +358,7 @@ export function LatestSummary() {
 }
 
 export function LastReport() {
+  const router = useRouter();
   const [latestReport, setLatestReport] = useState<Report | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
@@ -623,8 +625,8 @@ export function LastReport() {
                   <div className="pt-3 flex justify-center sm:justify-start">
                     <Button
                       variant="secondary"
-                      onClick={() => router.push("/report?id=${report.id}")}
-                      disabled={reportLoading}
+                      onClick={() => latestReport && router.push(`/report/${latestReport.id}`)}
+                      disabled={!latestReport || reportLoading}
                       size="sm"
                     >
                       Check Report
