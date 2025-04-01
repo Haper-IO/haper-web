@@ -16,7 +16,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import React, {useState, useEffect} from "react"
-import {EmailSummaryWithStats, EmailSummaryHistory, LastReport} from "@/components/dashboard-cards"
+import {LatestSummary, LastReport} from "@/components/dashboard-cards"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {
   stopMessageTracking,
@@ -410,9 +410,8 @@ export default function DashboardPage() {
 
           {/* Keep existing EmailSummaryWithStats and EmailSummaryHistory components */}
           <div className="grid gap-6">
-            <EmailSummaryWithStats/>
+            <LatestSummary/>
             <LastReport/>
-            <EmailSummaryHistory/>
           </div>
         </div>
       </section>
