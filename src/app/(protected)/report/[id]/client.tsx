@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ChevronDownIcon, RefreshCw, PanelLeft, PanelLeftClose, Loader2 } from "lucide-react"
+import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ChevronDownIcon, RefreshCw, PanelLeft, PanelLeftClose, Loader2, X } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Collapsible,
@@ -36,10 +36,16 @@ const SHARED_STYLES = {
 
 type Email = {
   id: string
+  message_id: string
+  thread_id: string
+  receive_at: string
   title: string
   from: string
   content: string
   isEssential: boolean
+  tags: string[]
+  action: "Read" | "Delete" | "Reply" | "Ignore" | null
+  action_result: "Success" | "Error" | null
 }
 
 // Mock data for previous reports (same as in dashboard)
@@ -123,9 +129,41 @@ function EmailItem({
   isEssential: boolean
   showReplyField: boolean
   onMove: (emailId: string, newStatus: boolean) => void
-  onActionSelect: (emailId: string, action: string) => void
+  onActionSelect: (emailId: string, action: "Read" | "Delete" | "Reply" | "Ignore" | null) => void
   setShowReplyField: (show: boolean) => void
 }) {
+  // Function to get action button style
+  const getActionButtonStyle = (action: "Read" | "Delete" | "Reply" | "Ignore") => {
+    switch (action) {
+      case "Read":
+        return "bg-green-100 text-green-700";
+      case "Delete":
+        return "bg-red-100 text-red-700";
+      case "Reply":
+        return "bg-blue-100 text-blue-700";
+      case "Ignore":
+        return "bg-slate-100 text-slate-700";
+      default:
+        return "bg-slate-100 text-slate-700";
+    }
+  };
+
+  // Function to get action icon
+  const getActionIcon = (action: "Read" | "Delete" | "Reply" | "Ignore" | null) => {
+    switch (action) {
+      case "Read":
+        return <Check className="mr-2 h-4 w-4 text-slate-600" />;
+      case "Delete":
+        return <Trash className="mr-2 h-4 w-4 text-red-500" />;
+      case "Reply":
+        return <Reply className="mr-2 h-4 w-4 text-blue-500" />;
+      case "Ignore":
+        return <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/70 shadow-sm hover:shadow transition-shadow">
       <div className="flex justify-between items-start mb-2">
@@ -150,22 +188,56 @@ function EmailItem({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1 text-slate-600 border-slate-200 hover:bg-slate-50 h-7 px-2 text-xs">
-                Actions <ChevronDown className="h-3.5 w-3.5 ml-1" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className={`gap-1 h-7 px-2 text-xs ${
+                  email.action ? getActionButtonStyle(email.action) : "text-slate-600 border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {getActionIcon(email.action)}
+                {email.action || "Actions"} 
+                {email.action_result === null && email.action && (
+                  <span className="ml-1 text-2xs text-slate-500">(pending)</span>
+                )}
+                <ChevronDown className="h-3.5 w-3.5 ml-1" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white border-slate-100 shadow-md">
-              <DropdownMenuItem onClick={() => onActionSelect(email.id, "read")} className="text-slate-700">
+              <DropdownMenuItem 
+                onClick={() => onActionSelect(email.id, "Read")} 
+                className={`${email.action === "Read" ? "bg-slate-50" : ""} text-slate-700`}
+              >
                 <Check className="mr-2 h-4 w-4 text-slate-600" />
                 Mark as Read
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onActionSelect(email.id, "reply")} className="text-slate-700">
+              <DropdownMenuItem 
+                onClick={() => onActionSelect(email.id, "Reply")} 
+                className={`${email.action === "Reply" ? "bg-slate-50" : ""} text-slate-700`}
+              >
                 <Reply className="mr-2 h-4 w-4 text-blue-500" />
                 Reply
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onActionSelect(email.id, "delete")} className="text-slate-700">
+              <DropdownMenuItem 
+                onClick={() => onActionSelect(email.id, "Delete")} 
+                className={`${email.action === "Delete" ? "bg-slate-50" : ""} text-slate-700`}
+              >
                 <Trash className="mr-2 h-4 w-4 text-red-500" />
                 Delete
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onActionSelect(email.id, "Ignore")} 
+                className={`${email.action === "Ignore" ? "bg-slate-50" : ""} text-slate-700`}
+              >
+                <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />
+                Ignore
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onActionSelect(email.id, null)} 
+                className="text-slate-700 border-t border-slate-100 mt-1 pt-1"
+              >
+                <X className="mr-2 h-4 w-4 text-slate-500" />
+                Clear Action
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -179,6 +251,7 @@ function EmailItem({
           <Textarea
             placeholder="Type your reply here..."
             className="mb-2 border-slate-200 focus:border-slate-300 focus:ring-slate-200 text-slate-700 rounded-md resize-none min-h-[80px] text-xs"
+            disabled={email.action_result === "Success"}
           />
           <div className="flex gap-2 justify-end">
             <Button
@@ -192,8 +265,9 @@ function EmailItem({
             <Button
               size="sm"
               className="bg-slate-600 hover:bg-slate-500 text-white h-7 px-3 text-xs"
+              onClick={() => onActionSelect(email.id, "Reply")}
             >
-              Send Reply
+              Set as Reply Action
             </Button>
           </div>
         </div>
@@ -235,17 +309,29 @@ export function ReportClient({ reportId }: { reportId: string }) {
     return [
       {
         id: "1",
+        message_id: "msg-001",
+        thread_id: "thread-001",
+        receive_at: new Date().toISOString(),
         title: "Marketing Newsletter",
         from: "newsletter@company.com",
         content: "This week's marketing updates and campaign performance...",
-        isEssential: false
+        isEssential: false,
+        tags: ["newsletter", "marketing"],
+        action: "Delete",  // This would come from the API
+        action_result: null // Initially null until applied
       },
       {
         id: "2",
+        message_id: "msg-002",
+        thread_id: "thread-002",
+        receive_at: new Date().toISOString(),
         title: "Security Alert",
         from: "security@company.com",
         content: "Important system update required...",
-        isEssential: true
+        isEssential: true,
+        tags: ["security", "important"],
+        action: "Read",  // This would come from the API
+        action_result: null // Initially null until applied
       }
     ];
   });
@@ -263,10 +349,16 @@ export function ReportClient({ reportId }: { reportId: string }) {
         account.messages.forEach(message => {
           allEmails.push({
             id: message.message_id,
+            message_id: message.message_id,
+            thread_id: message.thread_id || message.message_id,
+            receive_at: message.receive_at || new Date().toISOString(),
             title: message.subject,
             from: message.sender,
             content: message.summary,
-            isEssential: message.category === "Essential"
+            isEssential: message.category === "Essential",
+            tags: message.tags || [],
+            action: message.action as "Read" | "Delete" | "Reply" | "Ignore" || null, // Preserve action from API
+            action_result: null // Initially null until applied
           });
         });
       });
@@ -278,10 +370,16 @@ export function ReportClient({ reportId }: { reportId: string }) {
         account.messages.forEach(message => {
           allEmails.push({
             id: message.message_id,
+            message_id: message.message_id,
+            thread_id: message.thread_id || message.message_id,
+            receive_at: message.receive_at || new Date().toISOString(),
             title: message.subject,
             from: message.sender,
             content: message.summary,
-            isEssential: message.category === "Essential"
+            isEssential: message.category === "Essential",
+            tags: message.tags || [],
+            action: message.action as "Read" | "Delete" | "Reply" | "Ignore" || null, // Preserve action from API
+            action_result: null // Initially null until applied
           });
         });
       });
@@ -300,6 +398,20 @@ export function ReportClient({ reportId }: { reportId: string }) {
     }
   };
 
+  // Handle actions on emails (read, reply, delete)
+  const handleActionSelect = (emailId: string, action: "Read" | "Delete" | "Reply" | "Ignore" | null) => {
+    // If action is reply, show the reply field
+    setSelectedEmailId(emailId);
+    setShowReplyField(action === "Reply");
+
+    // Update the email with the selected action (pending state)
+    setEmails(prev => prev.map(email =>
+      email.id === emailId 
+        ? { ...email, action, action_result: null } 
+        : email
+    ));
+  };
+
   // Handle moving emails between essential and non-essential
   const handleMoveEmail = (emailId: string, newStatus: boolean) => {
     setEmails(prev => prev.map(email =>
@@ -307,15 +419,41 @@ export function ReportClient({ reportId }: { reportId: string }) {
     ));
   };
 
-  // Handle actions on emails (read, reply, delete)
-  const handleActionSelect = (emailId: string, action: string) => {
-    setSelectedEmailId(emailId);
-    setShowReplyField(action === "reply");
+  // New function to apply all pending actions
+  const applyAllActions = () => {
+    // Display loading state for all emails with actions
+    setEmails(prev => prev.map(email => 
+      email.action ? { ...email, action_result: null } : email
+    ));
 
-    // Handle other actions like delete
-    if (action === "delete") {
-      setEmails(prev => prev.filter(email => email.id !== emailId));
-    }
+    // Simulate processing time
+    setTimeout(() => {
+      setEmails(prev => {
+        // Create a new array to hold the updated emails
+        const updatedEmails = [...prev];
+        
+        // Process each email with an action
+        prev.forEach((email, index) => {
+          if (email.action) {
+            // 90% chance of success for each action
+            const success = Math.random() > 0.1;
+            updatedEmails[index] = { 
+              ...email, 
+              action_result: success ? "Success" : "Error" 
+            };
+          }
+        });
+        
+        return updatedEmails;
+      });
+
+      // After a delay, remove emails that were successfully deleted
+      setTimeout(() => {
+        setEmails(prev => prev.filter(email => 
+          !(email.action === "Delete" && email.action_result === "Success")
+        ));
+      }, 1000);
+    }, 1500);
   };
 
   const essentialEmails = emails.filter(email => email.isEssential);
@@ -484,6 +622,25 @@ export function ReportClient({ reportId }: { reportId: string }) {
                       )}
                     </CardContent>
                   </TabsContent>
+                  
+                  {/* Apply All Actions button section */}
+                  <div className="px-4 py-3 border-t border-slate-200">
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-slate-600">
+                        {emails.filter(email => email.action && !email.action_result).length > 0 
+                          ? `${emails.filter(email => email.action && !email.action_result).length} suggested actions - click Apply to process`
+                          : "No actions pending"}
+                      </div>
+                      <Button 
+                        size="sm" 
+                        className="bg-slate-600 hover:bg-slate-500 text-white h-7 px-4 text-xs"
+                        onClick={applyAllActions}
+                        disabled={emails.filter(email => email.action && !email.action_result).length === 0}
+                      >
+                        Apply All Actions
+                      </Button>
+                    </div>
+                  </div>
                 </Tabs>
               </Card>
             </div>
