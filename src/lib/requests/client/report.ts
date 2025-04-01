@@ -18,8 +18,8 @@ interface RichText {
   type: "text" | "email";
   text?: TextContent;
   email?: EmailContent;
-  annotations: Annotation;
-  plain_text: string;
+  // annotations: Annotation;
+  // plain_text: string;
 }
 
 // Report Related Interfaces
@@ -27,7 +27,7 @@ interface MailReportItem {
   id: number;
   message_id: string;
   thread_id: string;
-  received_at: string;
+  receive_at: string;
   sender: string;
   subject: string;
   summary: string;
@@ -58,7 +58,7 @@ interface MailMessagesByAccount {
 export interface Report {
   id: string;
   content: ReportModel;
-  status: "Appending" | "Finalized";
+  // status: "Appending" | "Finalized";
   created_at: string;
   finalized_at: string | null;
 }

@@ -10,10 +10,12 @@ import {
   Loader2,
   PlayCircle,
   StopCircle,
+  RefreshCw,
 } from "lucide-react"
 import Link from "next/link"
 import React, {useState, useEffect} from "react"
 import {EmailSummaryWithStats, EmailSummaryHistory} from "@/components/dashboard-cards"
+import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {
   stopMessageTracking,
   listMessageTrackingStatus,
@@ -28,6 +30,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface SidebarLinkProps {
   href: string
@@ -64,6 +72,9 @@ export default function DashboardPage() {
   const [isStartingTracking, setIsStartingTracking] = useState(false)
   const searchParams = useSearchParams()
   const [alterOpen, setAlterOpen] = useState(searchParams.has("error_msg"))
+  const [startDialogOpen, setStartDialogOpen] = useState(false)
+  const [stopDialogOpen, setStopDialogOpen] = useState(false)
+  const [selectedProvider, setSelectedProvider] = useState<TrackingStatus | null>(null)
 
   const fetchTrackingStatus = () => {
     if (isFetchingTrackingStatus) {
@@ -135,6 +146,24 @@ export default function DashboardPage() {
     return statusText[status] || status
   }
 
+  const handleStartConfirm = () => {
+    if (selectedProvider) {
+      if (selectedProvider.account_id) {
+        handleStartTracking(selectedProvider.account_id)
+      } else {
+        handleStartTrackingToOAuth(selectedProvider.provider)
+      }
+      setStartDialogOpen(false)
+    }
+  }
+
+  const handleStopConfirm = () => {
+    if (selectedProvider?.account_id) {
+      handleStopTracking(selectedProvider.account_id)
+      setStopDialogOpen(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50/10">
       {searchParams.get("error_msg") && (
@@ -152,6 +181,43 @@ export default function DashboardPage() {
           </AlertDialogContent>
         </AlertDialog>
       )}
+
+      {/* Start Confirmation Dialog */}
+      <AlertDialog open={startDialogOpen} onOpenChange={setStartDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start Message Tracking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to start tracking messages for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
+              This will begin synchronizing your emails.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleStartConfirm}>
+              Start Tracking
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Stop Confirmation Dialog */}
+      <AlertDialog open={stopDialogOpen} onOpenChange={setStopDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Stop Message Tracking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to stop tracking messages for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
+              This will end the synchronization process.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleStopConfirm}>
+              Stop Tracking
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b">
         <div className="px-5 py-3">
@@ -191,93 +257,106 @@ export default function DashboardPage() {
       >
         {/* Message Tracking Status Section */}
         <div className="container p-5 mx-auto">
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Message Processing Status</h2>
-
-            {/* Per-Email Tracking Status */}
-            <div className="space-y-4">
-              {SupportedProviders.map((provider, index) => {
-                // TODO: support show multiple accounts for the same provider
-                let t: TrackingStatus
-                if (trackingStatuses[provider] && trackingStatuses[provider].length > 0) {
-                  t = trackingStatuses[provider][0]
-                } else {
-                  t = {
-                    account_id: "",
-                    email: "",
-                    provider: provider,
-                    status: "NotStarted",
-                    created_at: null,
-                    updated_at: null,
+          <Card className="bg-slate-200/50 mb-6">
+            <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+              <Badge variant="emphasis" size="md">Status</Badge>
+              <div className="ml-auto">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={fetchTrackingStatus}
+                  disabled={isFetchingTrackingStatus}
+                  title="Refresh status"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isFetchingTrackingStatus ? 'animate-spin' : ''}`}/>
+                  <span className="sr-only">Refresh</span>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {SupportedProviders.map((provider, index) => {
+                  // TODO: support show multiple accounts for the same provider
+                  let t: TrackingStatus
+                  if (trackingStatuses[provider] && trackingStatuses[provider].length > 0) {
+                    t = trackingStatuses[provider][0]
+                  } else {
+                    t = {
+                      account_id: "",
+                      email: "",
+                      provider: provider,
+                      status: "NotStarted",
+                      created_at: null,
+                      updated_at: null,
+                    }
                   }
-                }
-                return (
-                  <div
-                    key={index}
-                    className="flex justify-between border rounded-lg p-4 bg-gray-50"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
+                  return (
+                    <div
+                      key={index}
+                      className={`flex justify-between border rounded-lg p-3 bg-slate-50/70 ${
+                        t.status === "Ongoing" ? "border-lime-200" :
+                          t.status === "Error" ? "border-red-500" :
+                            "border-slate-200"
+                      }`}
+                    >
+                      <div>
                         <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${
-                            t.status === "Ongoing" ? "bg-green-500" :
-                              t.status === "Error" ? "bg-red-500" :
-                                "bg-gray-500"
-                          }`}/>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{getProviderName(t.provider)}</span>
-                            <p className="text-sm text-gray-500">{t.email}</p>
+                            {t.provider === 'google' ? (
+                              <GmailIcon className="h-4 w-4" />
+                            ) : t.provider === 'microsoft' ? (
+                              <OutlookIcon className="h-4 w-4" />
+                            ) : null}
+                            <span className="font-medium text-sm">{getProviderName(t.provider)}</span>
+                            <p className="text-xs text-gray-500">{t.email}</p>
                           </div>
                         </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm mt-3">
-                        <div>
-                          <p className="text-gray-500">Status</p>
-                          <p className="font-medium">{getStatusText(t.status)}</p>
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-500">Status</p>
+                          <p className="text-sm font-medium">{getStatusText(t.status)}</p>
                         </div>
                       </div>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={() => {
+                            setSelectedProvider(t)
+                            setStartDialogOpen(true)
+                          }}
+                          disabled={t.status == "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
+                          className="flex items-center gap-2 h-8 text-sm"
+                        >
+                          {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                            <PlayCircle className="h-4 w-4"/>}
+                          Start
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSelectedProvider(t)
+                            setStopDialogOpen(true)
+                          }}
+                          variant="destructive"
+                          disabled={t.status != "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
+                          className="flex items-center gap-2 h-8 text-sm"
+                        >
+                          {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                            <StopCircle className="h-4 w-4"/>}
+                          Stop
+                        </Button>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Button
-                        onClick={() => {
-                          if (t.account_id) {
-                            handleStartTracking(t.account_id)
-                          } else {
-                            handleStartTrackingToOAuth(t.provider)
-                          }
-                        }}
-                        disabled={t.status == "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                        className="flex items-center gap-2"
-                      >
-                        {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                          <PlayCircle className="h-4 w-4"/>}
-                        Start Synchronization
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          handleStopTracking(t.account_id)
-                        }}
-                        variant="destructive"
-                        disabled={t.status != "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                        className="flex items-center gap-2"
-                      >
-                        {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                          <StopCircle className="h-4 w-4"/>}
-                        End Tracking
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
 
               {isFetchingTrackingStatus && (
-                <div className="text-center py-6">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400"/>
-                  <p className="text-gray-500 mt-2">Loading tracking status...</p>
+                <div className="text-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-gray-400"/>
+                  <p className="text-sm text-gray-500 mt-2">Loading tracking status...</p>
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Keep existing EmailSummaryWithStats and EmailSummaryHistory components */}
           <div className="grid gap-6">

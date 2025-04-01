@@ -1,244 +1,179 @@
-import {Mail, RefreshCw, PlusCircle} from "lucide-react"
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardHeader} from "@/components/ui/card"
-import {Badge} from "@/components/ui/badge"
-import {useRouter} from "next/navigation"
-import {useState, useEffect} from "react"
-import { getNewestReport, generateReport, Report, ReportModel } from "@/lib/requests/client/report"
+import { Mail, RefreshCw, PlusCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { getNewestReport, Report, ReportResponse } from "@/lib/requests/client/report"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 
-const mockReportResponse = {
+const mockReport: ReportResponse = {
   "report": {
+    "content": {
       "content": {
-          "content": {
-              "content_sources": [
-                  "gmail"
-              ],
-              "gmail": [
-                  {
-                      "account_id": "9b5f44cc-af57-4c59-ac53-b4e5a94907cc",
-                      "email": "kaigezhengzz@gmail.com",
-                      "messages": [
-                          {
-                              "action": "Read",
-                              "action_result": null,
-                              "category": "Essential",
-                              "id": 0,
-                              "message_id": "195ee6ac5c01b870",
-                              "receive_at": "2025-03-31T22:55:18+00:00",
-                              "sender": "Kaige Zheng <phantomgran@gmail.com>",
-                              "subject": "Fwd: Talk about Travel Plan for next week",
-                              "summary": "Billy reminds Kaige about their upcoming travel plan with Dr. Bieler, emphasizing the need to schedule the flight and requesting a password number by tomorrow, stressing its urgency.",
-                              "tags": [
-                                  "Travel",
-                                  "Urgent",
-                                  "Planning",
-                                  "Request",
-                                  "Communication"
-                              ],
-                              "thread_id": "195ee5cac52ce2c4"
-                          },
-                          {
-                              "action": "Read",
-                              "action_result": null,
-                              "category": "Essential",
-                              "id": 0,
-                              "message_id": "195ee6b39f055ff1",
-                              "receive_at": "2025-03-31T22:55:47+00:00",
-                              "sender": "Grant Z <phantomgran1@gmail.com>",
-                              "subject": "Fwd: Please fix the direction in your thesis proposal",
-                              "summary": "Grant emphasizes the need for Kaige to adhere to the specified direction in their thesis proposal, focusing on niobium heat treatment topics and requests feedback by tomorrow.",
-                              "tags": [
-                                  "Thesis",
-                                  "Direction",
-                                  "Niobium",
-                                  "Heat Treatment",
-                                  "Urgent"
-                              ],
-                              "thread_id": "195ee58f9ffaee48"
-                          }
-                      ]
-                  }
-              ]
-          },
-          "messages_in_queue": {
-              "gmail": 0
-          },
-          "summary": [
+        "content_source": [
+          "gmail"
+        ],
+        "gmail": [
+          {
+            "account_id": "9b5f44cc-af57-4c59-ac53-b4e5a94907cc",
+            "email": "kaigezhengzz@gmail.com",
+            "messages": [
               {
-                  "text": {
-                      "content": "You have received 1 email from "
-                  },
-                  "type": "text"
+                "action": "Read",
+                "action_result": null,
+                "category": "Essential",
+                "id": 0,
+                "message_id": "195ee6ac5c01b870",
+                "receive_at": "2025-03-31T22:55:18+00:00",
+                "sender": "Kaige Zheng <phantomgran@gmail.com>",
+                "subject": "Fwd: Talk about Travel Plan for next week",
+                "summary": "Billy reminds Kaige about their upcoming travel plan with Dr. Bieler, emphasizing the need to schedule the flight and requesting a password number by tomorrow, stressing its urgency.",
+                "tags": [
+                  "Travel",
+                  "Urgent",
+                  "Planning",
+                  "Request",
+                  "Communication"
+                ],
+                "thread_id": "195ee5cac52ce2c4"
               },
               {
-                  "email": {
-                      "address": "phantomgran@gmail.com",
-                      "name": "Kaige Zheng"
-                  },
-                  "type": "email"
-              },
-              {
-                  "text": {
-                      "content": " regarding the travel plan for next week, where Billy reminds Kaige about scheduling the flight and requests a password number by tomorrow, stressing its urgency. Additionally, you have received 1 email from "
-                  },
-                  "type": "text"
-              },
-              {
-                  "email": {
-                      "address": "phantomgran1@gmail.com",
-                      "name": "Grant Z"
-                  },
-                  "type": "email"
-              },
-              {
-                  "text": {
-                      "content": " regarding the thesis proposal, emphasizing the need to adhere to the specified direction on niobium heat treatment topics and requesting feedback by tomorrow."
-                  },
-                  "type": "text"
+                "action": "Read",
+                "action_result": null,
+                "category": "Essential",
+                "id": 0,
+                "message_id": "195ee6b39f055ff1",
+                "receive_at": "2025-03-31T22:55:47+00:00",
+                "sender": "Grant Z <phantomgran1@gmail.com>",
+                "subject": "Fwd: Please fix the direction in your thesis proposal",
+                "summary": "Grant emphasizes the need for Kaige to adhere to the specified direction in their thesis proposal, focusing on niobium heat treatment topics and requests feedback by tomorrow.",
+                "tags": [
+                  "Thesis",
+                  "Direction",
+                  "Niobium",
+                  "Heat Treatment",
+                  "Urgent"
+                ],
+                "thread_id": "195ee58f9ffaee48"
               }
-          ]
+            ]
+          }
+        ],
+        "outlook": []
       },
-      "created_at": "Mon, 31 Mar 2025 22:40:45 GMT",
-      "finalized_at": null,
-      "id": "a402561c-b584-4c31-827b-f00c4578dec0"
+      "messages_in_queue": {
+        "gmail": 0
+      },
+      "summary": [
+        {
+          "text": {
+            "content": "You have received 1 email from "
+          },
+          "type": "text"
+        },
+        {
+          "email": {
+            "address": "phantomgran@gmail.com",
+            "name": "Kaige Zheng"
+          },
+          "type": "email"
+        },
+        {
+          "text": {
+            "content": " regarding the travel plan for next week, where Billy reminds Kaige about scheduling the flight and requests a password number by tomorrow, stressing its urgency. Additionally, you have received 1 email from "
+          },
+          "type": "text"
+        },
+        {
+          "email": {
+            "address": "phantomgran1@gmail.com",
+            "name": "Grant Z"
+          },
+          "type": "email"
+        },
+        {
+          "text": {
+            "content": " regarding the thesis proposal, emphasizing the need to adhere to the specified direction on niobium heat treatment topics and requesting feedback by tomorrow."
+          },
+          "type": "text"
+        }
+      ]
+    },
+    "created_at": "Mon, 31 Mar 2025 22:40:45 GMT",
+    "finalized_at": null,
+    "id": "a402561c-b584-4c31-827b-f00c4578dec0"
   }
 }
 
-// Import additional interfaces from report.ts
-interface MailReportItem {
-  id: number;
-  message_id: string;
-  thread_id: string;
-  received_at: string;
-  sender: string;
-  subject: string;
-  summary: string;
-  category: "Essential" | "NonEssential";
-  tags: string[];
-  action: "Read" | "Delete" | "Reply" | "Ignore";
-  action_result: "Success" | "Error" | null;
+export function transToReportSummary(report: Report) {
+  if (!report) {
+    return {
+      title: "",
+      updateTime: "",
+      summaries: [],
+      essentialMailsByAccount: [],
+      totalCounts: {essential: 0, nonEssential: 0}
+    };
+  }
+
+  // Get the Gmail accounts array
+  const gmailAccounts = report?.content?.content?.gmail || [];
+
+  // Process each account
+  const accountReports = gmailAccounts.map(account => {
+    const messages = account.messages || [];
+
+    return {
+      accountEmail: account.email,
+      essentialSenders: messages
+        .filter(message => message.category === "Essential")
+        .map(message => message.sender),
+      categoryCounts: {
+        essential: messages.filter(message => message.category === "Essential").length,
+        nonEssential: messages.filter(message => message.category !== "Essential").length
+      }
+    };
+  });
+
+  // Calculate total counts across all accounts
+  const totalCounts = accountReports.reduce(
+    (acc, curr) => ({
+      essential: acc.essential + curr.categoryCounts.essential,
+      nonEssential: acc.nonEssential + curr.categoryCounts.nonEssential
+    }),
+    { essential: 0, nonEssential: 0 }
+  );
+
+  return {
+    title: "Email Summary Report",
+    updateTime: new Date(report.created_at).toLocaleString(),
+    summaries: report.content.summary ?
+      report.content.summary.map(item =>
+        item.type === 'text' ? item.text?.content :
+          item.type === 'email' ? item.email?.name :
+            null
+      ).filter(Boolean) : [],
+    accountReports,
+    totalCounts
+  };
 }
 
-interface MailMessagesByAccount {
-  account_id: string;
-  email: string;
-  messages: MailReportItem[];
-}
-
-// Types for backend data
-export interface MessageStatsData {
-  timeRange: string;
-  essentialCount: number;
-  essentialPercentage: number;
-  nonEssentialCount: number;
-  nonEssentialPercentage: number;
-}
-
-export interface EmailSummaryData {
-  title: string;
-  updateTime: string;
-  content: string;
-  highlightedPeople: Array<{ name: string, context: string }>;
-}
-
-export interface UserData {
-  id: string;
-  name: string;
-  image: string;
-  email: string;
-  email_verified: boolean;
-  created_at: string;
-}
 
 // Email Summary Component
-export function EmailSummaryWithStats({
-  onBatchAction
-}: {
-  onBatchAction?: () => void
-}) {
+export function EmailSummaryWithStats() {
   const router = useRouter();
   const [report, setReport] = useState<Report | null>(null);
+  const [generatedReport, setGeneratedReport] = useState<Report | null>(mockReport.report);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Helper functions to calculate stats from report
-  function calculateEssentialCount(content: ReportModel): number {
-    let count = 0;
-    if (content.content && content.content.gmail) {
-      content.content.gmail.forEach((account: MailMessagesByAccount) => {
-        count += account.messages.filter((msg: MailReportItem) => msg.category === "Essential").length;
-      });
-    }
-    if (content.content && content.content.outlook) {
-      content.content.outlook.forEach((account: MailMessagesByAccount) => {
-        count += account.messages.filter((msg: MailReportItem) => msg.category === "Essential").length;
-      });
-    }
-    return count;
-  }
-
-  function calculateNonEssentialCount(content: ReportModel): number {
-    let count = 0;
-    if (content.content && content.content.gmail) {
-      content.content.gmail.forEach((account: MailMessagesByAccount) => {
-        count += account.messages.filter((msg: MailReportItem) => msg.category === "NonEssential").length;
-      });
-    }
-    if (content.content && content.content.outlook) {
-      content.content.outlook.forEach((account: MailMessagesByAccount) => {
-        count += account.messages.filter((msg: MailReportItem) => msg.category === "NonEssential").length;
-      });
-    }
-    return count;
-  }
-
-  function calculateEssentialPercentage(content: ReportModel): number {
-    const essential = calculateEssentialCount(content);
-    const total = essential + calculateNonEssentialCount(content);
-    return total > 0 ? Math.round((essential / total) * 100) : 0;
-  }
-
-  function calculateNonEssentialPercentage(content: ReportModel): number {
-    const nonEssential = calculateNonEssentialCount(content);
-    const total = nonEssential + calculateEssentialCount(content);
-    return total > 0 ? Math.round((nonEssential / total) * 100) : 0;
-  }
-
   // Determine which email providers are present in the report
-  const hasGmail = report?.content?.content?.gmail && report?.content?.content?.gmail.length > 0;
-  const hasOutlook = report?.content?.content?.outlook && report?.content?.content?.outlook.length > 0;
+  const hasGmail = (report as Report)?.content?.content?.gmail && (report as Report)?.content?.content?.gmail.length > 0;
+  const hasOutlook = (report as Report)?.content?.content?.outlook && (report as Report)?.content?.content?.outlook.length > 0;
 
-  // Generate report summary from real data
-  const reportSummaryData = report ? {
-    title: "Email Summary Report",
-    updateTime: new Date(report.created_at).toLocaleString(),
-    content: report.content.summary.map(item => {
-      if (item.type === "text" && item.text?.content) {
-        return item.text.content;
-      } else if (item.type === "email" && item.email?.name) {
-        return item.email.name;
-      }
-      return "";
-    }).join(""),
-    highlightedPeople: report.content.summary
-      .filter(rt => rt.type === "email" && rt.email)
-      .map(rt => ({
-        name: rt.email?.name || "",
-        context: ""
-      }))
-  } : null;
-
-  // Generate stats from real data
-  const reportStatsData = report ? {
-    timeRange: "Latest Report",
-    essentialCount: calculateEssentialCount(report.content),
-    essentialPercentage: calculateEssentialPercentage(report.content),
-    nonEssentialCount: calculateNonEssentialCount(report.content),
-    nonEssentialPercentage: calculateNonEssentialPercentage(report.content)
-  } : null;
 
   const fetchReport = () => {
     if (reportLoading) {
@@ -247,10 +182,10 @@ export function EmailSummaryWithStats({
     setReportLoading(true);
     setReportError(null);
     getNewestReport()
-      .then((response) => {
-        if (response.data && response.data.report) {
-          setReport(response.data.report);
-          console.log("Report fetched:", response.data.report);
+      .then((resp) => {
+        if (resp.data && resp.data.report) {
+          setReport(resp.data.report);
+          console.log("Report fetched:", resp.data.report);
         }
       })
       .catch((error) => {
@@ -262,6 +197,7 @@ export function EmailSummaryWithStats({
       });
   };
 
+
   const handleGenerateReport = () => {
     if (isGenerating) {
       return;
@@ -269,24 +205,31 @@ export function EmailSummaryWithStats({
     setIsGenerating(true);
     setReportError(null);
 
-    generateReport()
-      .then((response) => {
-        console.log("Report generation started:", response);
-        // After generating, fetch the newest report to display it
-        fetchReport();
-      })
-      .catch((error) => {
-        console.error("Error generating report:", error);
-        setReportError(error.message);
-      })
-      .finally(() => {
-        setIsGenerating(false);
-      });
+    // Simulate API call with mock data
+    setTimeout(() => {
+      console.log("Report generation started with mock data");
+      setGeneratedReport(mockReport.report);
+      setIsGenerating(false);
+    }, 1000);
   };
 
-  useEffect(() => {
-    fetchReport();
-  }, []);
+  const reportSummary = generatedReport? transToReportSummary(generatedReport) : null;
+
+  const reportSummaryData = reportSummary ? {
+    title: reportSummary.title,
+    content: reportSummary.summaries.join(" "),
+    highlightedPeople: reportSummary.accountReports?.flatMap(account =>
+      account.essentialSenders.map((name: string) => ({ name }))
+    ) || []
+  } : null;
+
+  const reportStatsData = reportSummary ? {
+    essentialCount: reportSummary.totalCounts.essential,
+    nonEssentialCount: reportSummary.totalCounts.nonEssential,
+    essentialPercentage: reportSummary.totalCounts.essential / (reportSummary.totalCounts.essential + reportSummary.totalCounts.nonEssential) * 100,
+    nonEssentialPercentage: reportSummary.totalCounts.nonEssential / (reportSummary.totalCounts.essential + reportSummary.totalCounts.nonEssential) * 100
+  } : null;
+
 
   // Function to highlight names
   const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
@@ -302,13 +245,6 @@ export function EmailSummaryWithStats({
     return <p className="text-sm text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{__html: result}}/>;
   };
 
-  const handleBatchAction = () => {
-    if (onBatchAction) {
-      onBatchAction();
-    } else {
-      router.push("/report");
-    }
-  };
 
   // Render appropriate email provider icons
   const renderEmailProviderIcons = () => {
@@ -320,12 +256,12 @@ export function EmailSummaryWithStats({
       <div className="flex gap-1">
         {hasGmail && (
           <div className="relative h-5 w-5" title="Gmail">
-            <GmailIcon className="h-5 w-5" />
+            <GmailIcon className="h-5 w-5"/>
           </div>
         )}
         {hasOutlook && (
           <div className="relative h-5 w-5" title="Outlook">
-            <OutlookIcon className="h-5 w-5" />
+            <OutlookIcon className="h-5 w-5"/>
           </div>
         )}
       </div>
@@ -341,7 +277,7 @@ export function EmailSummaryWithStats({
             Updated {new Date(report.created_at).toLocaleString()}
           </Badge>
         ) : reportLoading ? (
-          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-6 w-32"/>
         ) : (
           <Badge variant="secondary" size="md">No data available</Badge>
         )}
@@ -354,7 +290,7 @@ export function EmailSummaryWithStats({
             disabled={reportLoading || isGenerating}
             title="Refresh report"
           >
-            <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`}/>
             <span className="sr-only">Refresh</span>
           </Button>
           <Button
@@ -365,7 +301,7 @@ export function EmailSummaryWithStats({
             disabled={isGenerating || reportLoading}
             title="Generate new report"
           >
-            <PlusCircle className={`h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
+            <PlusCircle className={`h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`}/>
             <span className="sr-only">Generate New Report</span>
           </Button>
           {renderEmailProviderIcons()}
@@ -377,8 +313,8 @@ export function EmailSummaryWithStats({
           <CardContent className="flex-1 min-w-[300px] lg:min-w-[420px] space-y-4 lg:w-3/5 ">
             {reportLoading || isGenerating ? (
               <div className="space-y-2">
-                <Skeleton className="h-6 w-64" />
-                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-6 w-64"/>
+                <Skeleton className="h-24 w-full"/>
                 {isGenerating && (
                   <p className="text-xs text-blue-600">Generating new report...</p>
                 )}
@@ -392,7 +328,7 @@ export function EmailSummaryWithStats({
                   </Button>
                 </div>
               </div>
-            ) : report && reportSummaryData ? (
+            ) : reportSummaryData ? (
               <>
                 <h3 className="font-medium text-gray-900">{reportSummaryData.title}</h3>
                 <div className="px-3 py-3 bg-slate-50/70 rounded-md">
@@ -404,20 +340,21 @@ export function EmailSummaryWithStats({
                     <span>Data sources:</span>
                     {hasGmail && (
                       <span className="flex items-center gap-1">
-                        <GmailIcon className="h-3 w-3" />
-                      </span>
+                      <GmailIcon className="h-3 w-3"/>
+                    </span>
                     )}
                     {hasOutlook && (
                       <span className="flex items-center gap-1">
-                        <OutlookIcon className="h-3 w-3" />
-                      </span>
+                      <OutlookIcon className="h-3 w-3"/>
+                    </span>
                     )}
                   </div>
                 )}
               </>
             ) : (
               <div className="px-3 py-3 bg-slate-50/70 rounded-md">
-                <p className="text-sm text-gray-600">No report data available. Click the + button generate a new report for testing.</p>
+                <p className="text-sm text-gray-600">No report data available. Click the + button generate a new
+                  report for testing.</p>
               </div>
             )}
           </CardContent>
@@ -426,52 +363,55 @@ export function EmailSummaryWithStats({
           <CardContent className="flex-1 min-w-[300px] lg:min-w-[400px] lg:w-2/5">
             {reportLoading || isGenerating ? (
               <div className="flex justify-center">
-                <Skeleton className="h-40 w-40 rounded-full" />
+                <Skeleton className="h-40 w-40 rounded-full"/>
               </div>
-            ) : report && reportStatsData ? (
+            ) : reportStatsData ? (
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 <div className="relative h-40 w-40">
                   <svg className="h-full w-full" viewBox="0 0 36 36">
+                    {/* Background circle */}
                     <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4"/>
+                    {/* Non-essential segment */}
                     <circle
                       cx="18"
                       cy="18"
                       r="16"
                       fill="none"
-                      stroke="#92bfff"
+                      className="stroke-slate-400"
                       strokeWidth="4"
-                      strokeDasharray="100.53 100"
+                      strokeDasharray={`${reportStatsData.nonEssentialPercentage} 100`}
                       transform="rotate(-90 18 18)"
                     />
+                    {/* Essential segment */}
                     <circle
                       cx="18"
                       cy="18"
                       r="16"
                       fill="none"
-                      stroke="#94e9b8"
+                      className="stroke-lime-400"
                       strokeWidth="4"
                       strokeDasharray={`${reportStatsData.essentialPercentage} 100`}
-                      transform="rotate(-90 18 18)"
+                      transform={`rotate(${reportStatsData.nonEssentialPercentage * 3.6 - 90} 18 18)`}
                     />
                   </svg>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[#92bfff]"/>
+                    <div className="h-3 w-3 rounded-full bg-lime-400"/>
                     <span className="text-sm text-gray-600">
-                      Essential ({reportStatsData.essentialCount})
+                    Essential ({reportStatsData.essentialCount})
                     </span>
                     <span className="ml-auto text-sm font-medium">
-                      {reportStatsData.essentialPercentage}%
+                    {Math.round(reportStatsData.essentialPercentage)}%
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[#94e9b8]"/>
+                    <div className="h-3 w-3 rounded-full bg-slate-400"/>
                     <span className="text-sm text-gray-600">
-                      Non-essential ({reportStatsData.nonEssentialCount})
+                    Non-essential ({reportStatsData.nonEssentialCount})
                     </span>
                     <span className="ml-auto text-sm font-medium">
-                      {reportStatsData.nonEssentialPercentage}%
+                    {Math.round(reportStatsData.nonEssentialPercentage)}%
                     </span>
                   </div>
                 </div>
@@ -489,7 +429,7 @@ export function EmailSummaryWithStats({
           <div className="pt-3 flex justify-center sm:justify-start">
             <Button
               variant="default"
-              onClick={handleBatchAction}
+              onClick={() => router.push("/report")}
               disabled={!report || reportLoading || isGenerating}
             >
               Quick Batch Actions
@@ -507,7 +447,7 @@ export function EmailSummaryHistory({
   onCheckLastReport?: () => void
 }) {
   const router = useRouter();
-  const [report, setReport] = useState<Report | null>(null);
+  const [report, setReport] = useState<Report | null>(mockReport.report);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
@@ -516,22 +456,21 @@ export function EmailSummaryHistory({
   const hasOutlook = report?.content?.content?.outlook && report?.content?.content?.outlook.length > 0;
 
   // Get data from report if available
-  const mockReport = mockReportResponse.report;
-  const reportSummaryData = mockReport ? {
+  const reportSummaryData = report ? {
     title: "Previous Email Report",
-    updateTime: new Date(mockReport.created_at).toLocaleString(),
-    content: mockReport.content.summary.map((item, index) => {
-          if (item.type === 'text' && item.text) {
-            return <span key={index}>{item.text.content}</span>;
-          } else if (item.type === 'email' && item.email) {
-            return (
-              <span key={index} className="font-medium text-lime-600">
-                {item.email.name}
-              </span>
-            );
-          }
-          return null;
-        })
+    updateTime: new Date(report.created_at).toLocaleString(),
+    content: report.content.summary.map((item: { type: string; text?: { content: string }; email?: { name: string } }, index: number) => {
+      if (item.type === 'text' && item.text) {
+        return <span key={index}>{item.text.content}</span>;
+      } else if (item.type === 'email' && item.email) {
+        return (
+          <span key={index} className="font-medium text-lime-600">
+            {item.email.name}
+          </span>
+        );
+      }
+      return null;
+    })
   } : null;
 
   const fetchHistoryReport = () => {
@@ -560,18 +499,6 @@ export function EmailSummaryHistory({
     fetchHistoryReport();
   }, []);
 
-  // // Function to highlight names
-  // const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
-  //   let result = content;
-  //   highlights.forEach(person => {
-  //     result = result.replace(
-  //       person.name,
-  //       `<span class="text-lime-600">${person.name}</span>`
-  //     );
-  //   });
-
-  //   return <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{__html: result}}/>;
-  // };
 
   const handleCheckLastReport = () => {
     if (onCheckLastReport) {
@@ -591,12 +518,12 @@ export function EmailSummaryHistory({
       <div className="flex gap-1">
         {hasGmail && (
           <div className="relative h-5 w-5" title="Gmail">
-            <GmailIcon className="h-5 w-5" />
+            <GmailIcon className="h-5 w-5"/>
           </div>
         )}
         {hasOutlook && (
           <div className="relative h-5 w-5" title="Outlook">
-            <OutlookIcon className="h-5 w-5" />
+            <OutlookIcon className="h-5 w-5"/>
           </div>
         )}
       </div>
@@ -607,12 +534,12 @@ export function EmailSummaryHistory({
     <Card className="bg-slate-200/50">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="default" size="md">Summary</Badge>
-        {mockReport ? (
+        {report ? (
           <Badge variant="secondary" size="md">
-            Updated {new Date(mockReport.created_at).toLocaleString()}
+            Updated {new Date(report.created_at).toLocaleString()}
           </Badge>
         ) : reportLoading ? (
-          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-6 w-32"/>
         ) : (
           <Badge variant="secondary" size="md">No data available</Badge>
         )}
@@ -624,7 +551,7 @@ export function EmailSummaryHistory({
             onClick={fetchHistoryReport}
             disabled={reportLoading}
           >
-            <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`}/>
             <span className="sr-only">Refresh</span>
           </Button>
           {renderEmailProviderIcons()}
@@ -633,8 +560,8 @@ export function EmailSummaryHistory({
       <CardContent className="container space-y-4">
         {reportLoading ? (
           <div className="space-y-2">
-            <Skeleton className="h-6 w-64" />
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-6 w-64"/>
+            <Skeleton className="h-24 w-full"/>
           </div>
         ) : reportError ? (
           <div className="px-3 py-3 bg-red-50 text-red-800 rounded-md">
@@ -643,7 +570,7 @@ export function EmailSummaryHistory({
               Try Again
             </Button>
           </div>
-        ) : mockReport && reportSummaryData ? (
+        ) : report && reportSummaryData ? (
           <>
             <h3 className="font-medium text-gray-900">{reportSummaryData.title}</h3>
             <div className="px-2 py-2 bg-slate-50/80 rounded-md">
@@ -656,15 +583,15 @@ export function EmailSummaryHistory({
                 <span>Data sources:</span>
                 {hasGmail && (
                   <span className="flex items-center gap-1">
-                    <GmailIcon className="h-3 w-3" />
-                    Gmail
-                  </span>
+                  <GmailIcon className="h-3 w-3"/>
+                  Gmail
+                </span>
                 )}
                 {hasOutlook && (
                   <span className="flex items-center gap-1">
-                    <OutlookIcon className="h-3 w-3" />
-                    Outlook
-                  </span>
+                  <OutlookIcon className="h-3 w-3"/>
+                  Outlook
+                </span>
                 )}
               </div>
             )}
