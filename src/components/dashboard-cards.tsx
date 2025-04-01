@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { getNewestReport, Report, ReportResponse } from "@/lib/requests/client/report"
+import { getNewestReport, getReportHistory, Report, ReportResponse } from "@/lib/requests/client/report"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 
@@ -106,60 +106,6 @@ const mockReport: ReportResponse = {
     "id": "a402561c-b584-4c31-827b-f00c4578dec0"
   }
 }
-
-const mockReportHistory = {
-  "data": {
-    "reports": [
-      {
-        "content": {
-          "content": {
-            "content_source": ["gmail"],
-            "gmail": [
-              {
-                "account_id": "9b5f44cc-af57-4c59-ac53-b4e5a94907cc",
-                "email": "kaigezhengzz@gmail.com",
-                "messages": [
-                  {
-                    "action": "Delete",
-                    "action_result": null,
-                    "category": "NonEssential",
-                    "id": 0,
-                    "message_id": "195eea25d3d47039",
-                    "receive_at": "2025-03-31T23:56:09+00:00",
-                    "sender": "LinkedIn <messages-noreply@linkedin.com>",
-                    "subject": "Kaige, add Iris Sun - Product Designer - Center for Career and Professional Development",
-                    "summary": "Kaige Zheng has been invited to connect with Iris Sun, a Product Designer. The email encourages Kaige to connect with Iris and highlights mutual connections.",
-                    "tags": [
-                      "Invitation",
-                      "Networking",
-                      "LinkedIn",
-                      "Connection",
-                      "Professional"
-                    ],
-                    "thread_id": "195eea25d3d47039"
-                  }
-                ]
-              }
-            ],
-            "outlook": []
-          },
-          "messages_in_queue": {
-            "gmail": 1
-          },
-          "summary": []
-        },
-        "created_at": "Mon, 31 Mar 2025 22:56:18 GMT",
-        "finalized_at": "Tue, 01 Apr 2025 03:54:02 GMT",
-        "id": "d89cfc01-e0f2-4c1d-a61f-b0fb97038b91"
-      }
-    ],
-    "total_page": 7
-  },
-  "elapsed": 94,
-  "message": "success",
-  "status": 0,
-  "uri": "/api/v1/report/history"
-};
 
 export function transToReportSummary(report: Report) {
   if (!report) {
@@ -385,7 +331,7 @@ export function EmailSummaryWithStats() {
             ) : reportSummaryData ? (
               <>
                 <h3 className="font-medium text-black-900">{reportSummaryData.title}</h3>
-                <div className="px-4 py-4 bg-white rounded-md shadow-sm border border-slate-200 max-w-[800px]">
+                <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200 max-w-[800px]">
                   {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
                 </div>
                 {/* Display provider information if available */}
@@ -406,7 +352,7 @@ export function EmailSummaryWithStats() {
                 )}
               </>
             ) : (
-              <div className="px-3 py-3 bg-white-50/70 rounded-md">
+              <div className="px-3 py-3 bg-white/80 rounded-md">
                 <p className="text-sm text-gray-600">No report data available. Click the + button generate a new
                   report for testing.</p>
               </div>
@@ -675,7 +621,7 @@ export function LastReport() {
   const [latestReport, setLatestReport] = useState<Report | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
-
+  
   // Determine which email providers are present in the report
   const hasGmail = latestReport?.content?.content?.gmail && latestReport?.content?.content?.gmail.length > 0;
   const hasOutlook = latestReport?.content?.content?.outlook && latestReport?.content?.content?.outlook.length > 0;
@@ -687,43 +633,123 @@ export function LastReport() {
     setReportLoading(true);
     setReportError(null);
     
-    // For development, use mock data
-    setTimeout(() => {
-      // Use type assertion to overcome type mismatch
-      setLatestReport(mockReportHistory.data.reports[0] as unknown as Report);
-      setReportLoading(false);
-    }, 500);
+    // Use real API call to fetch the most recent report
+    getReportHistory(1, 1)
+      .then((response) => {
+        console.log("Report history response:", response);
+        // Access reports from the response.data which should contain a ReportListResponse
+        if (response && response.data && response.data.reports && response.data.reports.length > 0) {
+          setLatestReport(response.data.reports[0]);
+          console.log("Latest report fetched:", response.data.reports[0]);
+        } else {
+          console.log("No reports available");
+          setLatestReport(null);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching report history:", error);
+        setReportError("Failed to load report history");
+      })
+      .finally(() => {
+        setReportLoading(false);
+      });
   };
-
-  useEffect(() => {
-    // Initial load uses the mock data
-    setLatestReport(mockReportHistory.data.reports[0] as unknown as Report);
+  
+  // Generate a better summary of all messages in the report
+  const generateSummaryFromMessages = (report: Report) => {
+    if (!report?.content?.content?.gmail) return "No messages found in this report.";
     
-    // Clean up function
-    return () => {
-      setReportLoading(false);
-    };
-  }, []);
+    let allMessages: {
+      sender: string;
+      subject: string;
+      summary: string;
+      category: string;
+    }[] = [];
+    
+    // Collect all messages from all accounts
+    report.content.content.gmail.forEach(account => {
+      if (account.messages && account.messages.length > 0) {
+        allMessages = [...allMessages, ...account.messages.map(msg => ({
+          sender: msg.sender,
+          subject: msg.subject,
+          summary: msg.summary,
+          category: msg.category
+        }))];
+      }
+    });
+    
+    if (allMessages.length === 0) {
+      return "No messages found in this report.";
+    }
+    
+    // Sort messages by category (Essential first)
+    allMessages.sort((a, b) => {
+      if (a.category === "Essential" && b.category !== "Essential") return -1;
+      if (a.category !== "Essential" && b.category === "Essential") return 1;
+      return 0;
+    });
+    
+    // Generate summary text
+    const essentialCount = allMessages.filter(m => m.category === "Essential").length;
+    const nonEssentialCount = allMessages.filter(m => m.category !== "Essential").length;
+    
+    let summaryText = `This report processed ${allMessages.length} emails: ${essentialCount} essential and ${nonEssentialCount} non-essential. `;
+    
+    // Add detailed summary for essential messages (up to 3)
+    const essentialMessages = allMessages.filter(m => m.category === "Essential").slice(0, 3);
+    if (essentialMessages.length > 0) {
+      summaryText += "Essential emails include: ";
+      essentialMessages.forEach((msg, index) => {
+        const sender = msg.sender.includes('<') ? msg.sender.split('<')[0].trim() : msg.sender;
+        summaryText += `${sender} regarding "${msg.subject}"`;
+        if (index < essentialMessages.length - 1) {
+          summaryText += ", ";
+        }
+      });
+      if (essentialCount > 3) {
+        summaryText += `, and ${essentialCount - 3} more`;
+      }
+      summaryText += ". ";
+    }
+    
+    return summaryText;
+  };
 
   // Generate content for the report if summary is empty
   const generateContent = (report: Report) => {
-    if (report?.content?.content?.gmail && report.content.content.gmail.length > 0) {
-      const messages = report.content.content.gmail[0].messages;
-      if (messages && messages.length > 0) {
-        // Just show summary of the first message
-        return (
-          <div>
-            <p className="text-sm text-slate-800">
-              {messages[0].summary}
-            </p>
-            <div className="mt-2 text-xs text-slate-600">
-              <span className="font-medium">From:</span> {messages[0].sender.includes('<') ? messages[0].sender.split('<')[0].trim() : messages[0].sender}
-            </div>
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-slate-800 leading-relaxed">
+          {generateSummaryFromMessages(report)}
+        </p>
+        
+        {report?.content?.content?.gmail && report.content.content.gmail.some(account => 
+          account.messages && account.messages.length > 0
+        ) && (
+          <div className="space-y-2 mt-3 pt-2 border-t border-slate-100">
+            <p className="text-xs font-medium text-slate-700">Sample messages:</p>
+            {report.content.content.gmail.flatMap(account => 
+              account.messages?.slice(0, 2).map((msg, idx) => (
+                <div key={`${account.account_id}-${idx}`} className="px-3 py-2 bg-slate-50 rounded-md">
+                  <div className="flex justify-between items-start">
+                    <span className="text-xs font-medium text-slate-800">
+                      {msg.sender.includes('<') ? msg.sender.split('<')[0].trim() : msg.sender}
+                    </span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      msg.category === "Essential" ? 'bg-lime-100 text-lime-800' : 'bg-slate-200 text-slate-800'
+                    }`}>
+                      {msg.category}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-600 truncate">{msg.subject}</div>
+                  <p className="text-xs text-slate-700 mt-1">{msg.summary}</p>
+                </div>
+              ))
+            ).slice(0, 2)}
           </div>
-        );
-      }
-    }
-    return <span>No content available for this report</span>;
+        )}
+      </div>
+    );
   };
 
   // Render appropriate email provider icons
@@ -773,10 +799,20 @@ export function LastReport() {
   
   const reportStats = latestReport ? calculateStats(latestReport) : null;
 
+  useEffect(() => {
+    // Initial load with real API call
+    fetchReportHistory();
+    
+    // Clean up function
+    return () => {
+      setReportLoading(false);
+    };
+  }, []);
+
   return (
     <Card className="bg-slate-200/50">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-        <Badge variant="emphasis" size="md">Last Report</Badge>
+        <Badge variant="default" size="md">Last Report</Badge>
         {latestReport ? (
           <Badge variant="secondary" size="md">
             {new Date(latestReport.created_at).toLocaleString()}
@@ -793,6 +829,7 @@ export function LastReport() {
             className="h-8 w-8 p-0"
             onClick={fetchReportHistory}
             disabled={reportLoading}
+            title="Refresh report"
           >
             <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`}/>
             <span className="sr-only">Refresh</span>
@@ -818,22 +855,25 @@ export function LastReport() {
               </div>
             ) : latestReport ? (
               <>
-                <div className="px-4 py-4 bg-white rounded-md shadow-sm border border-slate-200">
-                  {latestReport.content.summary && latestReport.content.summary.length > 0 ? 
-                    latestReport.content.summary.map((item: { type: string; text?: { content: string }; email?: { name: string } }, index: number) => {
-                      if (item.type === 'text' && item.text) {
-                        return <span key={index}>{item.text.content}</span>;
-                      } else if (item.type === 'email' && item.email) {
-                        return (
-                          <span key={index} className="font-medium text-lime-600">
-                            {item.email.name}
-                          </span>
-                        );
-                      }
-                      return null;
-                    }) : 
+                <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200">
+                  {latestReport.content.summary && latestReport.content.summary.length > 0 ? (
+                    <p className="text-sm text-slate-800 leading-relaxed">
+                      {latestReport.content.summary.map((item: { type: string; text?: { content: string }; email?: { name: string } }, index: number) => {
+                        if (item.type === 'text' && item.text) {
+                          return <span key={index}>{item.text.content}</span>;
+                        } else if (item.type === 'email' && item.email) {
+                          return (
+                            <span key={index} className="font-medium text-lime-600">
+                              {item.email.name}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })}
+                    </p>
+                  ) : (
                     generateContent(latestReport)
-                  }
+                  )}
                 </div>
                 
                 {/* Display stats below content */}
@@ -860,7 +900,7 @@ export function LastReport() {
                 )}
               </>
             ) : (
-              <div className="px-4 py-4 bg-white rounded-md shadow-sm border border-slate-200">
+              <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200">
                 <p className="text-sm text-slate-800">No report history available. Click refresh to check for reports.</p>
               </div>
             )}

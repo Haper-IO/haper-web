@@ -279,7 +279,7 @@ export default function DashboardPage() {
         <div className="container p-5 mx-auto">
           <Card className="bg-slate-200/50 mb-6">
             <CardHeader className="flex flex-row items-center gap-2 space-y-0 ">
-              <Badge variant="emphasis" size="md">Status</Badge>
+              <Badge variant="default" size="md">Status</Badge>
               <div className="flex items-center gap-2">
                 {!isStatusExpanded && runningProviders.length > 0 && (
                   <span className="text-sm text-slate-600">
