@@ -7,6 +7,7 @@ import { useState, useEffect } from "react"
 import { generateReport, getNewestReport, getReportHistory, Report } from "@/lib/requests/client/report"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
+import {AxiosError} from "axios";
 
 export function transToReportSummary(report: Report) {
   if (!report) {
@@ -64,7 +65,6 @@ export function transToReportSummary(report: Report) {
 // Email Summary Component
 export function LatestSummary() {
   const router = useRouter();
-  // Initialize with mock data to simulate a generated report
   const [report, setReport] = useState<Report | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
@@ -74,32 +74,32 @@ export function LatestSummary() {
   const hasGmail = (report as Report)?.content?.content?.gmail && (report as Report)?.content?.content?.gmail.length > 0;
   const hasOutlook = (report as Report)?.content?.content?.outlook && (report as Report)?.content?.content?.outlook.length > 0;
 
-  const fetchReport = () => {
-    if (reportLoading) {
-      return;
-    }
-    setReportLoading(true);
-    setReportError(null);
-    console.log("Fetching newest report...");
-
-    getNewestReport()
-      .then((resp) => {
-        console.log("API response:", resp);
-        if (resp.data && resp.data.report) {
-          setReport(resp.data.report);
-          console.log("Report fetched:", resp.data.report);
-        } else {
-          console.log("No report data in response");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching report:", error);
-        setReportError("Failed to load report data");
-      })
-      .finally(() => {
-        setReportLoading(false);
-      });
-  };
+  // const fetchReport = () => {
+  //   if (reportLoading) {
+  //     return;
+  //   }
+  //   setReportLoading(true);
+  //   setReportError(null);
+  //   console.log("Fetching newest report...");
+  //
+  //   getNewestReport()
+  //     .then((resp) => {
+  //       console.log("API response:", resp);
+  //       if (resp?.data?.report) {
+  //         setReport(resp.data.report);
+  //         console.log("Report fetched:", resp.data.report);
+  //       } else {
+  //         console.log("No report data in response");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching report:", error);
+  //       setReportError("Failed to load report data");
+  //     })
+  //     .finally(() => {
+  //       setReportLoading(false);
+  //     });
+  // };
 
   const handleGenerateReport = () => {
     if (isGenerating) {
@@ -107,20 +107,22 @@ export function LatestSummary() {
     }
     setIsGenerating(true);
     setReportError(null);
-    console.log("Generating report with mock data...");
 
     generateReport()
       .then((resp) => {
         console.log("API response:", resp);
-        if (resp.data && resp.data.report) {
-          setReport(resp.data.report);
-          console.log("New report generated:", resp.data.report);
+        if (resp?.report) {
+          setReport(resp.report);
+          console.log("New report generated:", resp.report);
         } else {
           console.log("No report data in response");
           setReportError("Failed to generate report");
         }
       })
-      .catch((error) => {
+      .catch((error: AxiosError) => {
+        console.error("Error generating report:", error);
+        setReportError("You do not receive any messages since last updates, please check later!");
+      }).catch((error) => {
         console.error("Error generating report:", error);
         setReportError("Failed to generate report");
       })
@@ -200,7 +202,7 @@ export function LatestSummary() {
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
-            onClick={fetchReport}
+            onClick={handleGenerateReport}
             disabled={reportLoading || isGenerating}
             title="Refresh report"
           >
@@ -237,7 +239,7 @@ export function LatestSummary() {
               <div className="px-3 py-3 bg-red-50 text-red-800 rounded-md">
                 <p className="text-sm">{reportError}</p>
                 <div className="flex gap-2 mt-2">
-                  <Button variant="outline" size="sm" onClick={fetchReport}>
+                  <Button variant="outline" size="sm" onClick={handleGenerateReport}>
                     Try Again
                   </Button>
                 </div>
