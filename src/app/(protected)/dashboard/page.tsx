@@ -11,10 +11,12 @@ import {
   PlayCircle,
   StopCircle,
   RefreshCw,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import Link from "next/link"
 import React, {useState, useEffect} from "react"
-import {EmailSummaryWithStats, EmailSummaryHistory} from "@/components/dashboard-cards"
+import {EmailSummaryWithStats, EmailSummaryHistory, LastReport} from "@/components/dashboard-cards"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {
   stopMessageTracking,
@@ -65,6 +67,18 @@ interface TrackingStatus {
 
 const SupportedProviders = ["google", "microsoft"]
 
+const getRunningProviders = (trackingStatuses: Record<string, TrackingStatus[]>) => {
+  const running = Object.entries(trackingStatuses).reduce((acc, [provider, statuses]) => {
+    const runningCount = statuses.filter(s => s.status === "Ongoing").length;
+    if (runningCount > 0) {
+      acc.push({ provider, count: runningCount });
+    }
+    return acc;
+  }, [] as Array<{ provider: string, count: number }>);
+
+  return running;
+};
+
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [trackingStatuses, setTrackingStatuses] = useState<Record<string/*provider name*/, TrackingStatus[]>>({})
@@ -76,6 +90,7 @@ export default function DashboardPage() {
   const [startDialogOpen, setStartDialogOpen] = useState(false)
   const [stopDialogOpen, setStopDialogOpen] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<TrackingStatus | null>(null)
+  const [isStatusExpanded, setIsStatusExpanded] = useState(true);
 
   const fetchTrackingStatus = () => {
     if (isFetchingTrackingStatus) {
@@ -164,6 +179,8 @@ export default function DashboardPage() {
       setStopDialogOpen(false)
     }
   }
+
+  const runningProviders = getRunningProviders(trackingStatuses);
 
   return (
     <div className="min-h-screen bg-slate-50/10">
@@ -261,9 +278,25 @@ export default function DashboardPage() {
         {/* Message Tracking Status Section */}
         <div className="container p-5 mx-auto">
           <Card className="bg-slate-200/50 mb-6">
-            <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+            <CardHeader className="flex flex-row items-center gap-2 space-y-0 ">
               <Badge variant="emphasis" size="md">Status</Badge>
-              <div className="ml-auto">
+              <div className="flex items-center gap-2">
+                {!isStatusExpanded && runningProviders.length > 0 && (
+                  <span className="text-sm text-slate-600">
+                    {runningProviders.map(({ provider, count }) => (
+                      <span key={provider} className="flex items-center gap-1 inline-flex mr-2">
+                        {provider === 'google' ? (
+                          <GmailIcon className="h-4 w-4" />
+                        ) : provider === 'microsoft' ? (
+                          <OutlookIcon className="h-4 w-4" />
+                        ) : null}
+                        <span className="text-slate-700">Tracking {count} Email Now</span>
+                      </span>
+                    ))}
+                  </span>
+                )}
+              </div>
+              <div className="ml-auto flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -275,95 +308,110 @@ export default function DashboardPage() {
                   <RefreshCw className={`h-4 w-4 ${isFetchingTrackingStatus ? 'animate-spin' : ''}`}/>
                   <span className="sr-only">Refresh</span>
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setIsStatusExpanded(!isStatusExpanded)}
+                >
+                  {isStatusExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {SupportedProviders.map((provider, index) => {
-                  // TODO: support show multiple accounts for the same provider
-                  let t: TrackingStatus
-                  if (trackingStatuses[provider] && trackingStatuses[provider].length > 0) {
-                    t = trackingStatuses[provider][0]
-                  } else {
-                    t = {
-                      account_id: "",
-                      email: "",
-                      provider: provider,
-                      status: "NotStarted",
-                      created_at: null,
-                      updated_at: null,
+            {isStatusExpanded && (
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {SupportedProviders.map((provider, index) => {
+                    // TODO: support show multiple accounts for the same provider
+                    let t: TrackingStatus
+                    if (trackingStatuses[provider] && trackingStatuses[provider].length > 0) {
+                      t = trackingStatuses[provider][0]
+                    } else {
+                      t = {
+                        account_id: "",
+                        email: "",
+                        provider: provider,
+                        status: "NotStarted",
+                        created_at: null,
+                        updated_at: null,
+                      }
                     }
-                  }
-                  return (
-                    <div
-                      key={index}
-                      className={`flex justify-between border rounded-lg p-3 bg-slate-50/70 ${
-                        t.status === "Ongoing" ? "border-lime-200" :
-                          t.status === "Error" ? "border-red-500" :
-                            "border-slate-200"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
+                    return (
+                      <div
+                        key={index}
+                        className={`flex justify-between border rounded-lg p-3 bg-slate-50/70 ${
+                          t.status === "Ongoing" ? "border-lime-200" :
+                            t.status === "Error" ? "border-red-500" :
+                              "border-slate-200"
+                        }`}
+                      >
+                        <div>
                           <div className="flex items-center gap-2">
-                            {t.provider === 'google' ? (
-                              <GmailIcon className="h-4 w-4" />
-                            ) : t.provider === 'microsoft' ? (
-                              <OutlookIcon className="h-4 w-4" />
-                            ) : null}
-                            <span className="font-medium text-sm">{getProviderName(t.provider)}</span>
-                            <p className="text-xs text-gray-500">{t.email}</p>
+                            <div className="flex items-center gap-2">
+                              {t.provider === 'google' ? (
+                                <GmailIcon className="h-4 w-4" />
+                              ) : t.provider === 'microsoft' ? (
+                                <OutlookIcon className="h-4 w-4" />
+                              ) : null}
+                              <span className="font-medium text-sm">{getProviderName(t.provider)}</span>
+                              <p className="text-xs text-gray-500">{t.email}</p>
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            <p className="text-xs text-gray-500">Status</p>
+                            <p className="text-sm font-medium">{getStatusText(t.status)}</p>
                           </div>
                         </div>
-                        <div className="mt-2">
-                          <p className="text-xs text-gray-500">Status</p>
-                          <p className="text-sm font-medium">{getStatusText(t.status)}</p>
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => {
+                              setSelectedProvider(t)
+                              setStartDialogOpen(true)
+                            }}
+                            disabled={t.status == "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
+                            className="flex items-center gap-2 h-8 text-sm bg-slate-700 hover:bg-slate-800 text-white"
+                          >
+                            {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                              <PlayCircle className="h-4 w-4"/>}
+                            Start
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setSelectedProvider(t)
+                              setStopDialogOpen(true)
+                            }}
+                            variant="outline"
+                            disabled={t.status != "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
+                            className="flex items-center gap-2 h-8 text-sm border-slate-300 hover:bg-slate-100 text-slate-700"
+                          >
+                            {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
+                              <StopCircle className="h-4 w-4"/>}
+                            Stop
+                          </Button>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Button
-                          onClick={() => {
-                            setSelectedProvider(t)
-                            setStartDialogOpen(true)
-                          }}
-                          disabled={t.status == "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                          className="flex items-center gap-2 h-8 text-sm bg-slate-700 hover:bg-slate-800 text-white"
-                        >
-                          {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                            <PlayCircle className="h-4 w-4"/>}
-                          Start
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setSelectedProvider(t)
-                            setStopDialogOpen(true)
-                          }}
-                          variant="outline"
-                          disabled={t.status != "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                          className="flex items-center gap-2 h-8 text-sm border-slate-300 hover:bg-slate-100 text-slate-700"
-                        >
-                          {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                            <StopCircle className="h-4 w-4"/>}
-                          Stop
-                        </Button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {isFetchingTrackingStatus && (
-                <div className="text-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-gray-400"/>
-                  <p className="text-sm text-gray-500 mt-2">Loading tracking status...</p>
+                    )
+                  })}
                 </div>
-              )}
-            </CardContent>
+
+                {isFetchingTrackingStatus && (
+                  <div className="text-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin mx-auto text-gray-400"/>
+                    <p className="text-sm text-gray-500 mt-2">Loading tracking status...</p>
+                  </div>
+                )}
+              </CardContent>
+            )}
           </Card>
 
           {/* Keep existing EmailSummaryWithStats and EmailSummaryHistory components */}
           <div className="grid gap-6">
             <EmailSummaryWithStats/>
+            <LastReport/>
             <EmailSummaryHistory/>
           </div>
         </div>
