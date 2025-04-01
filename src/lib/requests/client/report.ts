@@ -1,9 +1,9 @@
 import { reqHandler } from "@/lib/requests/client/base";
 
 // Rich Text Related Interfaces
-interface Annotation {
-  bold: boolean;
-}
+// interface Annotation {
+//   bold: boolean;
+// }
 
 interface TextContent {
   content: string;

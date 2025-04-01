@@ -74,32 +74,32 @@ export function LatestSummary() {
   const hasGmail = (report as Report)?.content?.content?.gmail && (report as Report)?.content?.content?.gmail.length > 0;
   const hasOutlook = (report as Report)?.content?.content?.outlook && (report as Report)?.content?.content?.outlook.length > 0;
 
-  // const fetchReport = () => {
-  //   if (reportLoading) {
-  //     return;
-  //   }
-  //   setReportLoading(true);
-  //   setReportError(null);
-  //   console.log("Fetching newest report...");
-  //
-  //   getNewestReport()
-  //     .then((resp) => {
-  //       console.log("API response:", resp);
-  //       if (resp?.data?.report) {
-  //         setReport(resp.data.report);
-  //         console.log("Report fetched:", resp.data.report);
-  //       } else {
-  //         console.log("No report data in response");
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching report:", error);
-  //       setReportError("Failed to load report data");
-  //     })
-  //     .finally(() => {
-  //       setReportLoading(false);
-  //     });
-  // };
+  const fetchReport = () => {
+    if (reportLoading) {
+      return;
+    }
+    setReportLoading(true);
+    setReportError(null);
+    console.log("Fetching newest report...");
+
+    getNewestReport()
+      .then((resp) => {
+        console.log("API response:", resp);
+        if (resp?.data?.report) {
+          setReport(resp.data.report);
+          console.log("Report fetched:", resp.data.report);
+        } else {
+          console.log("No report data in response");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching report:", error);
+        setReportError("Failed to load report data");
+      })
+      .finally(() => {
+        setReportLoading(false);
+      });
+  };
 
   const handleGenerateReport = () => {
     if (isGenerating) {
@@ -202,7 +202,7 @@ export function LatestSummary() {
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
-            onClick={handleGenerateReport}
+            onClick={fetchReport}
             disabled={reportLoading || isGenerating}
             title="Refresh report"
           >

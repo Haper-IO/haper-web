@@ -97,7 +97,7 @@ export default function DashboardPage() {
       return
     }
     setIsFetchingTrackingStatus(true)
-    listMessageTrackingStatus().then((resp: any) => {
+    listMessageTrackingStatus().then((resp) => {
       const trackingStatusMap: Record<string, TrackingStatus[]> = {}
       for (const t of resp.tracking_status) {
         const provider = t.provider
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                 {!isStatusExpanded && runningProviders.length > 0 && (
                   <span className="text-sm text-slate-600">
                     {runningProviders.map(({ provider, count }) => (
-                      <span key={provider} className="flex items-center gap-1 inline-flex mr-2">
+                      <span key={provider} className="flex items-center gap-1 mr-2">
                         {provider === 'google' ? (
                           <GmailIcon className="h-4 w-4" />
                         ) : provider === 'microsoft' ? (
