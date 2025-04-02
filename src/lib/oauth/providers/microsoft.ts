@@ -1,5 +1,5 @@
 import * as arctic from "arctic";
-import {getBaseUrl, OAuthProvider} from "@/lib/oauth/providers/base";
+import {OAuthProvider} from "@/lib/oauth/providers/base";
 import {ActionType, OAuthError, OAuthProviderConfig, Profile} from "@/lib/oauth/types";
 import {redirect} from "next/navigation";
 
@@ -16,17 +16,16 @@ export class Microsoft extends OAuthProvider {
   }
 
   private async constructClient(action: ActionType) {
-    const baseUrl = await getBaseUrl();
     let redirectUrl: string;
     switch (action) {
       case "login":
-        redirectUrl = new URL(this.loginRedirectUrl, baseUrl).toString();
+        redirectUrl = new URL(this.loginRedirectUrl, this.options.originUrl).toString();
         break;
       case "signup":
-        redirectUrl = new URL(this.signupRedirectUrl, baseUrl).toString();
+        redirectUrl = new URL(this.signupRedirectUrl, this.options.originUrl).toString();
         break;
       case "authorize":
-        redirectUrl = new URL(this.authorizeRedirectUrl, baseUrl).toString();
+        redirectUrl = new URL(this.authorizeRedirectUrl, this.options.originUrl).toString();
         break;
     }
     return new arctic.MicrosoftEntraId("common", this.options.clientId, this.options.clientSecret, redirectUrl);

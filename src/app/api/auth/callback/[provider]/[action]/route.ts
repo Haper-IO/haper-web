@@ -14,8 +14,6 @@ export async function GET(
   const cookieStore = await cookies()
   const {searchParams} = req.nextUrl
   const {provider, action} = await params
-  const proto = req.headers.get("x-forwarded-proto") || "http";  // Default to 'http' if not found
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host")
 
   const errorRedirectPath = action === "authorize" ? "/dashboard" : "/error"
 
@@ -61,7 +59,7 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
+      const resp = NextResponse.redirect(new URL("/dashboard", process.env.SITE_HOST_URL!))
       if (response.headers["set-cookie"]) {
         for (const cookie of response.headers["set-cookie"]) {
           resp.headers.append("Set-Cookie", cookie)
@@ -79,7 +77,7 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
+      const resp = NextResponse.redirect(new URL("/dashboard", process.env.SITE_HOST_URL!))
       if (response.headers["set-cookie"]) {
         for (const cookie of response.headers["set-cookie"]) {
           resp.headers.append("Set-Cookie", cookie)
@@ -95,7 +93,7 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         email: userProfile.email,
       }, cookieStore.toString())
-      return NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
+      return NextResponse.redirect(new URL("/dashboard", process.env.SITE_HOST_URL!))
     } else {
       throw new Error("unknown action")
     }

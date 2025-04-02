@@ -1,11 +1,5 @@
-import {headers} from "next/headers";
 import * as arctic from "arctic";
 import {ActionType, OAuthProviderConfig, Profile} from "@/lib/oauth/types";
-
-export async function getBaseUrl() {
-  const headersList = await headers();
-  return headersList.get("origin") ?? "";
-}
 
 export class OAuthProvider {
   options: OAuthProviderConfig

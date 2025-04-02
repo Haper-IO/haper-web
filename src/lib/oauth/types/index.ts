@@ -15,6 +15,7 @@ export interface Profile {
 }
 
 export interface OAuthProviderConfig {
+  originUrl: string;
   clientId: string;
   clientSecret: string;
   codeVerifier: string;
