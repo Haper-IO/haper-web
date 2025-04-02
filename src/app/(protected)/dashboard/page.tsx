@@ -54,16 +54,16 @@ const SCROLLBAR_STYLES = `
   ::-webkit-scrollbar {
     width: 5px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background-color: #e2e8f0;
     border-radius: 20px;
   }
-  
+
   /* For Firefox */
   * {
     scrollbar-width: thin;
@@ -128,39 +128,39 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
   const [reportGroups, setReportGroups] = useState<ReportGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const { userInfo, loading: userLoading } = useUserInfo();
-  
+
   useEffect(() => {
     const fetchReportHistory = async () => {
       try {
         setLoading(true);
         // Fetch a reasonable number of reports
         const response = await getReportHistory(1, 20);
-        
+
         if (response.reports && response.reports.length > 0) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          
+
           const yesterday = new Date(today);
           yesterday.setDate(yesterday.getDate() - 1);
-          
+
           const weekAgo = new Date(today);
           weekAgo.setDate(weekAgo.getDate() - 7);
-          
+
           // Group reports by date categories
           const todayReports: ReportGroup["reports"] = [];
           const yesterdayReports: ReportGroup["reports"] = [];
           const weekReports: ReportGroup["reports"] = [];
-          
+
           response.reports.forEach(report => {
             const reportDate = new Date(report.created_at);
             reportDate.setHours(0, 0, 0, 0);
-            
+
             const formattedTime = new Date(report.created_at).toLocaleString('en-US', {
               hour: 'numeric',
               minute: 'numeric',
               hour12: true
             });
-            
+
             // Generate a title from the summary or use a default
             let title = `Report ${report.id.slice(0, 6)}`;
             if (report.content && report.content.summary && report.content.summary.length > 0) {
@@ -168,7 +168,7 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
                 .filter(item => item.type === "text" && item.text?.content)
                 .map(item => item.text?.content)
                 .join(" ");
-              
+
               if (summaryText) {
                 title = summaryText.slice(0, 24) + (summaryText.length > 24 ? "..." : "");
               }
@@ -176,7 +176,7 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
 
             // Simulate a status for demo purposes
             const status = Math.random() > 0.8 ? "processing" : "completed";
-            
+
             const reportItem = {
               id: report.id,
               title: title,
@@ -184,7 +184,7 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
               created_at: report.created_at,
               status: status as "processing" | "completed" | "error"
             };
-            
+
             // Add to appropriate category
             if (reportDate.getTime() === today.getTime()) {
               todayReports.push(reportItem);
@@ -194,30 +194,30 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
               weekReports.push(reportItem);
             }
           });
-          
+
           // Sort reports by time (newest first)
-          const sortByDate = (a: { created_at: string }, b: { created_at: string }) => 
+          const sortByDate = (a: { created_at: string }, b: { created_at: string }) =>
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-          
+
           todayReports.sort(sortByDate);
           yesterdayReports.sort(sortByDate);
           weekReports.sort(sortByDate);
-          
+
           // Create final groups
           const groups: ReportGroup[] = [];
-          
+
           if (todayReports.length > 0) {
             groups.push({ date: "Today", reports: todayReports });
           }
-          
+
           if (yesterdayReports.length > 0) {
             groups.push({ date: "Yesterday", reports: yesterdayReports });
           }
-          
+
           if (weekReports.length > 0) {
             groups.push({ date: "Previous 7 Days", reports: weekReports });
           }
-          
+
           setReportGroups(groups);
         }
       } catch (error) {
@@ -226,10 +226,10 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
         setLoading(false);
       }
     };
-    
+
     fetchReportHistory();
   }, []);
-  
+
   return (
     <aside
       className={`fixed top-[61px] left-0 bottom-0 w-56 border-r bg-slate-50/80 transition-transform duration-300 z-10 ${
@@ -251,7 +251,7 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
             </SidebarLink>
           </nav>
         </div>
-      
+
         {/* Reports section */}
         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent px-2 py-3">
           <div className="mb-2 px-2">
@@ -304,11 +304,11 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
             </div>
           )}
         </div>
-        
+
         {/* User profile button */}
         <div className="mt-auto border-t border-slate-200 px-2 py-2">
-          <button 
-            onClick={() => window.location.href = '/userprofile'} 
+          <button
+            onClick={() => window.location.href = '/userprofile'}
             className="w-full flex items-center gap-2 px-2 py-2 hover:bg-slate-200/70 transition-colors rounded-md"
           >
             <div className="flex-shrink-0 h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
@@ -355,8 +355,8 @@ export default function DashboardPage() {
     setIsFetchingTrackingStatus(true)
     listMessageTrackingStatus().then((resp) => {
       const trackingStatusMap: Record<string, TrackingStatus[]> = {}
-      const trackingStatuses = resp?.data?.tracking_status || [];
-      for (const t of trackingStatuses) {
+      // @ts-ignore
+      for (const t of resp.tracking_status) {
         const provider = t.provider
         if (!trackingStatusMap[provider]) {
           trackingStatusMap[provider] = []
@@ -443,7 +443,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-50/10">
       {/* Add a style tag for custom scrollbar styling */}
       <style dangerouslySetInnerHTML={{ __html: SCROLLBAR_STYLES }} />
-      
+
       {searchParams.get("error_msg") && (
         <AlertDialog open={alterOpen} onOpenChange={setAlterOpen}>
           <AlertDialogContent className="bg-white">

@@ -30,7 +30,7 @@ reqHandler.interceptors.response.use(
           }
         })
       } else {
-        toast.warning(`${error.message}: ${message}`)
+        toast.warning(message)
       }
       isAuthFail = error.response.data.status == 1101
     } else {

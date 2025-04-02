@@ -4,9 +4,7 @@ import {ActionType, OAuthProviderConfig, Profile} from "@/lib/oauth/types";
 
 export async function getBaseUrl() {
   const headersList = await headers();
-  const host = headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") || "http";
-  return `${protocol}://${host}`;
+  return headersList.get("origin") ?? "";
 }
 
 export class OAuthProvider {
