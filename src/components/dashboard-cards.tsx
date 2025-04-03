@@ -31,7 +31,13 @@ export function transToReportSummary(report: Report) {
       accountEmail: account.email,
       essentialSenders: messages
         .filter(message => message.category === "Essential")
-        .map(message => message.sender),
+        .map(message => {
+          // Clean up sender names by removing email parts in brackets
+          const sender = message.sender.includes('<') 
+            ? message.sender.split('<')[0].trim() 
+            : message.sender;
+          return sender;
+        }),
       categoryCounts: {
         essential: messages.filter(message => message.category === "Essential").length,
         nonEssential: messages.filter(message => message.category !== "Essential").length
@@ -48,15 +54,23 @@ export function transToReportSummary(report: Report) {
     { essential: 0, nonEssential: 0 }
   );
 
+  // Get summary content from the report
+  let summaryContent: string[] = [];
+  if (report.content?.summary && Array.isArray(report.content.summary)) {
+    summaryContent = report.content.summary.map(item => {
+      if (item.type === 'text' && item.text?.content) {
+        return item.text.content;
+      } else if (item.type === 'email' && item.email?.name) {
+        return item.email.name;
+      }
+      return '';
+    }).filter(Boolean);
+  }
+
   return {
     title: "Email Summary Report",
     updateTime: new Date(report.created_at).toLocaleString(),
-    summaries: report.content.summary ?
-      report.content.summary.map(item =>
-        item.type === 'text' ? item.text?.content :
-          item.type === 'email' ? item.email?.name :
-            null
-      ).filter(Boolean) : [],
+    summaries: summaryContent,
     accountReports,
     totalCounts
   };
@@ -74,6 +88,11 @@ export function LatestSummary() {
   const hasGmail = (report as Report)?.content?.content?.gmail && (report as Report)?.content?.content?.gmail.length > 0;
   const hasOutlook = (report as Report)?.content?.content?.outlook && (report as Report)?.content?.content?.outlook.length > 0;
 
+  // Fetch report when component mounts
+  useEffect(() => {
+    fetchReport();
+  }, []);
+
   const fetchReport = () => {
     if (reportLoading) {
       return;
@@ -85,9 +104,9 @@ export function LatestSummary() {
     getNewestReport()
       .then((resp) => {
         console.log("API response:", resp);
-        if (resp?.data?.report) {
-          setReport(resp.data.report);
-          console.log("Report fetched:", resp.data.report);
+        if (resp?.report) {
+          setReport(resp.report);
+          console.log("Report fetched:", resp.report);
         } else {
           console.log("No report data in response");
         }
@@ -113,6 +132,10 @@ export function LatestSummary() {
         if (resp?.report) {
           setReport(resp.report);
           console.log("New report generated:", resp.report);
+          // Navigate to the report page after successful generation
+          if (resp.report?.id) {
+            router.push(`/report/${resp.report.id}`);
+          }
         } else {
           console.log("No report data in response");
           setReportError("Failed to generate report");
@@ -137,9 +160,11 @@ export function LatestSummary() {
   const reportSummaryData = reportSummary ? {
     title: reportSummary.title,
     content: reportSummary.summaries.join(" "),
-    highlightedPeople: reportSummary.accountReports?.flatMap(account =>
-      account.essentialSenders.map((name: string) => ({ name }))
-    ) || []
+    highlightedPeople: reportSummary.accountReports?.flatMap(account => {
+      // Make sure we get unique senders only
+      const uniqueSenders = new Set(account.essentialSenders);
+      return Array.from(uniqueSenders).map(name => ({ name }));
+    }) || []
   } : null;
 
   const reportStatsData = reportSummary ? {
@@ -151,13 +176,34 @@ export function LatestSummary() {
 
   // Function to highlight names
   const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
+    if (!content || !highlights || highlights.length === 0) {
+      return <p className="text-sm text-slate-800 leading-relaxed">{content}</p>;
+    }
+
+    // Debug to check if we have highlights
+    console.log("Highlighting senders:", highlights.map(h => h.name).join(", "));
+    
+    // Sort by length (longest first) to avoid partial replacements
+    const sortedHighlights = [...highlights].sort((a, b) => 
+      b.name.length - a.name.length
+    );
+    
     let result = content;
-    highlights.forEach(person => {
-      const regex = new RegExp(person.name, 'g');
-      result = result.replace(
-        regex,
-        `<span class="text-lime-600 font-medium">${person.name}</span>`
-      );
+    sortedHighlights.forEach(person => {
+      if (person.name && person.name.length > 1) {
+        try {
+          // Escape special regex characters to prevent errors
+          const escapedName = person.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // Use a simpler regex without word boundaries which can be too restrictive
+          const regex = new RegExp(escapedName, 'g');
+          result = result.replace(
+            regex,
+            `<span class="text-lime-600 font-medium">${person.name}</span>`
+          );
+        } catch (e) {
+          console.error("Error highlighting name:", person.name, e);
+        }
+      }
     });
 
     return <p className="text-sm text-slate-800 leading-relaxed" dangerouslySetInnerHTML={{__html: result}}/>;
@@ -458,13 +504,71 @@ export function LastReport() {
     return summaryText;
   };
 
+  // Calculate message stats with safeguards for zero values
+  const calculateStats = (report: Report) => {
+    if (!report?.content?.content?.gmail) return { essential: 0, nonEssential: 0, total: 0 };
+
+    let essential = 0;
+    let nonEssential = 0;
+
+    report.content.content.gmail.forEach(account => {
+      if (account.messages) {
+        account.messages.forEach(message => {
+          if (message.category === "Essential") {
+            essential++;
+          } else {
+            nonEssential++;
+          }
+        });
+      }
+    });
+
+    const total = essential + nonEssential;
+    return { essential, nonEssential, total };
+  };
+
+  // Highlight sender names in text
+  const renderHighlightedContent = (summaryText: string, report: Report) => {
+    if (!report?.content?.content?.gmail) return summaryText;
+    
+    // Extract all essential senders
+    const essentialSenders: string[] = [];
+    report.content.content.gmail.forEach(account => {
+      if (account.messages) {
+        account.messages.forEach(message => {
+          if (message.category === "Essential") {
+            const sender = message.sender.includes('<') 
+              ? message.sender.split('<')[0].trim() 
+              : message.sender;
+            if (!essentialSenders.includes(sender)) {
+              essentialSenders.push(sender);
+            }
+          }
+        });
+      }
+    });
+    
+    // Highlight each sender in the text
+    let result = summaryText;
+    essentialSenders.forEach(sender => {
+      const regex = new RegExp(sender, 'g');
+      result = result.replace(
+        regex,
+        `<span class="text-lime-600 font-medium">${sender}</span>`
+      );
+    });
+
+    return result;
+  };
+
   // Generate content for the report if summary is empty
   const generateContent = (report: Report) => {
+    const summaryText = generateSummaryFromMessages(report);
+    const highlightedSummary = renderHighlightedContent(summaryText, report);
+    
     return (
       <div className="space-y-2">
-        <p className="text-sm text-slate-800 leading-relaxed">
-          {generateSummaryFromMessages(report)}
-        </p>
+        <p className="text-sm text-slate-800 leading-relaxed" dangerouslySetInnerHTML={{__html: highlightedSummary}} />
 
         {report?.content?.content?.gmail && report.content.content.gmail.some(account =>
           account.messages && account.messages.length > 0
@@ -475,7 +579,7 @@ export function LastReport() {
               account.messages?.slice(0, 2).map((msg, idx) => (
                 <div key={`${account.account_id}-${idx}`} className="px-3 py-2 bg-slate-50 rounded-md">
                   <div className="flex justify-between items-start">
-                    <span className="text-xs font-medium text-slate-800">
+                    <span className={`text-xs font-medium ${msg.category === "Essential" ? 'text-lime-600' : 'text-slate-800'}`}>
                       {msg.sender.includes('<') ? msg.sender.split('<')[0].trim() : msg.sender}
                     </span>
                     <span className={`text-xs px-1.5 py-0.5 rounded ${
@@ -487,7 +591,6 @@ export function LastReport() {
                   <div className="text-xs text-slate-600 truncate">{msg.subject}</div>
                   <p className="text-xs text-slate-700 mt-1">{msg.summary}</p>
                 </div>
-
               ))
             ).slice(0, 2)}
           </div>
@@ -516,29 +619,6 @@ export function LastReport() {
         )}
       </div>
     );
-  };
-
-  // Calculate message stats with safeguards for zero values
-  const calculateStats = (report: Report) => {
-    if (!report?.content?.content?.gmail) return { essential: 0, nonEssential: 0, total: 0 };
-
-    let essential = 0;
-    let nonEssential = 0;
-
-    report.content.content.gmail.forEach(account => {
-      if (account.messages) {
-        account.messages.forEach(message => {
-          if (message.category === "Essential") {
-            essential++;
-          } else {
-            nonEssential++;
-          }
-        });
-      }
-    });
-
-    const total = essential + nonEssential;
-    return { essential, nonEssential, total };
   };
 
   const reportStats = latestReport ? calculateStats(latestReport) : null;

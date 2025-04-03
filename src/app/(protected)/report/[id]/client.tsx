@@ -425,13 +425,6 @@ function EmailItem({
                 <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />
                 Ignore
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onActionSelect(email.id, null)} 
-                className="text-slate-700 border-t border-slate-100 mt-1 pt-1"
-              >
-                <X className="mr-2 h-4 w-4 text-slate-500" />
-                Clear Action
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
