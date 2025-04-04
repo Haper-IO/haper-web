@@ -27,6 +27,7 @@ import { Report, getReportById, getReportHistory, generateReply } from "@/lib/re
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import { cn } from "@/lib/utils"
 import { useUserInfo } from "@/hooks/useUserInfo"
+import Image from "next/image"
 
 const SHARED_STYLES = {
   heading: "font-medium text-slate-900 text-sm",
@@ -41,16 +42,16 @@ const SCROLLBAR_STYLES = `
   ::-webkit-scrollbar {
     width: 5px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background-color: #e2e8f0;
     border-radius: 20px;
   }
-  
+
   /* For Firefox */
   * {
     scrollbar-width: thin;
@@ -87,228 +88,233 @@ type ReportGroup = {
 };
 
 // Enhanced Sidebar Component with ChatGPT-style date grouping
-function EnhancedSidebar({ 
-  isOpen, 
+function EnhancedSidebar({
+  isOpen,
   onSelectReport,
   currentReportId
-}: { 
-  isOpen: boolean, 
+}: {
+  isOpen: boolean,
   onSelectReport: (id: string) => void,
   currentReportId: string
 }) {
-  const [reportGroups, setReportGroups] = useState<ReportGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { userInfo, loading: userLoading } = useUserInfo();
-  
-  useEffect(() => {
-    const fetchReportHistory = async () => {
-      try {
-        setLoading(true);
-        // Fetch a reasonable number of reports - adjust pageSize as needed
-        const response = await getReportHistory(1, 20);
-        
-        if (response.reports && response.reports.length > 0) {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          
-          const yesterday = new Date(today);
-          yesterday.setDate(yesterday.getDate() - 1);
-          
-          const weekAgo = new Date(today);
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          
-          // Group reports by date categories
-          const todayReports: ReportGroup["reports"] = [];
-          const yesterdayReports: ReportGroup["reports"] = [];
-          const weekReports: ReportGroup["reports"] = [];
-          
-          response.reports.forEach(report => {
-            const reportDate = new Date(report.created_at);
-            reportDate.setHours(0, 0, 0, 0);
-            
-            const formattedTime = new Date(report.created_at).toLocaleString('en-US', {
-              hour: 'numeric',
-              minute: 'numeric',
-              hour12: true
-            });
-            
-            // Generate a title from the summary or use a default
-            let title = `Report ${report.id.slice(0, 6)}`;
-            if (report.content && report.content.summary && report.content.summary.length > 0) {
-              const summaryText = report.content.summary
-                .filter(item => item.type === "text" && item.text?.content)
-                .map(item => item.text?.content)
-                .join(" ");
-              
-              if (summaryText) {
-                title = summaryText.slice(0, 24) + (summaryText.length > 24 ? "..." : "");
-              }
-            }
+    const [reportGroups, setReportGroups] = useState<ReportGroup[]>([]);
+    const [loading, setLoading] = useState(true);
+    const {userInfo, loading: userLoading} = useUserInfo();
 
-            // Simulate a status for demo purposes - in real app, get this from the report data
-            // About 20% of reports will be "processing" for this demo
-            const status = Math.random() > 0.8 ? "processing" : "completed";
-            
-            const reportItem = {
-              id: report.id,
-              title: title,
-              time: formattedTime,
-              created_at: report.created_at,
-              status: status as "processing" | "completed" | "error"
-            };
-            
-            // Add to appropriate category
-            if (reportDate.getTime() === today.getTime()) {
-              todayReports.push(reportItem);
-            } else if (reportDate.getTime() === yesterday.getTime()) {
-              yesterdayReports.push(reportItem);
-            } else if (reportDate.getTime() >= weekAgo.getTime()) {
-              weekReports.push(reportItem);
-            }
-          });
-          
-          // Sort reports by time (newest first)
-          const sortByDate = (a: { created_at: string }, b: { created_at: string }) => 
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-          
-          todayReports.sort(sortByDate);
-          yesterdayReports.sort(sortByDate);
-          weekReports.sort(sortByDate);
-          
-          // Create final groups
-          const groups: ReportGroup[] = [];
-          
-          if (todayReports.length > 0) {
-            groups.push({ date: "Today", reports: todayReports });
-          }
-          
-          if (yesterdayReports.length > 0) {
-            groups.push({ date: "Yesterday", reports: yesterdayReports });
-          }
-          
-          if (weekReports.length > 0) {
-            groups.push({ date: "Previous 7 Days", reports: weekReports });
-          }
-          
-          setReportGroups(groups);
-        }
-      } catch (error) {
-        console.error("Error fetching report history:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchReportHistory();
-  }, []);
-  
-  return (
-    <aside
-      className={`fixed top-[61px] left-0 bottom-0 w-56 border-r bg-slate-50/80 transition-transform duration-300 z-10 ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } hidden md:block`}
-    >
-      <div className="flex flex-col h-full">
-        {/* Menu section */}
-        <div className="px-2 py-3 border-b border-slate-200">
-          <div className="mb-2 px-2">
-            <p className="text-xs font-medium text-slate-400 uppercase">Menu</p>
-          </div>
-          <nav className="space-y-1">
-            <a href="/dashboard" className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-sm transition-colors">
-              <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
-              <span>Dashboard</span>
-            </a>
-          </nav>
-        </div>
-        
-        {/* Main scrollable area for reports */}
-        <div className="px-2 py-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-          {loading ? (
-            <div className="flex justify-center py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-            </div>
-          ) : reportGroups.length === 0 ? (
-            <div className="text-xs text-slate-500 text-center py-2">
-              No reports found
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {reportGroups.map((group) => (
-                <Collapsible key={group.date} defaultOpen={group.date === "Today"}>
-                  <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-sm">
-                    <span>{group.date}</span>
-                    <ChevronDownIcon size={14} className="text-slate-500" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-1">
-                    <div className="mt-0.5">
-                      {group.reports.map((report) => (
-                        <button
-                          key={report.id}
-                          onClick={() => onSelectReport(report.id)}
-                          className={`flex items-start w-full px-2 py-1.5 text-xs text-left text-slate-700 hover:bg-slate-100 rounded-sm ${
-                            report.id === currentReportId ? "bg-slate-100 border-l-2 border-slate-400" : ""
-                          }`}
-                        >
-                          <div className="w-full overflow-hidden pr-1">
-                            <div className="flex items-center gap-1">
-                              <p className={`font-medium truncate ${report.id === currentReportId ? "text-slate-900" : "text-slate-700"}`}>
-                                {report.title}
-                              </p>
-                              {report.status === "processing" && (
-                                <span className="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded-sm text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                  <Loader2 className="animate-spin mr-1 h-2 w-2" />
-                                  processing
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <p className="text-[10px] text-slate-500 truncate">{report.time}</p>
-                              {report.id === currentReportId && (
-                                <Badge variant="outline" className="text-[9px] py-0 px-1 h-3 font-normal bg-slate-100 border-slate-200">
-                                  current
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </button>
-                      ))}
+    useEffect(() => {
+        const fetchReportHistory = () => {
+            setLoading(true);
+            // Fetch a reasonable number of reports - adjust pageSize as needed, TODO: add pagination
+            getReportHistory(1, 20).then((resp) => {
+                if (resp.data.reports && resp.data.reports.length > 0) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+
+                    const weekAgo = new Date(today);
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+
+                    // Group reports by date categories
+                    const todayReports: ReportGroup["reports"] = [];
+                    const yesterdayReports: ReportGroup["reports"] = [];
+                    const weekReports: ReportGroup["reports"] = [];
+
+                    resp.data.reports.forEach(report => {
+                        const reportDate = new Date(report.created_at);
+                        reportDate.setHours(0, 0, 0, 0);
+
+                        const formattedTime = new Date(report.created_at).toLocaleString('en-US', {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true
+                        });
+
+                        // Generate a title from the summary or use a default
+                        let title = `Report ${report.id.slice(0, 6)}`;
+                        if (report.content && report.content.summary && report.content.summary.length > 0) {
+                            const summaryText = report.content.summary
+                                .filter(item => item.type === "text" && item.text?.content)
+                                .map(item => item.text?.content)
+                                .join(" ");
+
+                            if (summaryText) {
+                                title = summaryText.slice(0, 24) + (summaryText.length > 24 ? "..." : "");
+                            }
+                        }
+
+                        // Simulate a status for demo purposes - in real app, get this from the report data
+                        // About 20% of reports will be "processing" for this demo
+                        const status = Math.random() > 0.8 ? "processing" : "completed";
+
+                        const reportItem = {
+                            id: report.id,
+                            title: title,
+                            time: formattedTime,
+                            created_at: report.created_at,
+                            status: status as "processing" | "completed" | "error"
+                        };
+
+                        // Add to appropriate category
+                        if (reportDate.getTime() === today.getTime()) {
+                            todayReports.push(reportItem);
+                        } else if (reportDate.getTime() === yesterday.getTime()) {
+                            yesterdayReports.push(reportItem);
+                        } else if (reportDate.getTime() >= weekAgo.getTime()) {
+                            weekReports.push(reportItem);
+                        }
+                    });
+
+                    // Sort reports by time (newest first)
+                    const sortByDate = (a: { created_at: string }, b: { created_at: string }) =>
+                        new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+
+                    todayReports.sort(sortByDate);
+                    yesterdayReports.sort(sortByDate);
+                    weekReports.sort(sortByDate);
+
+                    // Create final groups
+                    const groups: ReportGroup[] = [];
+
+                    if (todayReports.length > 0) {
+                        groups.push({date: "Today", reports: todayReports});
+                    }
+
+                    if (yesterdayReports.length > 0) {
+                        groups.push({date: "Yesterday", reports: yesterdayReports});
+                    }
+
+                    if (weekReports.length > 0) {
+                        groups.push({date: "Previous 7 Days", reports: weekReports});
+                    }
+
+                    setReportGroups(groups);
+                }
+            }).finally(() => {
+                setLoading(false);
+            })
+        };
+
+        fetchReportHistory();
+    }, []);
+
+    return (
+        <aside
+            className={`fixed top-[61px] left-0 bottom-0 w-56 border-r bg-slate-50/80 transition-transform duration-300 z-10 ${
+                isOpen ? "translate-x-0" : "-translate-x-full"
+            } hidden md:block`}
+        >
+            <div className="flex flex-col h-full">
+                {/* Menu section */}
+                <div className="px-2 py-3 border-b border-slate-200">
+                    <div className="mb-2 px-2">
+                        <p className="text-xs font-medium text-slate-400 uppercase">Menu</p>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              ))}
+                    <nav className="space-y-1">
+                        <a href="/dashboard"
+                           className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-sm transition-colors">
+                            <LayoutDashboard className="h-3.5 w-3.5 text-slate-500"/>
+                            <span>Dashboard</span>
+                        </a>
+                    </nav>
+                </div>
+
+                {/* Main scrollable area for reports */}
+                <div
+                    className="px-2 py-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                    {loading ? (
+                        <div className="flex justify-center py-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-slate-400"/>
+                        </div>
+                    ) : reportGroups.length === 0 ? (
+                        <div className="text-xs text-slate-500 text-center py-2">
+                            No reports found
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            {reportGroups.map((group) => (
+                                <Collapsible key={group.date} defaultOpen={group.date === "Today"}>
+                                    <CollapsibleTrigger
+                                        className="flex items-center justify-between w-full px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-sm">
+                                        <span>{group.date}</span>
+                                        <ChevronDownIcon size={14} className="text-slate-500"/>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="pl-1">
+                                        <div className="mt-0.5">
+                                            {group.reports.map((report) => (
+                                                <button
+                                                    key={report.id}
+                                                    onClick={() => onSelectReport(report.id)}
+                                                    className={`flex items-start w-full px-2 py-1.5 text-xs text-left text-slate-700 hover:bg-slate-100 rounded-sm ${
+                                                        report.id === currentReportId ? "bg-slate-100 border-l-2 border-slate-400" : ""
+                                                    }`}
+                                                >
+                                                    <div className="w-full overflow-hidden pr-1">
+                                                        <div className="flex items-center gap-1">
+                                                            <p className={`font-medium truncate ${report.id === currentReportId ? "text-slate-900" : "text-slate-700"}`}>
+                                                                {report.title}
+                                                            </p>
+                                                            {report.status === "processing" && (
+                                                                <span
+                                                                    className="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded-sm text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                                                                >
+                                                                    <Loader2 className="animate-spin mr-1 h-2 w-2"/>
+                                                                    processing
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                            <p className="text-[10px] text-slate-500 truncate">{report.time}</p>
+                                                            {report.id === currentReportId && (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="text-[9px] py-0 px-1 h-3 font-normal bg-slate-100 border-slate-200"
+                                                                >
+                                                                    current
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Fixed user profile button at the bottom */}
+                <div className="mt-auto border-t border-slate-200 px-2 py-2">
+                    <button
+                        onClick={() => window.location.href = '/userprofile'}
+                        className="w-full flex items-center gap-2 px-2 py-2 hover:bg-slate-200/70 transition-colors rounded-md"
+                    >
+                        <div
+                            className="relative flex-shrink-0 h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
+                            {userLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-slate-600"/>
+                            ) : userInfo?.image ? (
+                                <Image src={userInfo.image} alt={userInfo.name || 'User'} className="object-cover" fill />
+                            ) : (
+                                <User className="h-4 w-4 text-slate-600"/>
+                            )}
+                        </div>
+                        <div className="overflow-hidden text-left">
+                            <p className="text-xs font-medium text-slate-800 truncate">
+                                {userLoading ? 'Loading...' : userInfo?.name || 'User Profile'}
+                            </p>
+                            <p className="text-[10px] text-slate-500 truncate">
+                                {userLoading ? '' : userInfo?.email || 'View profile'}
+                            </p>
+                        </div>
+                    </button>
+                </div>
             </div>
-          )}
-        </div>
-        
-        {/* Fixed user profile button at the bottom */}
-        <div className="mt-auto border-t border-slate-200 px-2 py-2">
-          <button 
-            onClick={() => window.location.href = '/userprofile'} 
-            className="w-full flex items-center gap-2 px-2 py-2 hover:bg-slate-200/70 transition-colors rounded-md"
-          >
-            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
-              {userLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
-              ) : userInfo?.image ? (
-                <img src={userInfo.image} alt={userInfo.name || 'User'} className="h-full w-full object-cover" />
-              ) : (
-                <User className="h-4 w-4 text-slate-600" />
-              )}
-            </div>
-            <div className="overflow-hidden text-left">
-              <p className="text-xs font-medium text-slate-800 truncate">
-                {userLoading ? 'Loading...' : userInfo?.name || 'User Profile'}
-              </p>
-              <p className="text-[10px] text-slate-500 truncate">
-                {userLoading ? '' : userInfo?.email || 'View profile'}
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
-    </aside>
-  );
+        </aside>
+    );
 }
 
 // Email Item Component
@@ -394,15 +400,15 @@ function EmailItem({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className={`gap-1 h-7 px-2 text-xs ${
                   email.action ? getActionButtonStyle(email.action) : "text-slate-600 border-slate-200 hover:bg-slate-50"
                 }`}
               >
                 {getActionIcon(email.action)}
-                {email.action || "Actions"} 
+                {email.action || "Actions"}
                 {email.action_result === null && email.action && (
                   <span className="ml-1 text-2xs text-slate-500">(pending)</span>
                 )}
@@ -410,29 +416,29 @@ function EmailItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white border-slate-100 shadow-md">
-              <DropdownMenuItem 
-                onClick={() => onActionSelect(email.id, "Read")} 
+              <DropdownMenuItem
+                onClick={() => onActionSelect(email.id, "Read")}
                 className={`${email.action === "Read" ? "bg-slate-50" : ""} text-slate-700`}
               >
                 <Check className="mr-2 h-4 w-4 text-slate-600" />
                 Mark as Read
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onActionSelect(email.id, "Reply")} 
+              <DropdownMenuItem
+                onClick={() => onActionSelect(email.id, "Reply")}
                 className={`${email.action === "Reply" ? "bg-slate-50" : ""} text-slate-700`}
               >
                 <Reply className="mr-2 h-4 w-4 text-blue-500" />
                 Reply
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onActionSelect(email.id, "Delete")} 
+              <DropdownMenuItem
+                onClick={() => onActionSelect(email.id, "Delete")}
                 className={`${email.action === "Delete" ? "bg-slate-50" : ""} text-slate-700`}
               >
                 <Trash className="mr-2 h-4 w-4 text-red-500" />
                 Delete
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onActionSelect(email.id, "Ignore")} 
+              <DropdownMenuItem
+                onClick={() => onActionSelect(email.id, "Ignore")}
                 className={`${email.action === "Ignore" ? "bg-slate-50" : ""} text-slate-700`}
               >
                 <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />
@@ -505,23 +511,20 @@ export function ReportClient({ reportId }: { reportId: string }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch report data on the client side
-  const fetchReport = async () => {
-    try {
-      setRefreshing(true);
-      const { report: fetchedReport } = await getReportById(reportId);
-      setReport(fetchedReport);
-    } catch (error) {
-      console.error("Error fetching report:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+    // Fetch report data on the client side
+    const fetchReport = (reportId: string) => {
+        setRefreshing(true);
+        getReportById(reportId).then((resp) => {
+            setReport(resp.data.report);
+        }).finally(() => {
+            setLoading(false);
+            setRefreshing(false);
+        })
+    };
 
-  useEffect(() => {
-    fetchReport();
-  }, [reportId]);
+    useEffect(() => {
+        fetchReport(reportId);
+    }, [reportId]);
 
   // Transform report data to emails if report exists
   const [emails, setEmails] = useState<(Email & { replyText?: string })[]>(() => {
@@ -564,7 +567,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
     // Transform report data to emails
     const allEmails: (Email & { replyText?: string })[] = [];
-    
+
     // Process Gmail messages
     if (report.content.content.gmail) {
       report.content.content.gmail.forEach(account => {
@@ -586,7 +589,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
         });
       });
     }
-    
+
     // Process Outlook messages
     if (report.content.content.outlook) {
       report.content.content.outlook.forEach(account => {
@@ -608,14 +611,14 @@ export function ReportClient({ reportId }: { reportId: string }) {
         });
       });
     }
-    
+
     setEmails(allEmails);
   }, [report]);
 
   const handleSelectReport = (id: string) => {
     // Navigate to the new report ID using window.location
     window.location.href = `/report/${id}`;
-    
+
     // On mobile, close sidebar after selection
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
@@ -628,7 +631,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
     if (!email) return;
 
     // Get the account from the report
-    const account = report?.content?.content?.gmail?.find(acc => 
+    const account = report?.content?.content?.gmail?.find(acc =>
       acc.messages.some(msg => msg.message_id === email.message_id)
     );
 
@@ -638,7 +641,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
     }
 
     // Update email state to show loading
-    setEmails(prev => prev.map(e => 
+    setEmails(prev => prev.map(e =>
       e.id === emailId ? { ...e, isGeneratingReply: true } : e
     ));
 
@@ -659,7 +662,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
         const { done, value } = await reader.read();
         if (done) {
           // Update email with generated reply
-          setEmails(prev => prev.map(e => 
+          setEmails(prev => prev.map(e =>
             e.id === emailId ? { ...e, replyText: result, isGeneratingReply: false } : e
           ));
           return;
@@ -677,7 +680,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
     } catch (error) {
       console.error("Error generating reply:", error);
       // Reset loading state on error
-      setEmails(prev => prev.map(e => 
+      setEmails(prev => prev.map(e =>
         e.id === emailId ? { ...e, isGeneratingReply: false } : e
       ));
     }
@@ -687,10 +690,10 @@ export function ReportClient({ reportId }: { reportId: string }) {
   const handleActionSelect = (emailId: string, action: "Read" | "Delete" | "Reply" | "Ignore" | null) => {
     // If action is reply, show the reply field and generate reply
     setSelectedEmailId(emailId);
-    
+
     if (action === "Reply") {
       setShowReplyField(true);
-      
+
       // Auto-generate reply if not already present
       const email = emails.find(e => e.id === emailId);
       if (email && (!email.replyText || email.replyText.trim() === "")) {
@@ -702,8 +705,8 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
     // Update the email with the selected action (pending state)
     setEmails(prev => prev.map(email =>
-      email.id === emailId 
-        ? { ...email, action, action_result: null } 
+      email.id === emailId
+        ? { ...email, action, action_result: null }
         : email
     ));
   };
@@ -723,7 +726,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
   // New function to apply all pending actions
   const applyAllActions = () => {
     // Display loading state for all emails with actions
-    setEmails(prev => prev.map(email => 
+    setEmails(prev => prev.map(email =>
       email.action ? { ...email, action_result: null } : email
     ));
 
@@ -732,25 +735,25 @@ export function ReportClient({ reportId }: { reportId: string }) {
       setEmails(prev => {
         // Create a new array to hold the updated emails
         const updatedEmails = [...prev];
-        
+
         // Process each email with an action
         prev.forEach((email, index) => {
           if (email.action) {
             // 90% chance of success for each action
             const success = Math.random() > 0.1;
-            updatedEmails[index] = { 
-              ...email, 
-              action_result: success ? "Success" : "Error" 
+            updatedEmails[index] = {
+              ...email,
+              action_result: success ? "Success" : "Error"
             };
           }
         });
-        
+
         return updatedEmails;
       });
 
       // After a delay, remove emails that were successfully deleted
       setTimeout(() => {
-        setEmails(prev => prev.filter(email => 
+        setEmails(prev => prev.filter(email =>
           !(email.action === "Delete" && email.action_result === "Success")
         ));
       }, 1000);
@@ -761,7 +764,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
   const nonEssentialEmails = emails.filter(email => !email.isEssential);
 
   // Format the report creation date if it exists
-  const formattedDate = report?.created_at 
+  const formattedDate = report?.created_at
     ? new Date(report.created_at).toLocaleString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -797,7 +800,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
     <div className="min-h-screen bg-slate-50/10">
       {/* Add a style tag for custom scrollbar styling */}
       <style dangerouslySetInnerHTML={{ __html: SCROLLBAR_STYLES }} />
-      
+
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b">
         <div className="px-5 py-3">
@@ -842,7 +845,9 @@ export function ReportClient({ reportId }: { reportId: string }) {
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0"
-                      onClick={fetchReport}
+                      onClick={() => {
+                        fetchReport(reportId)
+                      }}
                       disabled={refreshing}
                       title="Refresh report"
                     >
@@ -928,17 +933,17 @@ export function ReportClient({ reportId }: { reportId: string }) {
                       )}
                     </CardContent>
                   </TabsContent>
-                  
+
                   {/* Apply All Actions button section */}
                   <div className="px-4 py-3 border-t border-slate-200">
                     <div className="flex justify-between items-center">
                       <div className="text-xs text-slate-600">
-                        {emails.filter(email => email.action && !email.action_result).length > 0 
+                        {emails.filter(email => email.action && !email.action_result).length > 0
                           ? `${emails.filter(email => email.action && !email.action_result).length} suggested actions - click Apply to process`
                           : "No actions pending"}
                       </div>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="bg-slate-600 hover:bg-slate-500 text-white h-7 px-4 text-xs"
                         onClick={applyAllActions}
                         disabled={emails.filter(email => email.action && !email.action_result).length === 0}
@@ -955,4 +960,4 @@ export function ReportClient({ reportId }: { reportId: string }) {
       </section>
     </div>
   );
-} 
+}

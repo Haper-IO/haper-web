@@ -8,8 +8,8 @@ export function useUserInfo() {
   useEffect(() => {
     const fetchData = () => {
       setLoading(true);
-      getUserInfo().then((resp: any) => {
-        setUserInfo(resp.user)
+      getUserInfo().then((resp) => {
+        setUserInfo(resp.data.user)
       }).finally(() => {
         setLoading(false);
       })

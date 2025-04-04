@@ -11,11 +11,10 @@ export const reqHandler = axios.create({
 
 reqHandler.interceptors.response.use(
   (resp) => {
-    if (!resp.data.data) {
-      toast.error("no data field in response data")
-      return null
+    if (resp.data.data) {
+      resp.data = resp.data.data
     }
-    return resp.data.data
+    return resp
   },
   (error) => {
     let message: string

@@ -85,24 +85,24 @@ export interface BatchActionStatus {
 }
 
 // Get the newest report
-export const getNewestReport = async () : Promise<{ report: Report | null }> => {
+export const getNewestReport = async () => {
   return reqHandler.get<ReportResponse>('/report/newest');
 };
 
 // Generate a new report
-export const generateReport = async (): Promise<{ report: Report | null }> => {
+export const generateReport = async () => {
   return reqHandler.post<ReportResponse>('/report/generate');
 };
 
 // Get report history
-export const getReportHistory = async (page?: number, pageSize?: number) : Promise<{ reports: Report[], total_page: number }> => {
+export const getReportHistory = async (page?: number, pageSize?: number) => {
   return reqHandler.get<ReportListResponse>('/report/history', {
     params: { page, page_size: pageSize }
   });
 };
 
 // Get report by ID
-export const getReportById = async (reportId: string) : Promise<{ report: Report | null }> => {
+export const getReportById = async (reportId: string) => {
   return reqHandler.get<ReportResponse>(`/report/${reportId}`);
 };
 

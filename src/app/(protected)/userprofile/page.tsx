@@ -31,9 +31,9 @@ export default function TestProfilePage() {
       return
     }
     setIsLoadingSetting(true)
-    getUserSettings().then((resp: any) => {
-      setUserSetting(resp.setting)
-      setSelectedTags(resp.setting.key_message_tags)
+    getUserSettings().then((resp) => {
+      setUserSetting(resp.data.setting)
+      setSelectedTags(resp.data.setting.key_message_tags)
     }).finally(() => {
       setIsLoadingSetting(false)
     })
@@ -44,8 +44,8 @@ export default function TestProfilePage() {
       return
     }
     setIsLoadingSetting(true)
-    createUserSettings(settings).then((resp: any) => {
-      setUserSetting(resp.setting)
+    createUserSettings(settings).then((resp) => {
+      setUserSetting(resp.data.setting)
     }).finally(() => {
       setIsLoadingSetting(false)
     })
@@ -57,8 +57,8 @@ export default function TestProfilePage() {
       return
     }
     setIsLoadingSetting(true)
-    updateUserSettings(settings).then((resp: any) => {
-      setUserSetting(resp.setting)
+    updateUserSettings(settings).then((resp) => {
+      setUserSetting(resp.data.setting)
     }).finally(() => {
       setIsLoadingSetting(false)
     })
@@ -67,7 +67,6 @@ export default function TestProfilePage() {
   useEffect(() => {
     fetchSettings()
   }, [])
-
 
 
   // Toggle tag selection

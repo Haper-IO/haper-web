@@ -33,8 +33,8 @@ export function transToReportSummary(report: Report) {
         .filter(message => message.category === "Essential")
         .map(message => {
           // Clean up sender names by removing email parts in brackets
-          const sender = message.sender.includes('<') 
-            ? message.sender.split('<')[0].trim() 
+          const sender = message.sender.includes('<')
+            ? message.sender.split('<')[0].trim()
             : message.sender;
           return sender;
         }),
@@ -103,16 +103,11 @@ export function LatestSummary() {
 
     getNewestReport()
       .then((resp) => {
-        console.log("API response:", resp);
-        if (resp?.report) {
-          setReport(resp.report);
-          console.log("Report fetched:", resp.report);
-        } else {
-          console.log("No report data in response");
+        if (resp.data.report) {
+          setReport(resp.data.report);
         }
       })
-      .catch((error) => {
-        console.error("Error fetching report:", error);
+      .catch(() => {
         setReportError("Failed to load report data");
       })
       .finally(() => {
@@ -129,26 +124,19 @@ export function LatestSummary() {
 
     generateReport()
       .then((resp) => {
-        if (resp?.report) {
-          setReport(resp.report);
-          console.log("New report generated:", resp.report);
+        if (resp.data.report) {
+          setReport(resp.data.report);
           // Navigate to the report page after successful generation
-          if (resp.report?.id) {
-            router.push(`/report/${resp.report.id}`);
+          if (resp.data.report.id) {
+            router.push(`/report/${resp.data.report.id}`);
           }
         } else {
-          console.log("No report data in response");
           setReportError("Failed to generate report");
         }
       })
-      .catch((error) => {
-        console.error("Error generating report:", error);
+      .catch(({message}) => {
         // Check if it's an API error with a specific status
-        if (error?.response?.status === 404 || error?.response?.status === 400) {
-          setReportError("You do not receive any messages since last updates, please check later!");
-        } else {
-          setReportError("Failed to generate report");
-        }
+        setReportError(`Failed to generate report: ${message}`);
       })
       .finally(() => {
         setIsGenerating(false);
@@ -182,12 +170,12 @@ export function LatestSummary() {
 
     // Debug to check if we have highlights
     console.log("Highlighting senders:", highlights.map(h => h.name).join(", "));
-    
+
     // Sort by length (longest first) to avoid partial replacements
-    const sortedHighlights = [...highlights].sort((a, b) => 
+    const sortedHighlights = [...highlights].sort((a, b) =>
       b.name.length - a.name.length
     );
-    
+
     let result = content;
     sortedHighlights.forEach(person => {
       if (person.name && person.name.length > 1) {
@@ -424,19 +412,14 @@ export function LastReport() {
     // Use real API call to fetch report history
     getReportHistory(1, 2)
       .then((resp) => {
-        console.log("Report history API response:", resp);
-        console.log("Reports fetched:", resp?.reports);
-        const reports = resp?.reports || [];
+        const reports = resp.data.reports || [];
         if (reports[0]) {
           setLatestReport(reports[0]);
-          console.log("Latest report fetched:", reports[0]);
         } else {
-          console.log("No reports available");
           setLatestReport(null);
         }
       })
-      .catch((error) => {
-        console.error("Error fetching report history:", error);
+      .catch(() => {
         setReportError("Failed to load report history");
       })
       .finally(() => {
@@ -530,15 +513,15 @@ export function LastReport() {
   // Highlight sender names in text
   const renderHighlightedContent = (summaryText: string, report: Report) => {
     if (!report?.content?.content?.gmail) return summaryText;
-    
+
     // Extract all essential senders
     const essentialSenders: string[] = [];
     report.content.content.gmail.forEach(account => {
       if (account.messages) {
         account.messages.forEach(message => {
           if (message.category === "Essential") {
-            const sender = message.sender.includes('<') 
-              ? message.sender.split('<')[0].trim() 
+            const sender = message.sender.includes('<')
+              ? message.sender.split('<')[0].trim()
               : message.sender;
             if (!essentialSenders.includes(sender)) {
               essentialSenders.push(sender);
@@ -547,7 +530,7 @@ export function LastReport() {
         });
       }
     });
-    
+
     // Highlight each sender in the text
     let result = summaryText;
     essentialSenders.forEach(sender => {
@@ -565,7 +548,7 @@ export function LastReport() {
   const generateContent = (report: Report) => {
     const summaryText = generateSummaryFromMessages(report);
     const highlightedSummary = renderHighlightedContent(summaryText, report);
-    
+
     return (
       <div className="space-y-2">
         <p className="text-sm text-slate-800 leading-relaxed" dangerouslySetInnerHTML={{__html: highlightedSummary}} />
@@ -626,11 +609,6 @@ export function LastReport() {
   useEffect(() => {
     // Initial load with real API call
     fetchReportHistory();
-
-    // Clean up function
-    return () => {
-      setReportLoading(false);
-    };
   }, []);
 
   return (

@@ -22,7 +22,7 @@ import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {
   stopMessageTracking,
   listMessageTrackingStatus,
-  startMessageTrackingByAccountID
+  startMessageTrackingByAccountID, TrackingStatus
 } from "@/lib/requests/client/message-tracking"
 import {oauthRedirect} from "@/app/actions/oauth";
 import {cn} from "@/lib/utils";
@@ -47,6 +47,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { getReportHistory } from "@/lib/requests/client/report";
+import Image from "next/image";
 
 // Add custom scrollbar styles
 const SCROLLBAR_STYLES = `
@@ -100,15 +101,6 @@ const SidebarLink = ({href, icon: Icon, children, active = false}: SidebarLinkPr
   </Link>
 )
 
-interface TrackingStatus {
-  account_id: string;
-  email: string;
-  provider: string;
-  status: "NotStarted" | "Ongoing" | "Stopped" | "Error";
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
 const SupportedProviders = ["google", "microsoft"]
 
 const getRunningProviders = (trackingStatuses: Record<string, TrackingStatus[]>) => {
@@ -131,12 +123,10 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
 
   useEffect(() => {
     const fetchReportHistory = async () => {
-      try {
-        setLoading(true);
-        // Fetch a reasonable number of reports
-        const response = await getReportHistory(1, 20);
-
-        if (response.reports && response.reports.length > 0) {
+      setLoading(true);
+      // Fetch a reasonable number of reports
+      getReportHistory(1, 20).then((resp) => {
+        if (resp.data.reports && resp.data.reports.length > 0) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
@@ -151,7 +141,7 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
           const yesterdayReports: ReportGroup["reports"] = [];
           const weekReports: ReportGroup["reports"] = [];
 
-          response.reports.forEach(report => {
+          resp.data.reports.forEach(report => {
             const reportDate = new Date(report.created_at);
             reportDate.setHours(0, 0, 0, 0);
 
@@ -220,11 +210,9 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
 
           setReportGroups(groups);
         }
-      } catch (error) {
-        console.error("Error fetching report history:", error);
-      } finally {
+      }).finally(() => {
         setLoading(false);
-      }
+      })
     };
 
     fetchReportHistory();
@@ -311,11 +299,11 @@ function EnhancedSidebar({ isOpen }: { isOpen: boolean }) {
             onClick={() => window.location.href = '/userprofile'}
             className="w-full flex items-center gap-2 px-2 py-2 hover:bg-slate-200/70 transition-colors rounded-md"
           >
-            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
+            <div className="relative flex-shrink-0 h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
               {userLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
               ) : userInfo?.image ? (
-                <img src={userInfo.image} alt={userInfo.name || 'User'} className="h-full w-full object-cover" />
+                <Image src={userInfo.image} alt={userInfo.name || 'User'} className="object-cover" fill/>
               ) : (
                 <User className="h-4 w-4 text-slate-600" />
               )}
@@ -355,8 +343,7 @@ export default function DashboardPage() {
     setIsFetchingTrackingStatus(true)
     listMessageTrackingStatus().then((resp) => {
       const trackingStatusMap: Record<string, TrackingStatus[]> = {}
-      // @ts-ignore
-      for (const t of resp.tracking_status) {
+      for (const t of resp.data.tracking_status) {
         const provider = t.provider
         if (!trackingStatusMap[provider]) {
           trackingStatusMap[provider] = []
