@@ -5,7 +5,6 @@ export async function generateStaticParams() {
   // This could be dynamically generated from your API
   // For example: const reports = await fetchMostViewedReports();
 
-  // For now, return some static IDs
   return [
     { id: "latest" },
     { id: "today-1" },

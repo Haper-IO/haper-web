@@ -16,14 +16,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ChevronDownIcon, RefreshCw, PanelLeft, PanelLeftClose, Loader2, X, User, LayoutDashboard } from "lucide-react"
+import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ChevronDownIcon, RefreshCw, PanelLeft, PanelLeftClose, Loader2, User, LayoutDashboard } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Report, getReportById, getReportHistory } from "@/lib/requests/client/report"
+import { Report, getReportById, getReportHistory, generateReply } from "@/lib/requests/client/report"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import { cn } from "@/lib/utils"
 import { useUserInfo } from "@/hooks/useUserInfo"
@@ -70,6 +70,8 @@ type Email = {
   tags: string[]
   action: "Read" | "Delete" | "Reply" | "Ignore" | null
   action_result: "Success" | "Error" | null
+  replyText?: string
+  isGeneratingReply?: boolean
 }
 
 // Create a type for categorized reports
@@ -316,7 +318,8 @@ function EmailItem({
   showReplyField,
   onMove,
   onActionSelect,
-  setShowReplyField
+  setShowReplyField,
+  onRegenerateReply
 }: {
   email: Email
   isEssential: boolean
@@ -324,7 +327,17 @@ function EmailItem({
   onMove: (emailId: string, newStatus: boolean) => void
   onActionSelect: (emailId: string, action: "Read" | "Delete" | "Reply" | "Ignore" | null) => void
   setShowReplyField: (show: boolean) => void
+  onRegenerateReply: (emailId: string) => void
 }) {
+  const [replyText, setReplyText] = useState<string>(email.replyText || "");
+  const [isGenerating, setIsGenerating] = useState<boolean>(email.isGeneratingReply || false);
+
+  // Update local state when email props change
+  useEffect(() => {
+    setReplyText(email.replyText || "");
+    setIsGenerating(email.isGeneratingReply || false);
+  }, [email.replyText, email.isGeneratingReply]);
+
   // Function to get action button style
   const getActionButtonStyle = (action: "Read" | "Delete" | "Reply" | "Ignore") => {
     switch (action) {
@@ -434,28 +447,49 @@ function EmailItem({
 
       {showReplyField && (
         <div className="mt-3 pt-3 border-t border-slate-200">
-          <Textarea
-            placeholder="Type your reply here..."
-            className="mb-2 border-slate-200 focus:border-slate-300 focus:ring-slate-200 text-slate-700 rounded-md resize-none min-h-[80px] text-xs"
-            disabled={email.action_result === "Success"}
-          />
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowReplyField(false)}
-              className="text-slate-600 border-slate-200 hover:bg-slate-50 h-7 px-3 text-xs"
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="bg-slate-600 hover:bg-slate-500 text-white h-7 px-3 text-xs"
-              onClick={() => onActionSelect(email.id, "Reply")}
-            >
-              Set as Reply Action
-            </Button>
-          </div>
+          {isGenerating ? (
+            <div className="flex flex-col items-center justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-slate-500 mb-2" />
+              <p className="text-xs text-slate-500">Generating reply...</p>
+            </div>
+          ) : (
+            <>
+              <Textarea
+                placeholder="Type your reply here..."
+                className="mb-2 border-slate-200 focus:border-slate-300 focus:ring-slate-200 text-slate-700 rounded-md resize-none min-h-[80px] text-xs"
+                disabled={email.action_result === "Success"}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onRegenerateReply(email.id)}
+                  className="text-slate-600 border-slate-200 hover:bg-slate-50 h-7 px-3 text-xs"
+                  disabled={isGenerating}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Regenerate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowReplyField(false)}
+                  className="text-slate-600 border-slate-200 hover:bg-slate-50 h-7 px-3 text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-slate-600 hover:bg-slate-500 text-white h-7 px-3 text-xs"
+                  onClick={() => onActionSelect(email.id, "Reply")}
+                >
+                  Set as Reply Action
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -490,7 +524,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
   }, [reportId]);
 
   // Transform report data to emails if report exists
-  const [emails, setEmails] = useState<Email[]>(() => {
+  const [emails, setEmails] = useState<(Email & { replyText?: string })[]>(() => {
     // Use default placeholders initially
     return [
       {
@@ -504,7 +538,8 @@ export function ReportClient({ reportId }: { reportId: string }) {
         isEssential: false,
         tags: ["newsletter", "marketing"],
         action: "Delete",  // This would come from the API
-        action_result: null // Initially null until applied
+        action_result: null, // Initially null until applied
+        replyText: ""
       },
       {
         id: "2",
@@ -517,7 +552,8 @@ export function ReportClient({ reportId }: { reportId: string }) {
         isEssential: true,
         tags: ["security", "important"],
         action: "Read",  // This would come from the API
-        action_result: null // Initially null until applied
+        action_result: null, // Initially null until applied
+        replyText: ""
       }
     ];
   });
@@ -527,7 +563,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
     if (!report || !report.content) return;
 
     // Transform report data to emails
-    const allEmails: Email[] = [];
+    const allEmails: (Email & { replyText?: string })[] = [];
     
     // Process Gmail messages
     if (report.content.content.gmail) {
@@ -544,7 +580,8 @@ export function ReportClient({ reportId }: { reportId: string }) {
             isEssential: message.category === "Essential",
             tags: message.tags || [],
             action: message.action as "Read" | "Delete" | "Reply" | "Ignore" || null, // Preserve action from API
-            action_result: null // Initially null until applied
+            action_result: null, // Initially null until applied
+            replyText: ""
           });
         });
       });
@@ -565,7 +602,8 @@ export function ReportClient({ reportId }: { reportId: string }) {
             isEssential: message.category === "Essential",
             tags: message.tags || [],
             action: message.action as "Read" | "Delete" | "Reply" | "Ignore" || null, // Preserve action from API
-            action_result: null // Initially null until applied
+            action_result: null, // Initially null until applied
+            replyText: ""
           });
         });
       });
@@ -584,11 +622,83 @@ export function ReportClient({ reportId }: { reportId: string }) {
     }
   };
 
+  // Generate reply for an email
+  const generateReplyForEmail = async (emailId: string) => {
+    const email = emails.find(e => e.id === emailId);
+    if (!email) return;
+
+    // Get the account from the report
+    const account = report?.content?.content?.gmail?.find(acc => 
+      acc.messages.some(msg => msg.message_id === email.message_id)
+    );
+
+    if (!account) {
+      console.error("Account not found for this email");
+      return;
+    }
+
+    // Update email state to show loading
+    setEmails(prev => prev.map(e => 
+      e.id === emailId ? { ...e, isGeneratingReply: true } : e
+    ));
+
+    try {
+      // Setup request data
+      const request = {
+        source: "gmail", // You may need to determine this dynamically
+        account_id: account.account_id,
+        id: email.message_id
+      };
+
+      // Call the generateReply API
+      const reader = await generateReply(reportId, request);
+      let result = "";
+
+      // Process the streaming response
+      const processText = async () => {
+        const { done, value } = await reader.read();
+        if (done) {
+          // Update email with generated reply
+          setEmails(prev => prev.map(e => 
+            e.id === emailId ? { ...e, replyText: result, isGeneratingReply: false } : e
+          ));
+          return;
+        }
+
+        // Decode and append the chunk
+        const chunk = new TextDecoder().decode(value);
+        result += chunk;
+
+        // Continue reading
+        return processText();
+      };
+
+      await processText();
+    } catch (error) {
+      console.error("Error generating reply:", error);
+      // Reset loading state on error
+      setEmails(prev => prev.map(e => 
+        e.id === emailId ? { ...e, isGeneratingReply: false } : e
+      ));
+    }
+  };
+
   // Handle actions on emails (read, reply, delete)
   const handleActionSelect = (emailId: string, action: "Read" | "Delete" | "Reply" | "Ignore" | null) => {
-    // If action is reply, show the reply field
+    // If action is reply, show the reply field and generate reply
     setSelectedEmailId(emailId);
-    setShowReplyField(action === "Reply");
+    
+    if (action === "Reply") {
+      setShowReplyField(true);
+      
+      // Auto-generate reply if not already present
+      const email = emails.find(e => e.id === emailId);
+      if (email && (!email.replyText || email.replyText.trim() === "")) {
+        generateReplyForEmail(emailId);
+      }
+    } else {
+      setShowReplyField(false);
+    }
 
     // Update the email with the selected action (pending state)
     setEmails(prev => prev.map(email =>
@@ -596,6 +706,11 @@ export function ReportClient({ reportId }: { reportId: string }) {
         ? { ...email, action, action_result: null } 
         : email
     ));
+  };
+
+  // Handle regenerating a reply
+  const handleRegenerateReply = (emailId: string) => {
+    generateReplyForEmail(emailId);
   };
 
   // Handle moving emails between essential and non-essential
@@ -784,6 +899,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
                             onMove={handleMoveEmail}
                             onActionSelect={handleActionSelect}
                             setShowReplyField={setShowReplyField}
+                            onRegenerateReply={handleRegenerateReply}
                           />
                         ))
                       )}
@@ -806,6 +922,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
                             onMove={handleMoveEmail}
                             onActionSelect={handleActionSelect}
                             setShowReplyField={setShowReplyField}
+                            onRegenerateReply={handleRegenerateReply}
                           />
                         ))
                       )}
