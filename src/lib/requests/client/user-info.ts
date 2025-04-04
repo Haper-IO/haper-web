@@ -15,5 +15,5 @@ export interface UserInfo {
  * @returns - A promise that resolves to the user information.
  */
 export const getUserInfo = async () => {
-  return reqHandler.get<{user: UserInfo}>('/user/info');
+  return reqHandler.get('/user/info');
 };

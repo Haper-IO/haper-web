@@ -1,10 +1,10 @@
-import { Mail, RefreshCw, PlusCircle } from "lucide-react"
+import { Mail, RefreshCw, PlusCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { generateReport, getNewestReport, getReportHistory, Report } from "@/lib/requests/client/report"
+import { generateReport, getNewestReport, getReportHistory, getReportProcessingStatus, Report } from "@/lib/requests/client/report"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 
@@ -33,8 +33,8 @@ export function transToReportSummary(report: Report) {
         .filter(message => message.category === "Essential")
         .map(message => {
           // Clean up sender names by removing email parts in brackets
-          const sender = message.sender.includes('<')
-            ? message.sender.split('<')[0].trim()
+          const sender = message.sender.includes('<') 
+            ? message.sender.split('<')[0].trim() 
             : message.sender;
           return sender;
         }),
@@ -83,6 +83,8 @@ export function LatestSummary() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<{gmail?: number, outlook?: number} | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Determine which email providers are present in the report
   const hasGmail = (report as Report)?.content?.content?.gmail && (report as Report)?.content?.content?.gmail.length > 0;
@@ -93,21 +95,85 @@ export function LatestSummary() {
     fetchReport();
   }, []);
 
+  // Effect to poll processing status for latest report
+  useEffect(() => {
+    if (!report?.id) return;
+    
+    let isActive = true;
+    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+    
+    const fetchProcessingStatus = async () => {
+      try {
+        setIsProcessing(true);
+        reader = await getReportProcessingStatus(report.id);
+        
+        const processStream = async () => {
+          if (!isActive || !reader) return;
+          
+          try {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+              setIsProcessing(false);
+              return;
+            }
+            
+            // Decode and parse the chunk
+            const chunk = new TextDecoder().decode(value);
+            try {
+              const data = JSON.parse(chunk);
+              setProcessingStatus(data);
+              
+              // Check if still processing
+              const totalInQueue = (data.gmail || 0) + (data.outlook || 0);
+              setIsProcessing(totalInQueue > 0);
+              
+              // Continue reading if still processing
+              if (isActive) {
+                processStream();
+              }
+            } catch (error) {
+              if (isActive) {
+                processStream();
+              }
+            }
+          } catch (error) {
+            setIsProcessing(false);
+          }
+        };
+        
+        processStream();
+      } catch (error) {
+        setIsProcessing(false);
+      }
+    };
+    
+    fetchProcessingStatus();
+    
+    // Clean up function
+    return () => {
+      isActive = false;
+      if (reader) {
+        reader.cancel().catch(console.error);
+      }
+    };
+  }, [report?.id]);
+
   const fetchReport = () => {
     if (reportLoading) {
       return;
     }
     setReportLoading(true);
     setReportError(null);
-    console.log("Fetching newest report...");
 
     getNewestReport()
       .then((resp) => {
-        if (resp.data.report) {
-          setReport(resp.data.report);
+        if (resp?.report) {
+          setReport(resp.report);
+        } else {
         }
       })
-      .catch(() => {
+      .catch((error) => {
         setReportError("Failed to load report data");
       })
       .finally(() => {
@@ -124,19 +190,23 @@ export function LatestSummary() {
 
     generateReport()
       .then((resp) => {
-        if (resp.data.report) {
-          setReport(resp.data.report);
+        if (resp?.report) {
+          setReport(resp.report);
           // Navigate to the report page after successful generation
-          if (resp.data.report.id) {
-            router.push(`/report/${resp.data.report.id}`);
+          if (resp.report?.id) {
+            router.push(`/report/${resp.report.id}`);
           }
         } else {
           setReportError("Failed to generate report");
         }
       })
-      .catch(({message}) => {
+      .catch((error) => {
         // Check if it's an API error with a specific status
-        setReportError(`Failed to generate report: ${message}`);
+        if (error?.response?.status === 404 || error?.response?.status === 400) {
+          setReportError("You do not receive any messages since last updates, please check later!");
+        } else {
+          setReportError("Failed to generate report");
+        }
       })
       .finally(() => {
         setIsGenerating(false);
@@ -167,15 +237,12 @@ export function LatestSummary() {
     if (!content || !highlights || highlights.length === 0) {
       return <p className="text-sm text-slate-800 leading-relaxed">{content}</p>;
     }
-
-    // Debug to check if we have highlights
-    console.log("Highlighting senders:", highlights.map(h => h.name).join(", "));
-
+    
     // Sort by length (longest first) to avoid partial replacements
-    const sortedHighlights = [...highlights].sort((a, b) =>
+    const sortedHighlights = [...highlights].sort((a, b) => 
       b.name.length - a.name.length
     );
-
+    
     let result = content;
     sortedHighlights.forEach(person => {
       if (person.name && person.name.length > 1) {
@@ -258,6 +325,31 @@ export function LatestSummary() {
           {renderEmailProviderIcons()}
         </div>
       </CardHeader>
+      
+      {/* Message Processing Status */}
+      {isProcessing && processingStatus && (
+        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
+            <p className="text-xs font-medium text-blue-700">Processing messages</p>
+          </div>
+          <div className="mt-1 flex flex-wrap gap-3">
+            {processingStatus.gmail !== undefined && processingStatus.gmail > 0 && (
+              <div className="flex items-center gap-1.5">
+                <GmailIcon className="h-3.5 w-3.5" />
+                <span className="text-xs text-blue-700">{processingStatus.gmail} messages in queue</span>
+              </div>
+            )}
+            {processingStatus.outlook !== undefined && processingStatus.outlook > 0 && (
+              <div className="flex items-center gap-1.5">
+                <OutlookIcon className="h-3.5 w-3.5" />
+                <span className="text-xs text-blue-700">{processingStatus.outlook} messages in queue</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
       <div>
         <div className="flex flex-col md:flex-row flex-wrap gap-4">
           {/* Email Summary */}
@@ -396,10 +488,79 @@ export function LastReport() {
   const [latestReport, setLatestReport] = useState<Report | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [processingStatus, setProcessingStatus] = useState<{gmail?: number, outlook?: number} | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Determine which email providers are present in the report
   const hasGmail = latestReport?.content?.content?.gmail && latestReport?.content?.content?.gmail.length > 0;
   const hasOutlook = latestReport?.content?.content?.outlook && latestReport?.content?.content?.outlook.length > 0;
+
+  // Effect to poll processing status for last report
+  useEffect(() => {
+    if (!latestReport?.id) return;
+    
+    let isActive = true;
+    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+    
+    const fetchProcessingStatus = async () => {
+      try {
+        setIsProcessing(true);
+        reader = await getReportProcessingStatus(latestReport.id);
+        
+        const processStream = async () => {
+          if (!isActive || !reader) return;
+          
+          try {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+              setIsProcessing(false);
+              return;
+            }
+            
+            // Decode and parse the chunk
+            const chunk = new TextDecoder().decode(value);
+            try {
+              const data = JSON.parse(chunk);
+              setProcessingStatus(data);
+              
+              // Check if still processing
+              const totalInQueue = (data.gmail || 0) + (data.outlook || 0);
+              setIsProcessing(totalInQueue > 0);
+              
+              // Continue reading if still processing
+              if (isActive) {
+                processStream();
+              }
+            } catch (error) {
+              console.error("Error parsing processing status data:", error);
+              if (isActive) {
+                processStream();
+              }
+            }
+          } catch (error) {
+            console.error("Error reading processing status:", error);
+            setIsProcessing(false);
+          }
+        };
+        
+        processStream();
+      } catch (error) {
+        console.error("Error starting processing status polling:", error);
+        setIsProcessing(false);
+      }
+    };
+    
+    fetchProcessingStatus();
+    
+    // Clean up function
+    return () => {
+      isActive = false;
+      if (reader) {
+        reader.cancel().catch(console.error);
+      }
+    };
+  }, [latestReport?.id]);
 
   const fetchReportHistory = () => {
     if (reportLoading) {
@@ -407,19 +568,19 @@ export function LastReport() {
     }
     setReportLoading(true);
     setReportError(null);
-    console.log("Fetching report history...");
 
     // Use real API call to fetch report history
     getReportHistory(1, 2)
       .then((resp) => {
-        const reports = resp.data.reports || [];
+        const reports = resp?.reports || [];
         if (reports[0]) {
           setLatestReport(reports[0]);
         } else {
           setLatestReport(null);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error fetching report history:", error);
         setReportError("Failed to load report history");
       })
       .finally(() => {
@@ -513,15 +674,15 @@ export function LastReport() {
   // Highlight sender names in text
   const renderHighlightedContent = (summaryText: string, report: Report) => {
     if (!report?.content?.content?.gmail) return summaryText;
-
+    
     // Extract all essential senders
     const essentialSenders: string[] = [];
     report.content.content.gmail.forEach(account => {
       if (account.messages) {
         account.messages.forEach(message => {
           if (message.category === "Essential") {
-            const sender = message.sender.includes('<')
-              ? message.sender.split('<')[0].trim()
+            const sender = message.sender.includes('<') 
+              ? message.sender.split('<')[0].trim() 
               : message.sender;
             if (!essentialSenders.includes(sender)) {
               essentialSenders.push(sender);
@@ -530,7 +691,7 @@ export function LastReport() {
         });
       }
     });
-
+    
     // Highlight each sender in the text
     let result = summaryText;
     essentialSenders.forEach(sender => {
@@ -548,7 +709,7 @@ export function LastReport() {
   const generateContent = (report: Report) => {
     const summaryText = generateSummaryFromMessages(report);
     const highlightedSummary = renderHighlightedContent(summaryText, report);
-
+    
     return (
       <div className="space-y-2">
         <p className="text-sm text-slate-800 leading-relaxed" dangerouslySetInnerHTML={{__html: highlightedSummary}} />
@@ -609,6 +770,11 @@ export function LastReport() {
   useEffect(() => {
     // Initial load with real API call
     fetchReportHistory();
+
+    // Clean up function
+    return () => {
+      setReportLoading(false);
+    };
   }, []);
 
   return (
@@ -639,6 +805,31 @@ export function LastReport() {
           {renderEmailProviderIcons()}
         </div>
       </CardHeader>
+      
+      {/* Message Processing Status */}
+      {isProcessing && processingStatus && (
+        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
+            <p className="text-xs font-medium text-blue-700">Processing messages</p>
+          </div>
+          <div className="mt-1 flex flex-wrap gap-3">
+            {processingStatus.gmail !== undefined && processingStatus.gmail > 0 && (
+              <div className="flex items-center gap-1.5">
+                <GmailIcon className="h-3.5 w-3.5" />
+                <span className="text-xs text-blue-700">{processingStatus.gmail} messages in queue</span>
+              </div>
+            )}
+            {processingStatus.outlook !== undefined && processingStatus.outlook > 0 && (
+              <div className="flex items-center gap-1.5">
+                <OutlookIcon className="h-3.5 w-3.5" />
+                <span className="text-xs text-blue-700">{processingStatus.outlook} messages in queue</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
       <div>
         <div className="flex flex-col md:flex-row flex-wrap gap-4 relative">
           {/* Summary Content */}

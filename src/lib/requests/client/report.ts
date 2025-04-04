@@ -85,24 +85,24 @@ export interface BatchActionStatus {
 }
 
 // Get the newest report
-export const getNewestReport = async () => {
+export const getNewestReport = async () : Promise<{ report: Report | null }> => {
   return reqHandler.get<ReportResponse>('/report/newest');
 };
 
 // Generate a new report
-export const generateReport = async () => {
+export const generateReport = async (): Promise<{ report: Report | null }> => {
   return reqHandler.post<ReportResponse>('/report/generate');
 };
 
 // Get report history
-export const getReportHistory = async (page?: number, pageSize?: number) => {
+export const getReportHistory = async (page?: number, pageSize?: number) : Promise<{ reports: Report[], total_page: number }> => {
   return reqHandler.get<ReportListResponse>('/report/history', {
     params: { page, page_size: pageSize }
   });
 };
 
 // Get report by ID
-export const getReportById = async (reportId: string) => {
+export const getReportById = async (reportId: string) : Promise<{ report: Report | null }> => {
   return reqHandler.get<ReportResponse>(`/report/${reportId}`);
 };
 
@@ -175,3 +175,75 @@ export const generateReply = async (reportId: string, request: GenerateReplyRequ
 
   return reader;
 };
+// Update email action in a report
+export interface UpdateEmailActionRequest {
+  source: string;
+  account_id: string;
+  message_id: string;
+  action: "Read" | "Delete" | "Reply" | "Ignore" | null;
+}
+
+export const updateEmailAction = async (reportId: string, request: UpdateEmailActionRequest): Promise<boolean> => {
+  try {
+    const response = await fetch(`/api/v1/report/${reportId}/update-action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(request)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error updating email action:", errorData);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in updateEmailAction:", error);
+    return false;
+  }
+};
+
+// Define interfaces for batch update
+export interface ItemUpdateInfo {
+  id: string | number; // Item id (numeric or string)
+  category?: string;   // Updated category
+  action?: "Read" | "Delete" | "Reply" | "Ignore" | null; // Updated action
+  reply_message?: string; // Reply message for Reply action
+}
+
+export interface BatchUpdateRequest {
+  gmail?: Record<string, ItemUpdateInfo[]>;
+  outlook?: Record<string, ItemUpdateInfo[]>;
+}
+
+// Update report with batched actions
+export const updateReportActions = async (updates: BatchUpdateRequest): Promise<boolean> => {
+  try {
+    console.log("Updating report with batch request:", updates);
+    
+    const response = await fetch(`/api/v1/report/generate`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(updates)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error updating report actions:", errorData);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in updateReportActions:", error);
+    return false;
+  }
+};
+
