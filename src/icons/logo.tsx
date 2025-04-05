@@ -23,7 +23,7 @@ export function Logo_md() {
 export function Logo_sm() {
   return (
     <svg width="74" height="13" viewBox="0 0 74 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g clip-path="url(#clip0_1160_41)">
+      <g clipPath="url(#clip0_1160_41)">
       <mask id="path-1-outside-1_1160_41" maskUnits="userSpaceOnUse" x="-0.799988" y="-0.109802" width="75" height="13" fill="black">
       <rect fill="white" x="-0.799988" y="-0.109802" width="75" height="13"/>
       <path d="M6.16001 0.890198V6.22353H2.17335V7.2902H6.16001V12.0902H7.14668V0.890198H6.16001ZM0.200012 12.0902H1.18668V0.890198H0.200012V12.0902Z"/>

@@ -20,7 +20,6 @@ import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, RefreshCw, PanelL
 import { Textarea } from "@/components/ui/textarea"
 import { Report, getReportById, generateReply, updateReportActions, getBatchActionStatus, BatchUpdateRequest, ItemUpdateInfo, getReportProcessingStatus } from "@/lib/requests/client/report"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
-import { Logo_md } from "@/icons/logo"
 import { cn } from "@/lib/utils"
 import { EnhancedSidebar } from "@/components/report-sidebar"
 
@@ -901,11 +900,6 @@ export function ReportClient({ reportId }: { reportId: string }) {
             {isSidebarOpen ? <PanelLeftClose className="h-5 w-5"/> : <PanelLeft className="h-5 w-5"/>}
           </Button>
 
-          {!isSidebarOpen && (
-            <div className="ml-2 hidden md:flex items-center">
-              <Logo_md />
-            </div>
-          )}
         </div>
       </header>
 
