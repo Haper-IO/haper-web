@@ -33,8 +33,8 @@ export function transToReportSummary(report: Report) {
         .filter(message => message.category === "Essential")
         .map(message => {
           // Clean up sender names by removing email parts in brackets
-          const sender = message.sender.includes('<') 
-            ? message.sender.split('<')[0].trim() 
+          const sender = message.sender.includes('<')
+            ? message.sender.split('<')[0].trim()
             : message.sender;
           return sender;
         }),
@@ -98,58 +98,61 @@ export function LatestSummary() {
   // Effect to poll processing status for latest report
   useEffect(() => {
     if (!report?.id) return;
-    
+
     let isActive = true;
     let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-    
+
     const fetchProcessingStatus = async () => {
       try {
         setIsProcessing(true);
         reader = await getReportProcessingStatus(report.id);
-        
+
         const processStream = async () => {
           if (!isActive || !reader) return;
-          
+
           try {
             const { done, value } = await reader.read();
-            
+
             if (done) {
               setIsProcessing(false);
               return;
             }
-            
+
             // Decode and parse the chunk
             const chunk = new TextDecoder().decode(value);
             try {
               const data = JSON.parse(chunk);
               setProcessingStatus(data);
-              
+
               // Check if still processing
               const totalInQueue = (data.gmail || 0) + (data.outlook || 0);
               setIsProcessing(totalInQueue > 0);
-              
+
               // Continue reading if still processing
               if (isActive) {
                 processStream();
               }
             } catch (error) {
+              console.error("Error parsing processing status data:", error);
               if (isActive) {
                 processStream();
               }
             }
           } catch (error) {
+            console.error("Error parsing processing status data:", error);
             setIsProcessing(false);
           }
         };
-        
+
         processStream();
       } catch (error) {
+        console.error("Error parsing processing status data:", error);
         setIsProcessing(false);
       }
     };
-    
+
     fetchProcessingStatus();
-    
+
     // Clean up function
     return () => {
       isActive = false;
@@ -174,6 +177,7 @@ export function LatestSummary() {
         }
       })
       .catch((error) => {
+        console.error("Error parsing processing status data:", error);
         setReportError("Failed to load report data");
       })
       .finally(() => {
@@ -237,12 +241,12 @@ export function LatestSummary() {
     if (!content || !highlights || highlights.length === 0) {
       return <p className="text-sm text-slate-800 leading-relaxed">{content}</p>;
     }
-    
+
     // Sort by length (longest first) to avoid partial replacements
-    const sortedHighlights = [...highlights].sort((a, b) => 
+    const sortedHighlights = [...highlights].sort((a, b) =>
       b.name.length - a.name.length
     );
-    
+
     let result = content;
     sortedHighlights.forEach(person => {
       if (person.name && person.name.length > 1) {
@@ -287,7 +291,7 @@ export function LatestSummary() {
   };
 
   return (
-    <Card className="bg-slate-200/50">
+    <Card className="bg-slate-200/40 backdrop-blur-[2px]">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="emphasis" size="md">Latest Summary</Badge>
         {report ? (
@@ -325,10 +329,10 @@ export function LatestSummary() {
           {renderEmailProviderIcons()}
         </div>
       </CardHeader>
-      
+
       {/* Message Processing Status */}
       {isProcessing && processingStatus && (
-        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50/80 border border-blue-200/70 rounded-md backdrop-blur-[2px]">
           <div className="flex items-center gap-2">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
             <p className="text-xs font-medium text-blue-700">Processing messages</p>
@@ -349,7 +353,7 @@ export function LatestSummary() {
           </div>
         </div>
       )}
-      
+
       <div>
         <div className="flex flex-col md:flex-row flex-wrap gap-4">
           {/* Email Summary */}
@@ -363,7 +367,7 @@ export function LatestSummary() {
                 )}
               </div>
             ) : reportError ? (
-              <div className="px-3 py-3 bg-red-50 text-red-800 rounded-md">
+              <div className="px-3 py-3 bg-red-50/90 text-red-800 rounded-md backdrop-blur-[2px]">
                 <p className="text-sm">{reportError}</p>
                 <div className="flex gap-2 mt-2">
                   <Button variant="outline" size="sm" onClick={handleGenerateReport}>
@@ -374,7 +378,7 @@ export function LatestSummary() {
             ) : reportSummaryData ? (
               <>
                 <h3 className="font-medium text-black-900">{reportSummaryData.title}</h3>
-                <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200 max-w-[800px]">
+                <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
                   {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
                 </div>
                 {/* Button Section */}
@@ -384,6 +388,7 @@ export function LatestSummary() {
                       onClick={() => report && router.push(`/report/${report.id}`)}
                       disabled={!report || reportLoading || isGenerating}
                       size = "sm"
+                      className="bg-slate-600/90 hover:bg-slate-500/90"
                     >
                       Quick Batch Actions
                     </Button>
@@ -407,7 +412,7 @@ export function LatestSummary() {
                 )}
               </>
             ) : (
-              <div className="px-3 py-3 bg-white/80 rounded-md">
+              <div className="px-3 py-3 bg-white/70 backdrop-blur-[2px] rounded-md border border-slate-200/70">
                 <p className="text-sm text-gray-600">No report data available. Click the + button generate a new
                   report for testing.</p>
               </div>
@@ -432,7 +437,7 @@ export function LatestSummary() {
                       cy="18"
                       r="16"
                       fill="none"
-                      className="stroke-slate-400"
+                      className="stroke-slate-400/80"
                       strokeWidth="4"
                       strokeDasharray={`${reportStatsData.nonEssentialPercentage} 100`}
                       transform="rotate(-90 18 18)"
@@ -443,7 +448,7 @@ export function LatestSummary() {
                       cy="18"
                       r="16"
                       fill="none"
-                      className="stroke-lime-400"
+                      className="stroke-lime-400/80"
                       strokeWidth="4"
                       strokeDasharray={`${reportStatsData.essentialPercentage} 100`}
                       transform={`rotate(${reportStatsData.nonEssentialPercentage * 3.6 - 90} 18 18)`}
@@ -452,7 +457,7 @@ export function LatestSummary() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-lime-400"/>
+                    <div className="h-3 w-3 rounded-full bg-lime-400/90"/>
                     <span className="text-sm text-gray-600">
                     Essential ({reportStatsData.essentialCount})
                     </span>
@@ -461,7 +466,7 @@ export function LatestSummary() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-slate-400"/>
+                    <div className="h-3 w-3 rounded-full bg-slate-400/80"/>
                     <span className="text-sm text-gray-600">
                     Non-essential ({reportStatsData.nonEssentialCount})
                     </span>
@@ -498,36 +503,36 @@ export function LastReport() {
   // Effect to poll processing status for last report
   useEffect(() => {
     if (!latestReport?.id) return;
-    
+
     let isActive = true;
     let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-    
+
     const fetchProcessingStatus = async () => {
       try {
         setIsProcessing(true);
         reader = await getReportProcessingStatus(latestReport.id);
-        
+
         const processStream = async () => {
           if (!isActive || !reader) return;
-          
+
           try {
             const { done, value } = await reader.read();
-            
+
             if (done) {
               setIsProcessing(false);
               return;
             }
-            
+
             // Decode and parse the chunk
             const chunk = new TextDecoder().decode(value);
             try {
               const data = JSON.parse(chunk);
               setProcessingStatus(data);
-              
+
               // Check if still processing
               const totalInQueue = (data.gmail || 0) + (data.outlook || 0);
               setIsProcessing(totalInQueue > 0);
-              
+
               // Continue reading if still processing
               if (isActive) {
                 processStream();
@@ -543,16 +548,16 @@ export function LastReport() {
             setIsProcessing(false);
           }
         };
-        
+
         processStream();
       } catch (error) {
         console.error("Error starting processing status polling:", error);
         setIsProcessing(false);
       }
     };
-    
+
     fetchProcessingStatus();
-    
+
     // Clean up function
     return () => {
       isActive = false;
@@ -674,15 +679,15 @@ export function LastReport() {
   // Highlight sender names in text
   const renderHighlightedContent = (summaryText: string, report: Report) => {
     if (!report?.content?.content?.gmail) return summaryText;
-    
+
     // Extract all essential senders
     const essentialSenders: string[] = [];
     report.content.content.gmail.forEach(account => {
       if (account.messages) {
         account.messages.forEach(message => {
           if (message.category === "Essential") {
-            const sender = message.sender.includes('<') 
-              ? message.sender.split('<')[0].trim() 
+            const sender = message.sender.includes('<')
+              ? message.sender.split('<')[0].trim()
               : message.sender;
             if (!essentialSenders.includes(sender)) {
               essentialSenders.push(sender);
@@ -691,7 +696,7 @@ export function LastReport() {
         });
       }
     });
-    
+
     // Highlight each sender in the text
     let result = summaryText;
     essentialSenders.forEach(sender => {
@@ -709,7 +714,7 @@ export function LastReport() {
   const generateContent = (report: Report) => {
     const summaryText = generateSummaryFromMessages(report);
     const highlightedSummary = renderHighlightedContent(summaryText, report);
-    
+
     return (
       <div className="space-y-2">
         <p className="text-sm text-slate-800 leading-relaxed" dangerouslySetInnerHTML={{__html: highlightedSummary}} />
@@ -778,7 +783,7 @@ export function LastReport() {
   }, []);
 
   return (
-    <Card className="bg-slate-200/50">
+    <Card className="bg-slate-200/40 backdrop-blur-[2px]">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="default" size="md">Last Report</Badge>
         {latestReport ? (
@@ -805,10 +810,10 @@ export function LastReport() {
           {renderEmailProviderIcons()}
         </div>
       </CardHeader>
-      
+
       {/* Message Processing Status */}
       {isProcessing && processingStatus && (
-        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50/80 border border-blue-200/70 rounded-md backdrop-blur-[2px]">
           <div className="flex items-center gap-2">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
             <p className="text-xs font-medium text-blue-700">Processing messages</p>
@@ -829,7 +834,7 @@ export function LastReport() {
           </div>
         </div>
       )}
-      
+
       <div>
         <div className="flex flex-col md:flex-row flex-wrap gap-4 relative">
           {/* Summary Content */}
@@ -840,7 +845,7 @@ export function LastReport() {
                 <Skeleton className="h-24 w-full"/>
               </div>
             ) : reportError ? (
-              <div className="px-3 py-3 bg-red-50 text-red-800 rounded-md">
+              <div className="px-3 py-3 bg-red-50/90 text-red-800 rounded-md backdrop-blur-[2px]">
                 <p className="text-sm">{reportError}</p>
                 <Button variant="outline" size="sm" className="mt-2" onClick={fetchReportHistory}>
                   Try Again
@@ -848,7 +853,7 @@ export function LastReport() {
               </div>
             ) : latestReport ? (
               <>
-                <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200">
+                <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
                   {latestReport.content?.summary && Array.isArray(latestReport.content.summary) && latestReport.content.summary.length > 0 ? (
                     <p className="text-sm text-slate-800 leading-relaxed">
                       {latestReport.content.summary.map((item: {
@@ -860,7 +865,7 @@ export function LastReport() {
                           return <span key={index}>{item.text.content}</span>;
                         } else if (item.type === 'email' && item.email) {
                           return (
-                            <span key={index} className="font-medium text-lime-600">
+                            <span key={index} className="font-medium text-lime-600/90">
                               {item.email.name}
                             </span>
                           );
@@ -877,6 +882,7 @@ export function LastReport() {
                       onClick={() => latestReport && router.push(`/report/${latestReport.id}`)}
                       disabled={!latestReport || reportLoading}
                       size="sm"
+                      className="bg-slate-200/90 hover:bg-slate-300/90 text-slate-800"
                     >
                       Check Report
                     </Button>
@@ -885,19 +891,19 @@ export function LastReport() {
 
                 {/* Display stats below content */}
                 {reportStats && reportStats.total > 0 && (
-                  <div className="flex flex-col gap-2 text-xs bg-slate-50/70 rounded-md p-3">
+                  <div className="flex flex-col gap-2 text-xs bg-slate-50/70 backdrop-blur-[2px] rounded-md p-3 border border-slate-200/60">
                     <div className="font-medium text-slate-700 pb-1 border-b border-slate-200/60">
                       {reportStats.total} {reportStats.total === 1 ? "Email" : "Emails"} Processed
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-2">
                       <div className="flex items-center gap-1.5">
-                        <div className="h-2.5 w-2.5 rounded-full bg-lime-500"/>
+                        <div className="h-2.5 w-2.5 rounded-full bg-lime-500/90"/>
                         <span className="text-slate-700 font-medium">
                           {reportStats.essential} Essential
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className="h-2.5 w-2.5 rounded-full bg-slate-400"/>
+                        <div className="h-2.5 w-2.5 rounded-full bg-slate-400/80"/>
                         <span className="text-slate-700 font-medium">
                           {reportStats.nonEssential} Non-essential
                         </span>
@@ -907,7 +913,7 @@ export function LastReport() {
                 )}
               </>
             ) : (
-              <div className="px-4 py-4 bg-white/80 rounded-md shadow-sm border border-slate-200">
+              <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
                 <p className="text-sm text-slate-800">No report history available. Click refresh to check for reports.</p>
               </div>
             )}

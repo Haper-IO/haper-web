@@ -16,17 +16,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, ChevronDownIcon, RefreshCw, PanelLeft, PanelLeftClose, Loader2, User, LayoutDashboard } from "lucide-react"
+import { MoreVertical, ChevronDown, Check, Reply, Trash, Move, RefreshCw, PanelLeft, PanelLeftClose, Loader2 } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { Report, getReportById, getReportHistory, generateReply, updateReportActions, getBatchActionStatus, generateReport, BatchUpdateRequest, ItemUpdateInfo, getReportProcessingStatus } from "@/lib/requests/client/report"
+import { Report, getReportById, generateReply, updateReportActions, getBatchActionStatus, BatchUpdateRequest, ItemUpdateInfo, getReportProcessingStatus } from "@/lib/requests/client/report"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
+import { Logo_md } from "@/icons/logo"
 import { cn } from "@/lib/utils"
-import { useUserInfo } from "@/hooks/useUserInfo"
+import { EnhancedSidebar } from "@/components/report-sidebar"
 
 const SHARED_STYLES = {
   heading: "font-medium text-slate-900 text-sm",
@@ -72,273 +68,6 @@ type Email = {
   action_result: "Success" | "Error" | null
   replyText?: string
   isGeneratingReply?: boolean
-}
-
-// Create a type for categorized reports
-type ReportGroup = {
-  date: string;
-  reports: {
-    id: string;
-    title: string;
-    time: string;
-    created_at: string;
-    status?: "processing" | "completed" | "error"; // Add status field
-  }[];
-};
-
-function EnhancedSidebar({
-  isOpen,
-  onSelectReport,
-  currentReportId
-}: {
-  isOpen: boolean,
-  onSelectReport: (id: string) => void,
-  currentReportId: string
-}) {
-  const [reportGroups, setReportGroups] = useState<ReportGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { userInfo, loading: userLoading } = useUserInfo();
-
-  useEffect(() => {
-    const fetchReportHistory = async () => {
-      try {
-        setLoading(true);
-        // Fetch a reasonable number of reports - adjust pageSize as needed
-        const response = await getReportHistory(1, 20);
-
-        if (response.reports && response.reports.length > 0) {
-          // Create date reference points for categorization
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          
-          const yesterday = new Date(today);
-          yesterday.setDate(yesterday.getDate() - 1);
-          
-          const weekAgo = new Date(today);
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          
-          const monthAgo = new Date(today);
-          monthAgo.setDate(monthAgo.getDate() - 30);
-
-          // Initialize report categories
-          const todayReports: ReportGroup["reports"] = [];
-          const yesterdayReports: ReportGroup["reports"] = [];
-          const weekReports: ReportGroup["reports"] = [];
-          const monthReports: ReportGroup["reports"] = [];
-
-          response.reports.forEach(report => {
-            const reportDate = new Date(report.created_at);
-            reportDate.setHours(0, 0, 0, 0);
-
-            const formattedTime = new Date(report.created_at).toLocaleString('en-US', {
-              hour: 'numeric',
-              minute: 'numeric',
-              hour12: true
-            });
-
-            // Generate a title from the summary or use a default
-            let title = `Report ${report.id.slice(0, 6)}`;
-            if (report.content && report.content.summary && report.content.summary.length > 0) {
-              const summaryText = report.content.summary
-                .filter(item => item.type === "text" && item.text?.content)
-                .map(item => item.text?.content)
-                .join(" ");
-
-              if (summaryText) {
-                title = summaryText.slice(0, 24) + (summaryText.length > 24 ? "..." : "");
-              }
-            }
-
-            const reportItem = {
-              id: report.id,
-              title: title,
-              time: formattedTime,
-              created_at: report.created_at
-            };
-
-            // Categorize based on date
-            if (reportDate.getTime() === today.getTime()) {
-              todayReports.push(reportItem);
-            } else if (reportDate.getTime() === yesterday.getTime()) {
-              yesterdayReports.push(reportItem);
-            } else if (reportDate.getTime() >= weekAgo.getTime()) {
-              weekReports.push(reportItem);
-            } else if (reportDate.getTime() >= monthAgo.getTime()) {
-              monthReports.push(reportItem);
-            }
-          });
-
-          // Sort reports by time (newest first)
-          const sortByDate = (a: { created_at: string }, b: { created_at: string }) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-
-          todayReports.sort(sortByDate);
-          yesterdayReports.sort(sortByDate);
-          weekReports.sort(sortByDate);
-          monthReports.sort(sortByDate);
-
-          // Create final groups
-          const groups: ReportGroup[] = [];
-
-          // Always include Today category, even if empty
-          groups.push({ date: "Today", reports: todayReports });
-
-          if (yesterdayReports.length > 0) {
-            groups.push({ date: "Yesterday", reports: yesterdayReports });
-          }
-
-          if (weekReports.length > 0) {
-            groups.push({ date: "Past 7 Days", reports: weekReports });
-          }
-
-          if (monthReports.length > 0) {
-            groups.push({ date: "Past 30 Days", reports: monthReports });
-          }
-
-          setReportGroups(groups);
-        }
-      } catch (error) {
-        console.error("Error fetching report history:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReportHistory();
-  }, []);
-
-  return (
-    <aside
-      className={`fixed top-[61px] left-0 bottom-0 w-56 border-r bg-slate-50/80 transition-transform duration-300 z-10 ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } hidden md:block`}
-    >
-      <div className="flex flex-col h-full">
-        {/* Menu section */}
-        <div className="px-2 py-3 border-b border-slate-200">
-          <div className="mb-2 px-2">
-            <p className="text-xs font-medium text-slate-400 uppercase">Menu</p>
-          </div>
-          <nav className="space-y-1">
-            <a href="/dashboard" className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-sm transition-colors">
-              <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
-              <span>Dashboard</span>
-            </a>
-          </nav>
-        </div>
-
-        {/* Main scrollable area for reports */}
-        <div className="px-2 py-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-          {loading ? (
-            <div className="flex justify-center py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-            </div>
-          ) : reportGroups.length === 0 ? (
-            <div className="text-xs text-slate-500 text-center py-2">
-              No reports found
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {reportGroups.map((group) => (
-                <Collapsible key={group.date} defaultOpen={group.date === "Today"}>
-                  <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-sm">
-                    <span>{group.date}</span>
-                    <ChevronDownIcon size={14} className="text-slate-500" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-1">
-                    <div className="mt-0.5">
-                      {group.reports.length > 0 ? (
-                        group.reports.map((report) => (
-                          <button
-                            key={report.id}
-                            onClick={() => onSelectReport(report.id)}
-                            className={`flex items-start w-full px-2 py-1.5 text-xs text-left text-slate-700 hover:bg-slate-100 rounded-sm ${
-                              report.id === currentReportId ? "bg-slate-100 border-l-2 border-slate-400" : ""
-                            }`}
-                          >
-                            <div className="w-full overflow-hidden pr-1">
-                              <div className="flex items-center gap-1">
-                                <p className={`font-medium truncate ${report.id === currentReportId ? "text-slate-900" : "text-slate-700"}`}>
-                                  {report.title}
-                                </p>
-                                {report.status === "processing" && (
-                                  <span className="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded-sm text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                    <Loader2 className="animate-spin mr-1 h-2 w-2" />
-                                    processing
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <p className="text-[10px] text-slate-500 truncate">{report.time}</p>
-                                {report.id === currentReportId && (
-                                  <Badge variant="outline" className="text-[9px] py-0 px-1 h-3 font-normal bg-slate-100 border-slate-200">
-                                    current
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        ))
-                      ) : group.date === "Today" ? (
-                        <div className="py-2 px-2">
-                          <p className="text-xs text-slate-500 mb-2">No reports generated today</p>
-                          <Button 
-                            size="sm" 
-                            className="w-full bg-slate-700 hover:bg-slate-600 text-white text-xs py-1 h-7"
-                            onClick={async () => {
-                              try {
-                                const { report } = await generateReport();
-                                if (report) {
-                                  // Navigate to the new report
-                                  window.location.href = `/report/${report.id}`;
-                                }
-                              } catch (error) {
-                                console.error("Error generating report:", error);
-                                // Consider adding a toast notification here
-                              }
-                            }}
-                          >
-                            <RefreshCw className="h-3 w-3 mr-1" />
-                            Generate Report
-                          </Button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Fixed user profile button at the bottom */}
-        <div className="mt-auto border-t border-slate-200 px-2 py-2">
-          <button
-            onClick={() => window.location.href = '/userprofile'}
-            className="w-full flex items-center gap-2 px-2 py-2 hover:bg-slate-200/70 transition-colors rounded-md"
-          >
-            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
-              {userLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
-              ) : userInfo?.image ? (
-                <img src={userInfo.image} alt={userInfo.name || 'User'} className="h-full w-full object-cover" />
-              ) : (
-                <User className="h-4 w-4 text-slate-600" />
-              )}
-            </div>
-            <div className="overflow-hidden text-left">
-              <p className="text-xs font-medium text-slate-800 truncate">
-                {userLoading ? 'Loading...' : userInfo?.name || 'User Profile'}
-              </p>
-              <p className="text-[10px] text-slate-500 truncate">
-                {userLoading ? '' : userInfo?.email || 'View profile'}
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
-    </aside>
-  );
 }
 
 // Email Item Component
@@ -403,7 +132,7 @@ function EmailItem({
   };
 
   return (
-    <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/70 shadow-sm hover:shadow transition-shadow">
+    <div className="border border-slate-200/70 rounded-lg p-3 bg-slate-50/60 backdrop-blur-[2px] shadow-sm hover:shadow transition-shadow">
       <div className="flex justify-between items-start mb-2">
         <div>
           <h3 className={`${SHARED_STYLES.heading} text-sm mb-0.5`}>{email.title}</h3>
@@ -415,13 +144,13 @@ function EmailItem({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 h-7 w-7 p-0 rounded-full"
+                className="text-slate-500 hover:text-slate-700 hover:bg-slate-100/70 h-7 w-7 p-0 rounded-full"
                 disabled={disabled}
               >
                 <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white border-slate-100 shadow-md">
+            <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-slate-100/80 shadow-md">
               <DropdownMenuItem onClick={() => onMove(email.id, !isEssential)} className="text-slate-700">
                 <Move className="mr-2 h-4 w-4 text-slate-500" />
                 Move to {isEssential ? "Non-Essential" : "Essential"}
@@ -435,7 +164,7 @@ function EmailItem({
                 variant="outline"
                 size="sm"
                 className={`gap-1 h-7 px-2 text-xs ${
-                  email.action ? getActionButtonStyle(email.action) : "text-slate-600 border-slate-200 hover:bg-slate-50"
+                  email.action ? getActionButtonStyle(email.action) : "text-slate-600 border-slate-200/80 hover:bg-slate-50/80"
                 }`}
                 disabled={disabled}
               >
@@ -447,31 +176,31 @@ function EmailItem({
                 <ChevronDown className="h-3.5 w-3.5 ml-1" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white border-slate-100 shadow-md">
+            <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-slate-100/80 shadow-md">
               <DropdownMenuItem
                 onClick={() => onActionSelect(email.id, "Read")}
-                className={`${email.action === "Read" ? "bg-slate-50" : ""} text-slate-700`}
+                className={`${email.action === "Read" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
                 <Check className="mr-2 h-4 w-4 text-slate-600" />
                 Mark as Read
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onActionSelect(email.id, "Reply")}
-                className={`${email.action === "Reply" ? "bg-slate-50" : ""} text-slate-700`}
+                className={`${email.action === "Reply" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
                 <Reply className="mr-2 h-4 w-4 text-blue-500" />
                 Reply
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onActionSelect(email.id, "Delete")}
-                className={`${email.action === "Delete" ? "bg-slate-50" : ""} text-slate-700`}
+                className={`${email.action === "Delete" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
                 <Trash className="mr-2 h-4 w-4 text-red-500" />
                 Delete
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onActionSelect(email.id, "Ignore")}
-                className={`${email.action === "Ignore" ? "bg-slate-50" : ""} text-slate-700`}
+                className={`${email.action === "Ignore" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
                 <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />
                 Ignore
@@ -484,7 +213,7 @@ function EmailItem({
       <p className={`${SHARED_STYLES.text} mb-2 leading-normal text-xs`}>{email.content}</p>
 
       {showReplyField && (
-        <div className="mt-3 pt-3 border-t border-slate-200">
+        <div className="mt-3 pt-3 border-t border-slate-200/70">
           {isGenerating ? (
             <div className="flex flex-col items-center justify-center py-4">
               <Loader2 className="h-4 w-4 animate-spin text-slate-500 mb-2" />
@@ -494,7 +223,7 @@ function EmailItem({
             <>
               <Textarea
                 placeholder="Type your reply here..."
-                className="mb-2 border-slate-200 focus:border-slate-300 focus:ring-slate-200 text-slate-700 rounded-md resize-none min-h-[80px] text-xs"
+                className="mb-2 border-slate-200/80 focus:border-slate-300/90 focus:ring-slate-200/50 text-slate-700 rounded-md resize-none min-h-[80px] text-xs"
                 disabled={email.action_result === "Success"}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
@@ -504,7 +233,7 @@ function EmailItem({
                   variant="outline"
                   size="sm"
                   onClick={() => onRegenerateReply(email.id)}
-                  className="text-slate-600 border-slate-200 hover:bg-slate-50 h-7 px-3 text-xs"
+                  className="text-slate-600 border-slate-200/80 hover:bg-slate-50/80 h-7 px-3 text-xs"
                   disabled={isGenerating}
                 >
                   <RefreshCw className="h-3 w-3 mr-1" />
@@ -514,13 +243,13 @@ function EmailItem({
                   variant="outline"
                   size="sm"
                   onClick={() => setShowReplyField(false)}
-                  className="text-slate-600 border-slate-200 hover:bg-slate-50 h-7 px-3 text-xs"
+                  className="text-slate-600 border-slate-200/80 hover:bg-slate-50/80 h-7 px-3 text-xs"
                 >
                   Cancel
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-slate-600 hover:bg-slate-500 text-white h-7 px-3 text-xs"
+                  className="bg-slate-600/90 hover:bg-slate-500/90 text-white h-7 px-3 text-xs"
                   onClick={() => onActionSelect(email.id, "Reply")}
                 >
                   Set as Reply Action
@@ -629,35 +358,43 @@ export function ReportClient({ reportId }: { reportId: string }) {
   // Track message processing status
   useEffect(() => {
     if (!reportId) return;
-    
+
     let isActive = true;
     let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-    
+
     const fetchProcessingStatus = async () => {
       try {
         reader = await getReportProcessingStatus(reportId);
-        
+
         const processStream = async () => {
           if (!isActive || !reader) return;
-          
+
           try {
             const { done, value } = await reader.read();
-            
+
             if (done) {
               setIsProcessing(false);
               return;
             }
-            
+
             // Decode and parse the chunk
             const chunk = new TextDecoder().decode(value);
             try {
               const data = JSON.parse(chunk);
+
+              // Check for specific error code
+              if (data.status === 1001) {
+                console.error("Error 1001: Message processing status error.", data);
+                setIsProcessing(false);
+                return;
+              }
+
               setProcessingStatus(data);
-              
+
               // Check if still processing
               const totalInQueue = (data.gmail || 0) + (data.outlook || 0);
               setIsProcessing(totalInQueue > 0);
-              
+
               // Continue reading if still processing
               if (isActive) {
                 processStream();
@@ -673,16 +410,16 @@ export function ReportClient({ reportId }: { reportId: string }) {
             setIsProcessing(false);
           }
         };
-        
+
         processStream();
       } catch (error) {
         console.error("Error starting processing status polling:", error);
         setIsProcessing(false);
       }
     };
-    
+
     fetchProcessingStatus();
-    
+
     // Clean up function
     return () => {
       isActive = false;
@@ -963,6 +700,12 @@ export function ReportClient({ reportId }: { reportId: string }) {
               // Parse the JSON data
               const data = JSON.parse(chunk);
 
+              // Check for specific error code
+              if (data.status === 1001) {
+                console.error("Error 1001: Batch action status error.", data);
+                return;
+              }
+
               // Update the status
               setBatchStatus({
                 total: data.total || 0,
@@ -1141,13 +884,13 @@ export function ReportClient({ reportId }: { reportId: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/10">
+    <div className="min-h-screen bg-transparent">
       {/* Add a style tag for custom scrollbar styling */}
       <style dangerouslySetInnerHTML={{ __html: SCROLLBAR_STYLES }} />
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b">
-        <div className="px-5 py-3">
+      <header className="fixed top-0 left-0 right-0 z-10 transition-all duration-300 bg-transparent">
+        <div className="px-5 py-3 flex items-center">
           <Button
             variant="ghost"
             size="icon"
@@ -1157,11 +900,22 @@ export function ReportClient({ reportId }: { reportId: string }) {
           >
             {isSidebarOpen ? <PanelLeftClose className="h-5 w-5"/> : <PanelLeft className="h-5 w-5"/>}
           </Button>
+
+          {!isSidebarOpen && (
+            <div className="ml-2 hidden md:flex items-center">
+              <Logo_md />
+            </div>
+          )}
         </div>
       </header>
 
       {/* Sidebar Navigation */}
-      <EnhancedSidebar isOpen={isSidebarOpen} onSelectReport={handleSelectReport} currentReportId={reportId} />
+      <EnhancedSidebar
+        isOpen={isSidebarOpen}
+        onSelectReport={handleSelectReport}
+        currentReportId={reportId}
+        onToggleSidebar={() => setIsSidebarOpen(false)}
+      />
 
       {/* Main Content */}
       <section
@@ -1179,7 +933,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
             <div className="space-y-3">
               {/* Message Processing Status */}
               {isProcessing && processingStatus && (
-                <div className="bg-blue-50 p-2 rounded-md border border-blue-200 mb-3">
+                <div className="bg-blue-50/80 p-2 rounded-md border border-blue-200/70 mb-3 backdrop-blur-[2px]">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
@@ -1187,7 +941,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
                         Processing messages in queue
                       </span>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       {processingStatus.gmail !== undefined && processingStatus.gmail > 0 && (
                         <div className="flex items-center gap-1.5">
@@ -1205,10 +959,10 @@ export function ReportClient({ reportId }: { reportId: string }) {
                   </div>
                 </div>
               )}
-              
+
               {/* Batch Action Status */}
               {batchStatus.status !== "Waiting" && (
-                <div className="bg-slate-100 p-2 rounded-md border border-slate-200 mb-3">
+                <div className="bg-slate-100/80 p-2 rounded-md border border-slate-200/70 mb-3 backdrop-blur-[2px]">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <Badge variant={batchStatus.status === "Done" ? "secondary" : "default"}>
@@ -1224,9 +978,9 @@ export function ReportClient({ reportId }: { reportId: string }) {
                     </div>
                   </div>
                   {/* Simple progress bar */}
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-2">
+                  <div className="w-full bg-slate-200/70 rounded-full h-1.5 mt-2">
                     <div
-                      className="h-1.5 rounded-full bg-blue-500"
+                      className="h-1.5 rounded-full bg-blue-500/80"
                       style={{
                         width: `${batchStatus.total ?
                           Math.min(100, (batchStatus.succeed + batchStatus.failed) / batchStatus.total * 100) : 0}%`
@@ -1237,7 +991,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
               )}
 
               {/* Report Header Card */}
-              <Card className="bg-slate-200/50">
+              <Card className="bg-slate-200/40 backdrop-blur-[2px]">
                 <CardHeader className="flex flex-row items-center gap-2 space-y-0 py-3 px-4">
                   <Badge variant="default" size="md">Email Report</Badge>
                   <Badge variant="secondary" size="md">
@@ -1260,7 +1014,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
                 </CardHeader>
                 {report && report.content && report.content.summary && report.content.summary.length > 0 && (
                   <CardContent className="pt-0 pb-3 px-4">
-                    <div className="px-3 py-2 bg-white/80 rounded-md shadow-sm border border-slate-200 max-w-[800px]">
+                    <div className="px-3 py-2 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
                       <p className="text-xs text-slate-800 leading-normal">
                         {report.content.summary
                           .filter(item => item.type === "text" && item.text?.content)
@@ -1272,18 +1026,18 @@ export function ReportClient({ reportId }: { reportId: string }) {
               </Card>
 
               {/* Tabs Card */}
-              <Card className="bg-slate-200/50 overflow-hidden">
+              <Card className="bg-slate-200/40 backdrop-blur-[2px] overflow-hidden">
                 <Tabs defaultValue="essential">
-                  <TabsList className="mx-4 mt-3 mb-2 bg-slate-100 p-1 rounded-md">
+                  <TabsList className="mx-4 mt-3 mb-2 bg-slate-100/80 p-1 rounded-md">
                     <TabsTrigger
                       value="essential"
-                      className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
+                      className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
                     >
                       Essential ({essentialEmails.length})
                     </TabsTrigger>
                     <TabsTrigger
                       value="non-essential"
-                      className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
+                      className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
                     >
                       Non-Essential ({nonEssentialEmails.length})
                     </TabsTrigger>
@@ -1338,7 +1092,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
                   </TabsContent>
 
                   {/* Apply All Actions button section */}
-                  <div className="px-4 py-3 border-t border-slate-200">
+                  <div className="px-4 py-3 border-t border-slate-200/70">
                     <div className="flex justify-between items-center">
                       <div className="text-xs text-slate-600">
                         {emails.filter(email => email.action && !email.action_result).length > 0
@@ -1347,7 +1101,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
                       </div>
                       <Button
                         size="sm"
-                        className="bg-slate-600 hover:bg-slate-500 text-white h-7 px-4 text-xs"
+                        className="bg-slate-600/90 hover:bg-slate-500/90 text-white h-7 px-4 text-xs"
                         onClick={applyAllActions}
                         disabled={
                           emails.filter(email => email.action && !email.action_result).length === 0 ||
@@ -1375,6 +1129,9 @@ export function ReportClient({ reportId }: { reportId: string }) {
           )}
         </div>
       </section>
+
+      {/* Background texture */}
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[length:20px_20px] opacity-50"></div>
     </div>
   );
 }
