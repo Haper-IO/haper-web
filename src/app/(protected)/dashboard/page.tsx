@@ -12,7 +12,7 @@ import {
   ChevronUp,
 } from "lucide-react"
 import React, {useState, useEffect} from "react"
-import {LatestSummary, LastReport} from "@/components/dashboard-cards"
+import {LatestSummary, LastReport} from "@/app/(protected)/dashboard/dashboard-cards"
 import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {
   stopMessageTracking,

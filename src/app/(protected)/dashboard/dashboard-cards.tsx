@@ -8,8 +8,8 @@ import {
   generateReport,
   getNewestReport,
   getReportHistory,
-  Report
 } from "@/lib/requests/client/report"
+import {Report} from "@/lib/modal/report"
 import {Skeleton} from "@/components/ui/skeleton"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 

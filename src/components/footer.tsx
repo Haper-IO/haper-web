@@ -13,7 +13,7 @@ export function Footer() {
             Privacy Policy
           </Link>
           <Link
-            href="/terms-of-service"
+            href="/terms"
             className="text-sm text-slate-600 hover:text-slate-900 bg-transparent px-2 py-1 transition-colors"
           >
             Terms of Service

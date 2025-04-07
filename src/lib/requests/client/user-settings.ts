@@ -1,11 +1,7 @@
-import { reqHandler } from "./base";
+import {reqHandler} from "./base";
 
 export interface UserSettings {
   key_message_tags: string[];
-}
-
-export interface UserSettingsResponse {
-  setting: UserSettings;
 }
 
 /**
@@ -14,7 +10,7 @@ export interface UserSettingsResponse {
  * @returns - A promise that resolves to the user settings.
  */
 export const getUserSettings = async () => {
-  return reqHandler.get<UserSettingsResponse>('/user/setting');
+  return reqHandler.get<{ setting: UserSettings | null }>('/user/setting');
 }
 
 /**
@@ -24,7 +20,7 @@ export const getUserSettings = async () => {
  * @returns - A promise that resolves to the created settings.
  */
 export const createUserSettings = async (settings: UserSettings) => {
-  return reqHandler.post<UserSettingsResponse>('/user/setting', settings);
+  return reqHandler.post<{ setting: UserSettings }>('/user/setting', settings);
 }
 
 /**
@@ -34,5 +30,5 @@ export const createUserSettings = async (settings: UserSettings) => {
  * @returns - A promise that resolves to the updated settings.
  */
 export const updateUserSettings = async (settings: UserSettings) => {
-  return reqHandler.put<UserSettingsResponse>('/user/setting', settings);
+  return reqHandler.put<{ setting: UserSettings }>('/user/setting', settings);
 }

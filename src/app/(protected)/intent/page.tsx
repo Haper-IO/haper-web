@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Plus } from 'lucide-react'
+import {useEffect, useState} from 'react'
+import {useRouter} from 'next/navigation'
+import {Button} from '@/components/ui/button'
+import {Card, CardContent} from '@/components/ui/card'
+import {Plus} from 'lucide-react'
+import {createUserSettings, getUserSettings} from "@/lib/requests/client/user-settings";
 
 interface EmailCategory {
   id: string
@@ -15,16 +16,16 @@ interface EmailCategory {
 export default function UserIntentPage() {
   const router = useRouter()
   const [categories, setCategories] = useState<EmailCategory[]>([
-    { id: 'work', name: 'Work communications', selected: false },
-    { id: 'personal', name: 'Personal messages', selected: false },
-    { id: 'financial', name: 'Financial notifications', selected: false },
-    { id: 'administrative', name: 'Administrative updates', selected: false },
-    { id: 'promotional', name: 'Promotional content', selected: false },
-    { id: 'newsletters', name: 'Newsletters and subscriptions', selected: false },
-    { id: 'social', name: 'Social media notifications', selected: false },
-    { id: 'calendar', name: 'Calendar invites and event updates', selected: false },
-    { id: 'travel', name: 'Travel-related emails', selected: false },
-    { id: 'shopping', name: 'Shopping and order updates', selected: false },
+    {id: 'work', name: 'Work Communications', selected: false},
+    {id: 'personal', name: 'Personal Messages', selected: false},
+    {id: 'financial', name: 'Financial Notifications', selected: false},
+    {id: 'administrative', name: 'Administrative Updates', selected: false},
+    {id: 'promotional', name: 'Promotional Content', selected: false},
+    {id: 'newsletters', name: 'Newsletters and Subscriptions', selected: false},
+    {id: 'social', name: 'Social Media Notifications', selected: false},
+    {id: 'calendar', name: 'Calendar Invites and Event Updates', selected: false},
+    {id: 'travel', name: 'Travel-related', selected: false},
+    {id: 'shopping', name: 'Shopping and Order Updates', selected: false},
   ])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -33,7 +34,7 @@ export default function UserIntentPage() {
 
   const toggleCategory = (id: string) => {
     setCategories(categories.map(category =>
-      category.id === id ? { ...category, selected: !category.selected } : category
+      category.id === id ? {...category, selected: !category.selected} : category
     ))
   }
 
@@ -42,50 +43,34 @@ export default function UserIntentPage() {
       const newId = `custom-${Date.now()}`
       setCategories([
         ...categories,
-        { id: newId, name: customCategory.trim(), selected: true }
+        {id: newId, name: customCategory.trim(), selected: true}
       ])
       setCustomCategory('')
       setShowCustomInput(false)
     }
   }
 
-  const handleSubmit = async () => {
-    try {
-      setIsSubmitting(true)
-
-      // This is where you'd make the actual API call
-      try {
-        // When backend is ready, uncomment this code:
-        /*
-        const response = await fetch('/api/user-preferences', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ emailCategories: selectedCategories }),
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to save preferences')
-        }
-        */
-
-        // For demo purposes, simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        // Redirect to dashboard using Next.js router
-        router.push('/dashboard')
-      } catch (apiError) {
-        console.error('API error:', apiError)
-        throw new Error('Failed to save preferences')
+  useEffect(() => {
+    // go to dashboard if user already has settings
+    getUserSettings().then((resp) => {
+      if (resp.data.setting) {
+        router.push("/dashboard")
       }
+    })
+  }, []);
 
-    } catch (error) {
-      console.error('Error saving preferences:', error)
-      alert('Failed to save preferences. Please try again.')
-    } finally {
-      setIsSubmitting(false)
+  const handleSubmit = async () => {
+    if (isSubmitting) {
+      return
     }
+    setIsSubmitting(true)
+    createUserSettings({
+      key_message_tags: categories.filter(categories => categories.selected).map(category => category.name)
+    }).then(() => {
+      router.push("/dashboard")
+    }).finally(() => {
+      setIsSubmitting(false)
+    })
   }
 
   const hasSelections = categories.some(category => category.selected)
@@ -118,7 +103,7 @@ export default function UserIntentPage() {
                 onClick={() => setShowCustomInput(true)}
                 className="px-4 py-3 rounded-lg text-left bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center"
               >
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="w-5 h-5 mr-2"/>
                 <span>Add custom</span>
               </button>
             )}
@@ -144,13 +129,23 @@ export default function UserIntentPage() {
             </div>
           )}
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-x-4">
             <Button
               onClick={handleSubmit}
               disabled={!hasSelections || isSubmitting}
               className="px-8 py-6 text-lg"
             >
               {isSubmitting ? 'Saving...' : 'Continue'}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                router.push("/dashboard")
+              }}
+              disabled={isSubmitting}
+              className="px-8 py-6 text-lg hover:bg-gray-400"
+            >
+              Skip
             </Button>
           </div>
         </CardContent>

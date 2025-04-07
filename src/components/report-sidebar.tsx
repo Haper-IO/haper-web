@@ -7,9 +7,11 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import {ChevronDownIcon, Loader2, LayoutDashboard, User, PanelLeftClose} from "lucide-react"
-import {getReportHistory, Report} from "@/lib/requests/client/report"
+import {getReportHistory} from "@/lib/requests/client/report"
+import {Report} from "@/lib/modal/report"
 import {useUserInfo} from "@/hooks/useUserInfo"
 import {Logo_sm} from "@/icons/logo"
+import {useRouter} from "next/navigation";
 
 export interface EnhancedSidebarProps {
   isOpen: boolean;
@@ -28,6 +30,7 @@ export function EnhancedSidebar(
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<Report[]>([]);
   const {userInfo, loading: userLoading} = useUserInfo();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchReportHistory = () => {
@@ -134,7 +137,9 @@ export function EnhancedSidebar(
         {/* Fixed user profile button at the bottom */}
         <div className="mt-auto border-t border-slate-200/80 px-2 py-2">
           <button
-            onClick={() => window.location.href = '/userprofile'}
+            onClick={() => {
+              router.push("/profile")
+            }}
             className="w-full flex items-center gap-2 px-2 py-2 hover:bg-slate-200/50 transition-colors rounded-md"
           >
             <div

@@ -30,14 +30,14 @@ import {
 } from "lucide-react"
 import {Textarea} from "@/components/ui/textarea"
 import {
-  Report,
   getReportById,
   generateReply,
   updateReport,
   ItemUpdateInfo,
   pollMessageProcessingStatus,
-  MailReportItem, pollBatchActionStatus, applyReportActions
+  pollBatchActionStatus, applyReportActions
 } from "@/lib/requests/client/report"
+import {Report, MailReportItem} from "@/lib/modal/report"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 import {cn} from "@/lib/utils"
 import {EnhancedSidebar} from "@/components/report-sidebar"

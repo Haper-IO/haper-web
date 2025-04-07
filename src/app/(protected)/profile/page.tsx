@@ -33,7 +33,9 @@ export default function TestProfilePage() {
     setIsLoadingSetting(true)
     getUserSettings().then((resp) => {
       setUserSetting(resp.data.setting)
-      setSelectedTags(resp.data.setting.key_message_tags)
+      if (resp.data.setting) {
+        setSelectedTags(resp.data.setting.key_message_tags)
+      }
     }).finally(() => {
       setIsLoadingSetting(false)
     })
