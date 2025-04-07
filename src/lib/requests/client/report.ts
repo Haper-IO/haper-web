@@ -114,7 +114,7 @@ export interface GenerateReplyRequest {
 }
 
 export const pollMessageProcessingStatus = (reportId: string) => {
-  return streamingHandler.get(`/report/${reportId}/message-processing-status`);
+  return streamingHandler.post(`/report/${reportId}/message-processing-status`);
 }
 
 export const generateReply = (reportId: string, request: GenerateReplyRequest, abortController?: AbortController) => {
@@ -147,5 +147,5 @@ export const applyReportActions = async (reportId: string) => {
 };
 
 export const pollBatchActionStatus =  (reportId: string) => {
-  return streamingHandler.get(`/report/${reportId}/batch-action-status`);
+  return streamingHandler.post(`/report/${reportId}/batch-action-status`);
 }

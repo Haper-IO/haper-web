@@ -1,6 +1,6 @@
 "use client"
 
-import {useState, useEffect} from "react"
+import {useState, useEffect, useRef} from "react"
 import {
   Tabs,
   TabsContent,
@@ -262,6 +262,7 @@ export function ReportClient({reportId}: { reportId: string }) {
 
   // Transform report data to emails if report exists
   const [emails, setEmails] = useState<Email[]>([]);
+  const replyInputDebounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
 
   // Fetch report data on the client side
@@ -386,16 +387,41 @@ export function ReportClient({reportId}: { reportId: string }) {
       <EmailItem
         key={email.id}
         email={email}
-        onInput={() => {
+        onInput={(value) => {
+          setEmails((prev) => {
+            return prev.map((e) => {
+              if (e.id == email.id) {
+                e.reply_message = value
+              }
+              return e
+            })
+          })
 
+          if (replyInputDebounceTimeout.current) {
+            clearTimeout(replyInputDebounceTimeout.current)
+          }
+
+          replyInputDebounceTimeout.current = setTimeout(() => {
+            // update report
+            const updateInfo: Record<string, ItemUpdateInfo[]> = {}
+            updateInfo[email.account_id] = [{
+              id: email.id,
+              reply_message: value
+            }]
+            updateReport(reportId, {
+                gmail: email.source == "gmail" ? updateInfo : undefined,
+                outlook: email.source == "outlook" ? updateInfo : undefined,
+              }
+            ).catch(() => {})
+          }, 1000)
         }}
         onMove={(_, category) => {
           setEmails((prev) => {
-            return prev.map((value) => {
-              if (value.id == email.id) {
-                value.category = category
+            return prev.map((e) => {
+              if (e.id == email.id) {
+                e.category = category
               }
-              return value
+              return e
             })
           })
           // update report
@@ -540,8 +566,8 @@ export function ReportClient({reportId}: { reportId: string }) {
       {/* Sidebar Navigation */}
       <EnhancedSidebar
         isOpen={isSidebarOpen}
-        onSelectReport={() => {
-          router.push(`/reports/${reportId}`);
+        onSelectReport={(id) => {
+          router.push(`/report/${id}`);
         }}
         currentReportId={reportId}
         onToggleSidebar={() => setIsSidebarOpen(false)}

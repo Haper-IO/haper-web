@@ -53,12 +53,6 @@ export default function UserIntentPage() {
     try {
       setIsSubmitting(true)
 
-      const selectedCategories = categories
-        .filter(category => category.selected)
-        .map(({ id, name }) => ({ id, name }))
-
-      console.log('Selected categories:', selectedCategories)
-
       // This is where you'd make the actual API call
       try {
         // When backend is ready, uncomment this code:
