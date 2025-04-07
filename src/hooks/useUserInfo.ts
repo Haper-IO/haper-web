@@ -1,15 +1,15 @@
+import {getUserInfo, User} from "@/lib/requests/client/user";
 import {useState, useEffect} from "react";
-import {getUserInfo, UserInfo} from "@/lib/requests/client/user-info";
 
 export function useUserInfo() {
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = () => {
       setLoading(true);
-      getUserInfo().then((resp: any) => {
-        setUserInfo(resp.user)
+      getUserInfo().then((resp) => {
+        setUserInfo(resp.data.user)
       }).finally(() => {
         setLoading(false);
       })

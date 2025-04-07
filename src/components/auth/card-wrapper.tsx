@@ -8,9 +8,11 @@ CardFooter
 
 import { Header } from '@/components/auth/header';
 import { BackButton } from '@/components/auth/back-button';
-import { Social } from '@/components/auth/social';
 import React from "react";
 import {Separator} from "@/components/ui/separator";
+import {Button} from "@/components/ui/button";
+import {oauthRedirect} from "@/app/actions/oauth";
+import {FcGoogle} from "react-icons/fc";
 
 interface CardWrapperProps {
   children: React.ReactNode;
@@ -41,7 +43,17 @@ export const CardWrapper = ({
         <Separator className="flex-1"/>
       </div>
       <CardFooter>
-        <Social authType={authType}/>
+        <div className={"flex items-center w-full gap-x-2"}>
+          <Button
+            size="lg"
+            className="w-full"
+            variant="outline"
+            onClick={() => oauthRedirect("google", authType)}
+          >
+            <FcGoogle className={"w-5 h-5"}/>
+            {`${authType === "login" ? "Login" : "Sign Up"} with Google`}
+          </Button>
+        </div>
       </CardFooter>
       <CardFooter>
         <BackButton

@@ -1,12 +1,17 @@
-import { Mail, RefreshCw, PlusCircle, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
-import { generateReport, getNewestReport, getReportHistory, getReportProcessingStatus, Report } from "@/lib/requests/client/report"
-import { Skeleton } from "@/components/ui/skeleton"
-import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
+import {Mail, RefreshCw} from "lucide-react"
+import {Button} from "@/components/ui/button"
+import {Card, CardContent, CardHeader} from "@/components/ui/card"
+import {Badge} from "@/components/ui/badge"
+import {useRouter} from "next/navigation"
+import {useState, useEffect} from "react"
+import {
+  generateReport,
+  getNewestReport,
+  getReportHistory,
+  Report
+} from "@/lib/requests/client/report"
+import {Skeleton} from "@/components/ui/skeleton"
+import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 
 
 export function transToReportSummary(report: Report) {
@@ -51,7 +56,7 @@ export function transToReportSummary(report: Report) {
       essential: acc.essential + curr.categoryCounts.essential,
       nonEssential: acc.nonEssential + curr.categoryCounts.nonEssential
     }),
-    { essential: 0, nonEssential: 0 }
+    {essential: 0, nonEssential: 0}
   );
 
   // Get summary content from the report
@@ -83,84 +88,10 @@ export function LatestSummary() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [processingStatus, setProcessingStatus] = useState<{gmail?: number, outlook?: number} | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // Determine which email providers are present in the report
   const hasGmail = (report as Report)?.content?.content?.gmail && (report as Report)?.content?.content?.gmail.length > 0;
   const hasOutlook = (report as Report)?.content?.content?.outlook && (report as Report)?.content?.content?.outlook.length > 0;
-
-  // Fetch report when component mounts
-  useEffect(() => {
-    fetchReport();
-  }, []);
-
-  // Effect to poll processing status for latest report
-  useEffect(() => {
-    if (!report?.id) return;
-
-    let isActive = true;
-    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-
-    const fetchProcessingStatus = async () => {
-      try {
-        setIsProcessing(true);
-        reader = await getReportProcessingStatus(report.id);
-
-        const processStream = async () => {
-          if (!isActive || !reader) return;
-
-          try {
-            const { done, value } = await reader.read();
-
-            if (done) {
-              setIsProcessing(false);
-              return;
-            }
-
-            // Decode and parse the chunk
-            const chunk = new TextDecoder().decode(value);
-            try {
-              const data = JSON.parse(chunk);
-              setProcessingStatus(data);
-
-              // Check if still processing
-              const totalInQueue = (data.gmail || 0) + (data.outlook || 0);
-              setIsProcessing(totalInQueue > 0);
-
-              // Continue reading if still processing
-              if (isActive) {
-                processStream();
-              }
-            } catch (error) {
-              console.error("Error parsing processing status data:", error);
-              if (isActive) {
-                processStream();
-              }
-            }
-          } catch (error) {
-            console.error("Error parsing processing status data:", error);
-            setIsProcessing(false);
-          }
-        };
-
-        processStream();
-      } catch (error) {
-        console.error("Error parsing processing status data:", error);
-        setIsProcessing(false);
-      }
-    };
-
-    fetchProcessingStatus();
-
-    // Clean up function
-    return () => {
-      isActive = false;
-      if (reader) {
-        reader.cancel().catch(console.error);
-      }
-    };
-  }, [report?.id]);
 
   const fetchReport = () => {
     if (reportLoading) {
@@ -169,21 +100,22 @@ export function LatestSummary() {
     setReportLoading(true);
     setReportError(null);
 
-    getNewestReport()
-      .then((resp) => {
-        if (resp?.report) {
-          setReport(resp.report);
-        } else {
-        }
-      })
-      .catch((error) => {
-        console.error("Error parsing processing status data:", error);
-        setReportError("Failed to load report data");
-      })
-      .finally(() => {
-        setReportLoading(false);
-      });
+    getNewestReport().then((resp) => {
+      if (resp.data.report) {
+        setReport(resp.data.report);
+      } else {
+      }
+    }).catch(() => {
+      setReportError("Failed to load report data");
+    }).finally(() => {
+      setReportLoading(false);
+    });
   };
+
+  // Fetch report when component mounts
+  useEffect(() => {
+    fetchReport();
+  }, []);
 
   const handleGenerateReport = () => {
     if (isGenerating) {
@@ -194,11 +126,11 @@ export function LatestSummary() {
 
     generateReport()
       .then((resp) => {
-        if (resp?.report) {
-          setReport(resp.report);
+        if (resp.data.report) {
+          setReport(resp.data.report);
           // Navigate to the report page after successful generation
-          if (resp.report?.id) {
-            router.push(`/report/${resp.report.id}`);
+          if (resp.data.report?.id) {
+            router.push(`/report/${resp.data.report.id}`);
           }
         } else {
           setReportError("Failed to generate report");
@@ -225,18 +157,20 @@ export function LatestSummary() {
     highlightedPeople: reportSummary.accountReports?.flatMap(account => {
       // Make sure we get unique senders only
       const uniqueSenders = new Set(account.essentialSenders);
-      return Array.from(uniqueSenders).map(name => ({ name }));
+      return Array.from(uniqueSenders).map(name => ({name}));
     }) || []
   } : null;
+
+  const totalReportItem = reportSummary ? reportSummary.totalCounts.essential + reportSummary.totalCounts.nonEssential : 0
 
   const reportStatsData = reportSummary ? {
     essentialCount: reportSummary.totalCounts.essential,
     nonEssentialCount: reportSummary.totalCounts.nonEssential,
-    essentialPercentage: reportSummary.totalCounts.essential / (reportSummary.totalCounts.essential + reportSummary.totalCounts.nonEssential) * 100,
-    nonEssentialPercentage: reportSummary.totalCounts.nonEssential / (reportSummary.totalCounts.essential + reportSummary.totalCounts.nonEssential) * 100
+    essentialPercentage: totalReportItem == 0 ? 0 : reportSummary.totalCounts.essential / totalReportItem * 100,
+    nonEssentialPercentage: totalReportItem == 0 ? 0 : reportSummary.totalCounts.nonEssential / (totalReportItem) * 100
   } : null;
 
-  // Function to highlight names
+  // Function to highlight names, TODO: fix this
   const renderHighlightedContent = (content: string, highlights: Array<{ name: string }>) => {
     if (!content || !highlights || highlights.length === 0) {
       return <p className="text-sm text-slate-800 leading-relaxed">{content}</p>;
@@ -315,44 +249,9 @@ export function LatestSummary() {
             <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`}/>
             <span className="sr-only">Refresh</span>
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={handleGenerateReport}
-            disabled={isGenerating || reportLoading}
-            title="Generate new report"
-          >
-            <PlusCircle className={`h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`}/>
-            <span className="sr-only">Generate New Report</span>
-          </Button>
           {renderEmailProviderIcons()}
         </div>
       </CardHeader>
-
-      {/* Message Processing Status */}
-      {isProcessing && processingStatus && (
-        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50/80 border border-blue-200/70 rounded-md backdrop-blur-[2px]">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
-            <p className="text-xs font-medium text-blue-700">Processing messages</p>
-          </div>
-          <div className="mt-1 flex flex-wrap gap-3">
-            {processingStatus.gmail !== undefined && processingStatus.gmail > 0 && (
-              <div className="flex items-center gap-1.5">
-                <GmailIcon className="h-3.5 w-3.5" />
-                <span className="text-xs text-blue-700">{processingStatus.gmail} messages in queue</span>
-              </div>
-            )}
-            {processingStatus.outlook !== undefined && processingStatus.outlook > 0 && (
-              <div className="flex items-center gap-1.5">
-                <OutlookIcon className="h-3.5 w-3.5" />
-                <span className="text-xs text-blue-700">{processingStatus.outlook} messages in queue</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       <div>
         <div className="flex flex-col md:flex-row flex-wrap gap-4">
@@ -378,21 +277,28 @@ export function LatestSummary() {
             ) : reportSummaryData ? (
               <>
                 <h3 className="font-medium text-black-900">{reportSummaryData.title}</h3>
-                <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
+                <div
+                  className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
                   {renderHighlightedContent(reportSummaryData.content, reportSummaryData.highlightedPeople)}
                 </div>
                 {/* Button Section */}
-                  <div className="pt-3 flex justify-center sm:justify-start">
-                    <Button
-                      variant="default"
-                      onClick={() => report && router.push(`/report/${report.id}`)}
-                      disabled={!report || reportLoading || isGenerating}
-                      size = "sm"
-                      className="bg-slate-600/90 hover:bg-slate-500/90"
-                    >
-                      Quick Batch Actions
-                    </Button>
-                  </div>
+                <div className="pt-3 flex justify-center sm:justify-start">
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      generateReport().then((resp) => {
+                        if (resp.data.report?.id) {
+                          router.push(`/report/${resp.data.report.id}`);
+                        }
+                      })
+                    }}
+                    disabled={!report || reportLoading || isGenerating}
+                    size="sm"
+                    className="bg-slate-600/90 hover:bg-slate-500/90"
+                  >
+                    Generate Report
+                  </Button>
+                </div>
 
                 {/* Display provider information if available */}
                 {(hasGmail || hasOutlook) && (
@@ -493,79 +399,11 @@ export function LastReport() {
   const [latestReport, setLatestReport] = useState<Report | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
-  const [processingStatus, setProcessingStatus] = useState<{gmail?: number, outlook?: number} | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // Determine which email providers are present in the report
   const hasGmail = latestReport?.content?.content?.gmail && latestReport?.content?.content?.gmail.length > 0;
   const hasOutlook = latestReport?.content?.content?.outlook && latestReport?.content?.content?.outlook.length > 0;
 
-  // Effect to poll processing status for last report
-  useEffect(() => {
-    if (!latestReport?.id) return;
-
-    let isActive = true;
-    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-
-    const fetchProcessingStatus = async () => {
-      try {
-        setIsProcessing(true);
-        reader = await getReportProcessingStatus(latestReport.id);
-
-        const processStream = async () => {
-          if (!isActive || !reader) return;
-
-          try {
-            const { done, value } = await reader.read();
-
-            if (done) {
-              setIsProcessing(false);
-              return;
-            }
-
-            // Decode and parse the chunk
-            const chunk = new TextDecoder().decode(value);
-            try {
-              const data = JSON.parse(chunk);
-              setProcessingStatus(data);
-
-              // Check if still processing
-              const totalInQueue = (data.gmail || 0) + (data.outlook || 0);
-              setIsProcessing(totalInQueue > 0);
-
-              // Continue reading if still processing
-              if (isActive) {
-                processStream();
-              }
-            } catch (error) {
-              console.error("Error parsing processing status data:", error);
-              if (isActive) {
-                processStream();
-              }
-            }
-          } catch (error) {
-            console.error("Error reading processing status:", error);
-            setIsProcessing(false);
-          }
-        };
-
-        processStream();
-      } catch (error) {
-        console.error("Error starting processing status polling:", error);
-        setIsProcessing(false);
-      }
-    };
-
-    fetchProcessingStatus();
-
-    // Clean up function
-    return () => {
-      isActive = false;
-      if (reader) {
-        reader.cancel().catch(console.error);
-      }
-    };
-  }, [latestReport?.id]);
 
   const fetchReportHistory = () => {
     if (reportLoading) {
@@ -575,22 +413,18 @@ export function LastReport() {
     setReportError(null);
 
     // Use real API call to fetch report history
-    getReportHistory(1, 2)
-      .then((resp) => {
-        const reports = resp?.reports || [];
-        if (reports[0]) {
-          setLatestReport(reports[0]);
-        } else {
-          setLatestReport(null);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching report history:", error);
-        setReportError("Failed to load report history");
-      })
-      .finally(() => {
-        setReportLoading(false);
-      });
+    getReportHistory(1, 1).then((resp) => {
+      const reports = resp.data.reports || [];
+      if (reports[0]) {
+        setLatestReport(reports[0]);
+      } else {
+        setLatestReport(null);
+      }
+    }).catch(() => {
+      setReportError("Failed to load report history");
+    }).finally(() => {
+      setReportLoading(false);
+    });
   };
 
   // Generate a better summary of all messages in the report
@@ -655,7 +489,7 @@ export function LastReport() {
 
   // Calculate message stats with safeguards for zero values
   const calculateStats = (report: Report) => {
-    if (!report?.content?.content?.gmail) return { essential: 0, nonEssential: 0, total: 0 };
+    if (!report?.content?.content?.gmail) return {essential: 0, nonEssential: 0, total: 0};
 
     let essential = 0;
     let nonEssential = 0;
@@ -673,7 +507,7 @@ export function LastReport() {
     });
 
     const total = essential + nonEssential;
-    return { essential, nonEssential, total };
+    return {essential, nonEssential, total};
   };
 
   // Highlight sender names in text
@@ -717,7 +551,7 @@ export function LastReport() {
 
     return (
       <div className="space-y-2">
-        <p className="text-sm text-slate-800 leading-relaxed" dangerouslySetInnerHTML={{__html: highlightedSummary}} />
+        <p className="text-sm text-slate-800 leading-relaxed" dangerouslySetInnerHTML={{__html: highlightedSummary}}/>
 
         {report?.content?.content?.gmail && report.content.content.gmail.some(account =>
           account.messages && account.messages.length > 0
@@ -728,7 +562,8 @@ export function LastReport() {
               account.messages?.slice(0, 2).map((msg, idx) => (
                 <div key={`${account.account_id}-${idx}`} className="px-3 py-2 bg-slate-50 rounded-md">
                   <div className="flex justify-between items-start">
-                    <span className={`text-xs font-medium ${msg.category === "Essential" ? 'text-lime-600' : 'text-slate-800'}`}>
+                    <span
+                      className={`text-xs font-medium ${msg.category === "Essential" ? 'text-lime-600' : 'text-slate-800'}`}>
                       {msg.sender.includes('<') ? msg.sender.split('<')[0].trim() : msg.sender}
                     </span>
                     <span className={`text-xs px-1.5 py-0.5 rounded ${
@@ -775,11 +610,6 @@ export function LastReport() {
   useEffect(() => {
     // Initial load with real API call
     fetchReportHistory();
-
-    // Clean up function
-    return () => {
-      setReportLoading(false);
-    };
   }, []);
 
   return (
@@ -811,30 +641,6 @@ export function LastReport() {
         </div>
       </CardHeader>
 
-      {/* Message Processing Status */}
-      {isProcessing && processingStatus && (
-        <div className="mx-4 mb-3 px-3 py-2 bg-blue-50/80 border border-blue-200/70 rounded-md backdrop-blur-[2px]">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
-            <p className="text-xs font-medium text-blue-700">Processing messages</p>
-          </div>
-          <div className="mt-1 flex flex-wrap gap-3">
-            {processingStatus.gmail !== undefined && processingStatus.gmail > 0 && (
-              <div className="flex items-center gap-1.5">
-                <GmailIcon className="h-3.5 w-3.5" />
-                <span className="text-xs text-blue-700">{processingStatus.gmail} messages in queue</span>
-              </div>
-            )}
-            {processingStatus.outlook !== undefined && processingStatus.outlook > 0 && (
-              <div className="flex items-center gap-1.5">
-                <OutlookIcon className="h-3.5 w-3.5" />
-                <span className="text-xs text-blue-700">{processingStatus.outlook} messages in queue</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       <div>
         <div className="flex flex-col md:flex-row flex-wrap gap-4 relative">
           {/* Summary Content */}
@@ -853,7 +659,8 @@ export function LastReport() {
               </div>
             ) : latestReport ? (
               <>
-                <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
+                <div
+                  className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
                   {latestReport.content?.summary && Array.isArray(latestReport.content.summary) && latestReport.content.summary.length > 0 ? (
                     <p className="text-sm text-slate-800 leading-relaxed">
                       {latestReport.content.summary.map((item: {
@@ -891,7 +698,8 @@ export function LastReport() {
 
                 {/* Display stats below content */}
                 {reportStats && reportStats.total > 0 && (
-                  <div className="flex flex-col gap-2 text-xs bg-slate-50/70 backdrop-blur-[2px] rounded-md p-3 border border-slate-200/60">
+                  <div
+                    className="flex flex-col gap-2 text-xs bg-slate-50/70 backdrop-blur-[2px] rounded-md p-3 border border-slate-200/60">
                     <div className="font-medium text-slate-700 pb-1 border-b border-slate-200/60">
                       {reportStats.total} {reportStats.total === 1 ? "Email" : "Emails"} Processed
                     </div>
@@ -913,8 +721,10 @@ export function LastReport() {
                 )}
               </>
             ) : (
-              <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
-                <p className="text-sm text-slate-800">No report history available. Click refresh to check for reports.</p>
+              <div
+                className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
+                <p className="text-sm text-slate-800">No report history available. Click refresh to check for
+                  reports.</p>
               </div>
             )}
           </CardContent>

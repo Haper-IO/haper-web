@@ -3,20 +3,11 @@ import {reqHandler} from "@/lib/requests/client/base";
 // Define interfaces
 export interface TrackingStatus {
   account_id: string;
+  email: string;
   provider: string;
   status: "NotStarted" | "Ongoing" | "Stopped" | "Error";
   created_at: string | null;
   updated_at: string | null;
-}
-
-export interface AccountInfo {
-  // This interface represents the account information used for tracking
-  provider: string;
-  provider_account_id: string;
-  access_token: string;
-  refresh_token?: string;
-  expires_at?: number;
-  email?: string;
 }
 
 /**
@@ -25,7 +16,7 @@ export interface AccountInfo {
  * @returns - A promise that resolves to an array of tracking status information.
  */
 export const listMessageTrackingStatus = async () => {
-  return reqHandler.get(`/message/tracking/status`);
+  return reqHandler.get<{tracking_status: TrackingStatus[]}>(`/message/tracking/status`);
 }
 
 /**
@@ -35,7 +26,7 @@ export const listMessageTrackingStatus = async () => {
  * @returns - A promise that resolves to the new tracking status.
  */
 export const stopMessageTracking = async (accountId: string) => {
-  return reqHandler.post(`/message/tracking/stop`, {
+  return reqHandler.post<{new_tracking_status: TrackingStatus}>(`/message/tracking/stop`, {
     account_id: accountId
   });
 }
@@ -47,7 +38,7 @@ export const stopMessageTracking = async (accountId: string) => {
  * @returns - A promise that resolves to the new tracking status.
  */
 export const startMessageTrackingByAccountID = async (accountId: string) => {
-  return reqHandler.post(`/message/tracking/start`, {
+  return reqHandler.post<{new_tracking_status: TrackingStatus}>(`/message/tracking/start`, {
     account_id: accountId
   });
 }

@@ -17,7 +17,7 @@ import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
 import {
   stopMessageTracking,
   listMessageTrackingStatus,
-  startMessageTrackingByAccountID
+  startMessageTrackingByAccountID, TrackingStatus
 } from "@/lib/requests/client/message-tracking"
 import {oauthRedirect} from "@/app/actions/oauth";
 import { useSearchParams, useRouter } from "next/navigation"
@@ -59,15 +59,6 @@ const SCROLLBAR_STYLES = `
   }
 `;
 
-interface TrackingStatus {
-  account_id: string;
-  email: string;
-  provider: string;
-  status: "NotStarted" | "Ongoing" | "Stopped" | "Error";
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
 const SupportedProviders = ["google", "microsoft"]
 
 const getRunningProviders = (trackingStatuses: Record<string, TrackingStatus[]>) => {
@@ -103,8 +94,7 @@ export default function DashboardPage() {
     setIsFetchingTrackingStatus(true)
     listMessageTrackingStatus().then((resp) => {
       const trackingStatusMap: Record<string, TrackingStatus[]> = {}
-      // @ts-ignore
-      for (const t of resp.tracking_status) {
+      for (const t of resp.data.tracking_status) {
         const provider = t.provider
         if (!trackingStatusMap[provider]) {
           trackingStatusMap[provider] = []

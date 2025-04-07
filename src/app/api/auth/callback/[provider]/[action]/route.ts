@@ -99,7 +99,6 @@ export async function GET(
     }
 
   } catch (e) {
-    //TODO redirect to different error page based on action
     if (e instanceof OAuthError) {
       return redirect(`${errorRedirectPath}?error_msg=${e.message}`)
     } else if (e instanceof AxiosError) {
