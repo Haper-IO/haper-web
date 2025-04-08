@@ -342,6 +342,7 @@ export function ReportClient({reportId}: { reportId: string }) {
         while (true) {
           const {value, done} = await reader.read();
           if (done) {
+            fetchReport()
             break
           }
           const data = JSON.parse(value) as BatchActionStatus
@@ -371,7 +372,6 @@ export function ReportClient({reportId}: { reportId: string }) {
     setIsApplyingActions(true);
     applyReportActions(reportId).then(() => {
       fetchBatchActionStatus() //will unset isApplyingActions in fetchBatchActionStatus
-    }).catch(() => {
     }).finally(() => {
       setIsApplyingActions(false);
     })
@@ -545,7 +545,8 @@ export function ReportClient({reportId}: { reportId: string }) {
             })
           }
         }}
-        disabled={isLoadingReport || numberOfMessageInProcessing > 0 || email.action_result == "Success"}
+        disabled={(batchActionStatus && batchActionStatus.status !== "Done") ||
+          isLoadingReport || numberOfMessageInProcessing > 0 || email.action_result == "Success"}
       />
     )
   }
