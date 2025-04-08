@@ -17,9 +17,9 @@ export interface MailReportItem {
 }
 
 export interface ReportModel {
-  messages_in_queue: Record<string, number>;  // Fixed from list<string, number>
-  summary: RichText[];
-  content: ReportContent;
+  messages_in_queue?: Record<string, number>;  // Fixed from list<string, number>
+  summary?: RichText[];
+  content?: ReportContent;
 }
 
 export interface ReportContent {

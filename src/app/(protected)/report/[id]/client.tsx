@@ -42,6 +42,7 @@ import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 import {cn} from "@/lib/utils"
 import {EnhancedSidebar} from "@/components/report-sidebar"
 import {useRouter} from "next/navigation";
+import RichContent from "@/components/rich-content";
 
 const SHARED_STYLES = {
   heading: "font-medium text-slate-900 text-sm",
@@ -82,23 +83,24 @@ type Email = MailReportItem & {
 }
 
 // Email Item Component
-function EmailItem({
-                     email,
-                     onInput,
-                     onMove,
-                     onActionSelect,
-                     onRegenerateReply,
-                     onCancelGenerate,
-                     disabled = false
-                   }: {
-  email: Email
-  onInput: (value: string) => void,
-  onMove: (email: Email, category: "Essential" | "NonEssential") => void
-  onActionSelect: (email: Email, action: "Read" | "Delete" | "Reply" | "Ignore") => void
-  onRegenerateReply: (email: Email) => void
-  onCancelGenerate: (email: Email) => void
-  disabled?: boolean
-}) {
+function EmailItem(
+  {
+    email,
+    onInput,
+    onMove,
+    onActionSelect,
+    onRegenerateReply,
+    onCancelGenerate,
+    disabled = false
+  }: {
+    email: Email
+    onInput: (value: string) => void,
+    onMove: (email: Email, category: "Essential" | "NonEssential") => void
+    onActionSelect: (email: Email, action: "Read" | "Delete" | "Reply" | "Ignore") => void
+    onRegenerateReply: (email: Email) => void
+    onCancelGenerate: (email: Email) => void
+    disabled?: boolean
+  }) {
 
   const actionButtonStyleMap: Record<string, string> = {
     "Read": "bg-green-100 text-green-700",
@@ -318,7 +320,7 @@ export function ReportClient({reportId}: { reportId: string }) {
       if (resp.data) {
         const reader = resp.data.pipeThrough(new TextDecoderStream()).getReader();
         while (true) {
-          const { value, done } = await reader.read();
+          const {value, done} = await reader.read();
           if (done) {
             break
           }
@@ -338,7 +340,7 @@ export function ReportClient({reportId}: { reportId: string }) {
       if (resp.data) {
         const reader = resp.data.pipeThrough(new TextDecoderStream()).getReader();
         while (true) {
-          const { value, done } = await reader.read();
+          const {value, done} = await reader.read();
           if (done) {
             break
           }
@@ -369,7 +371,8 @@ export function ReportClient({reportId}: { reportId: string }) {
     setIsApplyingActions(true);
     applyReportActions(reportId).then(() => {
       fetchBatchActionStatus() //will unset isApplyingActions in fetchBatchActionStatus
-    }).catch(() => {}).finally(() => {
+    }).catch(() => {
+    }).finally(() => {
       setIsApplyingActions(false);
     })
   };
@@ -412,7 +415,8 @@ export function ReportClient({reportId}: { reportId: string }) {
                 gmail: email.source == "gmail" ? updateInfo : undefined,
                 outlook: email.source == "outlook" ? updateInfo : undefined,
               }
-            ).catch(() => {})
+            ).catch(() => {
+            })
           }, 1000)
         }}
         onMove={(_, category) => {
@@ -434,7 +438,8 @@ export function ReportClient({reportId}: { reportId: string }) {
               gmail: email.source == "gmail" ? updateInfo : undefined,
               outlook: email.source == "outlook" ? updateInfo : undefined,
             }
-          ).catch(() => {})
+          ).catch(() => {
+          })
         }}
         onActionSelect={(_, action) => {
           setEmails((prev) => {
@@ -455,7 +460,8 @@ export function ReportClient({reportId}: { reportId: string }) {
               gmail: email.source == "gmail" ? updateInfo : undefined,
               outlook: email.source == "outlook" ? updateInfo : undefined,
             }
-          ).catch(() => {})
+          ).catch(() => {
+          })
         }}
         onRegenerateReply={() => {
           // generate reply for the email
@@ -479,7 +485,7 @@ export function ReportClient({reportId}: { reportId: string }) {
               const reader = resp.data.pipeThrough(new TextDecoderStream()).getReader();
               let generatedReply = ""
               while (true) {
-                const { value, done } = await reader.read();
+                const {value, done} = await reader.read();
                 if (done) {
                   // update email state
                   setEmails((prev) => {
@@ -503,7 +509,8 @@ export function ReportClient({reportId}: { reportId: string }) {
                       gmail: email.source == "gmail" ? updateInfo : undefined,
                       outlook: email.source == "outlook" ? updateInfo : undefined,
                     }
-                  ).catch(() => {})
+                  ).catch(() => {
+                  })
                   break
                 }
                 generatedReply += value
@@ -534,7 +541,8 @@ export function ReportClient({reportId}: { reportId: string }) {
                 gmail: email.source == "gmail" ? updateInfo : undefined,
                 outlook: email.source == "outlook" ? updateInfo : undefined,
               }
-            ).catch(() => {})
+            ).catch(() => {
+            })
           }
         }}
         disabled={isLoadingReport || numberOfMessageInProcessing > 0 || email.action_result == "Success"}
@@ -674,15 +682,11 @@ export function ReportClient({reportId}: { reportId: string }) {
                     </div>}
                   </div>
                 </CardHeader>
-                {report && report.content && report.content.summary && report.content.summary.length > 0 && (
+                {report && report.content.summary && report.content.summary.length > 0 && (
                   <CardContent className="pt-0 pb-3 px-4">
                     <div
-                      className="px-3 py-2 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
-                      <p className="text-xs text-slate-800 leading-normal">
-                        {report.content.summary
-                          .filter(item => item.type === "text" && item.text?.content)
-                          .map(item => item.text?.content).join(" ")}
-                      </p>
+                      className="px-3 py-2 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
+                      <RichContent richTextList={report.content.summary}></RichContent>
                     </div>
                   </CardContent>
                 )}
