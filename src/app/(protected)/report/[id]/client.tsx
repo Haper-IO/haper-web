@@ -40,7 +40,7 @@ import {
 import {Report, MailReportItem} from "@/lib/modal/report"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 import {cn} from "@/lib/utils"
-import {EnhancedSidebar} from "@/components/report-sidebar"
+import {Sidebar} from "@/components/report-sidebar"
 import {useRouter} from "next/navigation";
 import RichContent from "@/components/rich-content";
 
@@ -573,7 +573,7 @@ export function ReportClient({reportId}: { reportId: string }) {
       </header>
 
       {/* Sidebar Navigation */}
-      <EnhancedSidebar
+      <Sidebar
         isOpen={isSidebarOpen}
         onSelectReport={(id) => {
           router.push(`/report/${id}`);

@@ -34,7 +34,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { EnhancedSidebar } from "@/components/report-sidebar";
+import { Sidebar } from "@/components/report-sidebar";
 
 // Add custom scrollbar styles
 const SCROLLBAR_STYLES = `
@@ -260,7 +260,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <EnhancedSidebar
+      <Sidebar
         isOpen={isSidebarOpen}
         onSelectReport={handleSelectReport}
         currentReportId=""
@@ -271,14 +271,14 @@ export default function DashboardPage() {
           <div className="space-y-4">
 
             {/* Message Tracking Status Section */}
-            <Card className="bg-slate-200/40 backdrop-blur-[2px] mb-4">
-              <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+            <Card className="bg-slate-200/40 backdrop-blur-2xl pb-2">
+              <CardHeader className="flex flex-row justify-start items-center gap-4 space-y-0">
                 <Badge variant="default" size="md">Status</Badge>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                   {!isStatusExpanded && runningProviders.length > 0 && (
                     <span className="text-sm text-slate-600">
                       {runningProviders.map(({ provider, count }) => (
-                        <span key={provider} className="flex items-center gap-1 mr-2">
+                        <span key={provider} className="flex items-center gap-2 mr-2">
                           {provider === 'google' ? (
                             <GmailIcon className="h-4 w-4" />
                           ) : provider === 'microsoft' ? (

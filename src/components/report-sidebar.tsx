@@ -20,7 +20,7 @@ export interface EnhancedSidebarProps {
   onToggleSidebar?: () => void;
 }
 
-export function EnhancedSidebar(
+export function Sidebar(
   {
     isOpen,
     onSelectReport,
