@@ -12,6 +12,7 @@ import {
 import {Report} from "@/lib/modal/report"
 import {Skeleton} from "@/components/ui/skeleton"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
+import {WaitingIllustration} from "@/icons/illustrations";
 import RichContent from "@/components/rich-content";
 
 
@@ -249,6 +250,16 @@ export function LatestSummary() {
                 <div
                   className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
                   {report && report.content && report.content.summary && <RichContent richTextList={report.content.summary}></RichContent>}
+                  {report && report.content.summary == null &&
+                    <div className={"flex flex-row items-center justify-between gap-6"}>
+                      <WaitingIllustration/>
+                      <div className="bg-slate-50/70 backdrop-blur-[2px] rounded-md p-4 border border-slate-200/60">
+                        <p className="text-sm text-gray-500">Haper tracks your emails since the last report generation. If the summary is still empty after refreshing, please wait for incoming emails and try again later.
+                        </p>
+                      </div>
+                    </div>
+                  }
+
                 </div>
                 {/* Button Section */}
                 <div className="pt-3 flex justify-center sm:justify-start">
@@ -295,12 +306,12 @@ export function LatestSummary() {
           </CardContent>
 
           {/* Message Stats Statistics */}
-          <CardContent className="flex min-w-[300px] justify-center items-center md:min-w-[300px]">
+          <CardContent className="flex min-w-[300px] md:min-w-[300px]">
             {reportLoading || isGenerating ? (
               <div className="flex">
                 <Skeleton className="h-40 w-40 rounded-full"/>
               </div>
-            ) : reportStatsData && reportStatsData.essentialCount >= 0 ? (
+            ) : reportStatsData && reportStatsData.essentialCount > 0 ? (
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 <div className="relative h-40 w-40">
                   <svg className="h-full w-full" viewBox="0 0 36 36">
@@ -352,8 +363,10 @@ export function LatestSummary() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center">
-                <p className="text-sm text-gray-500">No statistics available</p>
+              <div className="flex flex-col items-center justify-center text-center">
+                  <p className="text-sm text-gray-500">
+                    No Statistics available. Click refresh to track newest update.
+                  </p>
               </div>
             )}
           </CardContent>
