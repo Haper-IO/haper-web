@@ -59,7 +59,7 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/dashboard", process.env.SITE_HOST_URL!))
+      const resp = NextResponse.redirect(new URL("/dashboard", process.env.NEXT_PUBLIC_SITE_HOST_URL!))
       if (response.headers["set-cookie"]) {
         for (const cookie of response.headers["set-cookie"]) {
           resp.headers.append("Set-Cookie", cookie)
@@ -77,7 +77,7 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/intent", process.env.SITE_HOST_URL!))
+      const resp = NextResponse.redirect(new URL("/intent", process.env.NEXT_PUBLIC_SITE_HOST_URL!))
       if (response.headers["set-cookie"]) {
         for (const cookie of response.headers["set-cookie"]) {
           resp.headers.append("Set-Cookie", cookie)
@@ -93,7 +93,7 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         email: userProfile.email,
       }, cookieStore.toString())
-      return NextResponse.redirect(new URL("/dashboard", process.env.SITE_HOST_URL!))
+      return NextResponse.redirect(new URL("/dashboard", process.env.NEXT_PUBLIC_SITE_HOST_URL!))
     } else {
       throw new Error("unknown action")
     }

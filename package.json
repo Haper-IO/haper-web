@@ -26,6 +26,8 @@
     "@radix-ui/react-tooltip": "^1.2.4",
     "@splinetool/react-spline": "^4.0.0",
     "@splinetool/runtime": "^1.9.73",
+    "@stripe/react-stripe-js": "^3.6.0",
+    "@stripe/stripe-js": "^7.1.0",
     "arctic": "^3.5.0",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",

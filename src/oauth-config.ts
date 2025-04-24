@@ -9,7 +9,7 @@ declare global {
 
 export const oauthClients = globalThis.oauthClients || {
   "google": new Google({
-    originUrl: process.env.SITE_HOST_URL!,
+    originUrl: process.env.NEXT_PUBLIC_SITE_HOST_URL!,
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     codeVerifier: process.env.OAUTH_CODE_VERIFIER!,
@@ -20,7 +20,7 @@ export const oauthClients = globalThis.oauthClients || {
     }
   }),
   "microsoft": new Microsoft({
-    originUrl: process.env.SITE_HOST_URL!,
+    originUrl: process.env.NEXT_PUBLIC_SITE_HOST_URL!,
     clientId: process.env.MICROSOFT_CLIENT_ID!,
     clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
     codeVerifier: process.env.OAUTH_CODE_VERIFIER!,
