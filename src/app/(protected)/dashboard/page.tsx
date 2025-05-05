@@ -266,7 +266,7 @@ export default function DashboardPage() {
         currentReportId=""
         onToggleSidebar={() => setIsSidebarOpen(false)}
       />
-      <div className={`transition-[padding] duration-300 pt-[61px] ${isSidebarOpen ? "md:pl-56" : "md:pl-0"}`}>
+      <div className={`transition-[padding] duration-300 ${isSidebarOpen ? "md:pl-56" : "md:pl-0"}`}>
         <div className="container p-4 mx-auto">
           <div className="space-y-4">
 
