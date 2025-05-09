@@ -11,8 +11,19 @@ import {getReportHistory} from "@/lib/requests/client/report"
 import {Report} from "@/lib/modal/report"
 import {useUserInfo} from "@/hooks/useUserInfo"
 import {Logo_sm} from "@/icons/logo"
-import {useRouter} from "next/navigation"
-  ;
+import {useRouter} from "next/navigation";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar"
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -21,7 +32,7 @@ export interface SidebarProps {
   onToggleSidebar?: () => void;
 }
 
-export function Sidebar(
+export function ReportSidebar(
   {
     isOpen,
     onSelectReport,

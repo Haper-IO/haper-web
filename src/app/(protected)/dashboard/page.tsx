@@ -13,14 +13,14 @@ import {
 } from "lucide-react"
 import React, {useState, useEffect} from "react"
 import {LatestSummary, LastReport} from "@/app/(protected)/dashboard/dashboard-cards"
-import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
+import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 import {
   stopMessageTracking,
   listMessageTrackingStatus,
   startMessageTrackingByAccountID, TrackingStatus
 } from "@/lib/requests/client/message-tracking"
 import {oauthRedirect} from "@/app/actions/oauth";
-import { useSearchParams, useRouter } from "next/navigation"
+import {useSearchParams, useRouter} from "next/navigation"
 import {
   AlertDialog, AlertDialogAction,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -33,31 +33,8 @@ import {
   CardHeader,
   CardContent,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Sidebar } from "@/components/report-sidebar";
-
-// Add custom scrollbar styles
-const SCROLLBAR_STYLES = `
-  /* For Webkit browsers (Chrome, Safari) */
-  ::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #e2e8f0;
-    border-radius: 20px;
-  }
-
-  /* For Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #e2e8f0 transparent;
-  }
-`;
+import {Badge} from "@/components/ui/badge";
+import {Sidebar} from "@/components/report-sidebar";
 
 const SupportedProviders = ["google", "microsoft"]
 
@@ -65,7 +42,7 @@ const getRunningProviders = (trackingStatuses: Record<string, TrackingStatus[]>)
   const running = Object.entries(trackingStatuses).reduce((acc, [provider, statuses]) => {
     const runningCount = statuses.filter(s => s.status === "Ongoing").length;
     if (runningCount > 0) {
-      acc.push({ provider, count: runningCount });
+      acc.push({provider, count: runningCount});
     }
     return acc;
   }, [] as Array<{ provider: string, count: number }>);
@@ -183,8 +160,6 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-transparent relative">
-      {/* Add a style tag for custom scrollbar styling */}
-      <style dangerouslySetInnerHTML={{ __html: SCROLLBAR_STYLES }} />
 
       {searchParams.get("error_msg") && (
         <AlertDialog open={alterOpen} onOpenChange={setAlterOpen}>
@@ -208,7 +183,8 @@ export default function DashboardPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Start Message Tracking</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to start tracking messages for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
+              Are you sure you want to start tracking messages
+              for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
               This will begin synchronizing your emails.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -227,7 +203,8 @@ export default function DashboardPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Stop Message Tracking</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to stop tracking messages for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
+              Are you sure you want to stop tracking messages
+              for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
               This will end the synchronization process.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -277,14 +254,15 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-4">
                   {!isStatusExpanded && runningProviders.length > 0 && (
                     <span className="text-sm text-slate-600">
-                      {runningProviders.map(({ provider, count }) => (
+                      {runningProviders.map(({provider, count}) => (
                         <span key={provider} className="flex items-center gap-2 mr-2">
                           {provider === 'google' ? (
-                            <GmailIcon className="h-4 w-4" />
+                            <GmailIcon className="h-4 w-4"/>
                           ) : provider === 'microsoft' ? (
-                            <OutlookIcon className="h-4 w-4" />
+                            <OutlookIcon className="h-4 w-4"/>
                           ) : null}
-                          <span className="text-slate-500 font-medium text-sm">Tracking {count} {count === 1 ? "Email" : "Emails"} Now</span>
+                          <span
+                            className="text-slate-500 font-medium text-sm">Tracking {count} {count === 1 ? "Email" : "Emails"} Now</span>
                         </span>
                       ))}
                     </span>
@@ -309,9 +287,9 @@ export default function DashboardPage() {
                     onClick={() => setIsStatusExpanded(!isStatusExpanded)}
                   >
                     {isStatusExpanded ? (
-                      <ChevronUp className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4"/>
                     ) : (
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-4 w-4"/>
                     )}
                   </Button>
                 </div>
@@ -347,9 +325,9 @@ export default function DashboardPage() {
                             <div className="flex items-center gap-2">
                               <div className="flex items-center gap-2">
                                 {t.provider === 'google' ? (
-                                  <GmailIcon className="h-4 w-4" />
+                                  <GmailIcon className="h-4 w-4"/>
                                 ) : t.provider === 'microsoft' ? (
-                                  <OutlookIcon className="h-4 w-4" />
+                                  <OutlookIcon className="h-4 w-4"/>
                                 ) : null}
                                 <span className="font-medium text-sm">{getProviderName(t.provider)}</span>
                                 <p className="text-xs text-gray-500">{t.email}</p>
@@ -403,15 +381,16 @@ export default function DashboardPage() {
             </Card>
 
             <div className="space-y-4 backdrop-blur-[1px]">
-              <LatestSummary />
-              <LastReport />
+              <LatestSummary/>
+              <LastReport/>
             </div>
           </div>
         </div>
       </div>
 
       {/* Background texture */}
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[length:20px_20px] opacity-50"></div>
+      <div
+        className="fixed inset-0 -z-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[length:20px_20px] opacity-50"></div>
     </main>
   )
 }
