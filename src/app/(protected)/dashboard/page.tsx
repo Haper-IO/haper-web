@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  PlusCircle
 } from "lucide-react"
 import React, {useState, useEffect} from "react"
 import {LatestSummary, LastReport} from "@/app/(protected)/dashboard/dashboard-cards"
@@ -63,6 +64,8 @@ export default function DashboardPage() {
   const [stopDialogOpen, setStopDialogOpen] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<TrackingStatus | null>(null)
   const [isStatusExpanded, setIsStatusExpanded] = useState(false);
+  const [addAccountDialogOpen, setAddAccountDialogOpen] = useState(false)
+  const [selectedProviderForAdd, setSelectedProviderForAdd] = useState("")
 
   const fetchTrackingStatus = () => {
     if (isFetchingTrackingStatus) {
@@ -152,6 +155,13 @@ export default function DashboardPage() {
     }
   }
 
+  const handleAddAccount = () => {
+    if (selectedProviderForAdd) {
+      handleStartTrackingToOAuth(selectedProviderForAdd)
+      setAddAccountDialogOpen(false)
+    }
+  }
+
   const runningProviders = getRunningProviders(trackingStatuses);
 
   const handleSelectReport = (id: string) => {
@@ -185,6 +195,7 @@ export default function DashboardPage() {
             <AlertDialogDescription>
               Are you sure you want to start tracking messages
               for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
+              {selectedProvider?.email && ` (${selectedProvider.email})`}
               This will begin synchronizing your emails.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -205,6 +216,7 @@ export default function DashboardPage() {
             <AlertDialogDescription>
               Are you sure you want to stop tracking messages
               for {selectedProvider ? getProviderName(selectedProvider.provider) : ''}?
+              {selectedProvider?.email && ` (${selectedProvider.email})`}
               This will end the synchronization process.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -212,6 +224,41 @@ export default function DashboardPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleStopConfirm}>
               Stop Tracking
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add Account Dialog */}
+      <AlertDialog open={addAccountDialogOpen} onOpenChange={setAddAccountDialogOpen}>
+        <AlertDialogContent className="bg-slate-100">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Add Email Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select the email provider you want to add for message tracking.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-2 py-4">
+            {SupportedProviders.map(provider => (
+              <Button
+                key={provider}
+                variant={selectedProviderForAdd === provider ? "default" : "outline"}
+                onClick={() => setSelectedProviderForAdd(provider)}
+                className="flex items-center justify-start gap-2 h-10"
+              >
+                {provider === 'google' ? (
+                  <GmailIcon className="h-5 w-5"/>
+                ) : provider === 'microsoft' ? (
+                  <OutlookIcon className="h-5 w-5"/>
+                ) : null}
+                {getProviderName(provider)}
+              </Button>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAddAccount} disabled={!selectedProviderForAdd}>
+              Connect Account
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -272,6 +319,16 @@ export default function DashboardPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-8 p-2 flex items-center gap-1 text-sm text-slate-700"
+                    onClick={() => setAddAccountDialogOpen(true)}
+                    title="Add Account"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    <span>Add Account</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-8 w-8 p-0"
                     onClick={fetchTrackingStatus}
                     disabled={isFetchingTrackingStatus}
@@ -297,76 +354,118 @@ export default function DashboardPage() {
               {isStatusExpanded && (
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {SupportedProviders.map((provider, index) => {
-                      // Find provider status
-                      let t: TrackingStatus
-                      if (trackingStatuses[provider] && trackingStatuses[provider].length > 0) {
-                        t = trackingStatuses[provider][0]
-                      } else {
-                        t = {
+                    {SupportedProviders.map((provider) => {
+                      // Get all accounts for this provider
+                      const accounts = trackingStatuses[provider] || [];
+                      
+                      // If no accounts, add a placeholder
+                      if (accounts.length === 0) {
+                        accounts.push({
                           account_id: "",
                           email: "",
                           provider: provider,
                           status: "NotStarted",
                           created_at: null,
                           updated_at: null,
-                        }
+                        });
                       }
+                      
+                      // Return a single card per provider containing all accounts
                       return (
                         <div
-                          key={index}
-                          className={`flex justify-between border rounded-lg p-3 bg-slate-50/70 backdrop-blur-[2px] ${
-                            t.status === "Ongoing" ? "border-lime-200" :
-                              t.status === "Error" ? "border-red-500" :
-                                "border-slate-200/70"
-                          }`}
+                          key={provider}
+                          className="border rounded-lg p-3 bg-slate-50/70 backdrop-blur-[2px] border-slate-200/70"
                         >
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-2">
-                                {t.provider === 'google' ? (
-                                  <GmailIcon className="h-4 w-4"/>
-                                ) : t.provider === 'microsoft' ? (
-                                  <OutlookIcon className="h-4 w-4"/>
-                                ) : null}
-                                <span className="font-medium text-sm">{getProviderName(t.provider)}</span>
-                                <p className="text-xs text-gray-500">{t.email}</p>
-                              </div>
-                            </div>
-                            <div className="mt-2">
-                              <p className="text-xs text-gray-500">Status</p>
-                              <p className="text-sm font-medium">{getStatusText(t.status)}</p>
-                            </div>
+                          <div className="flex items-center gap-2 mb-3">
+                            {provider === 'google' ? (
+                              <GmailIcon className="h-4 w-4"/>
+                            ) : provider === 'microsoft' ? (
+                              <OutlookIcon className="h-4 w-4"/>
+                            ) : null}
+                            <span className="font-medium">{getProviderName(provider)}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="ml-auto h-7 text-xs flex items-center gap-1"
+                              onClick={() => {
+                                setSelectedProviderForAdd(provider);
+                                setAddAccountDialogOpen(true);
+                              }}
+                            >
+                              <PlusCircle className="h-3 w-3" />
+                              <span>Add</span>
+                            </Button>
                           </div>
-                          <div className="space-y-2">
-                            <Button
-                              onClick={() => {
-                                setSelectedProvider(t);
-                                setStartDialogOpen(true);
-                              }}
-                              disabled={t.status == "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                              className="flex items-center gap-2 h-8 text-sm bg-slate-700/90 hover:bg-slate-800/90 text-white"
-                            >
-                              {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                                <PlayCircle className="h-4 w-4"/>}
-                              Start
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                setSelectedProvider(t);
-                                setStopDialogOpen(true);
-                              }}
-                              variant="outline"
-                              disabled={t.status != "Ongoing" || isFetchingTrackingStatus || isStoppingTracking}
-                              className="flex items-center gap-2 h-8 text-sm border-slate-300/80 hover:bg-slate-100/70 text-slate-700"
-                            >
-                              {isFetchingTrackingStatus ? <Loader2 className="h-4 w-4 animate-spin"/> :
-                                <StopCircle className="h-4 w-4"/>}
-                              Stop
-                            </Button>
+                          
+                          <div className="space-y-3">
+                            {accounts.map((account, idx) => (
+                              <div 
+                                key={`${provider}-${idx}`}
+                                className={`flex justify-between items-center p-2 rounded-md ${
+                                  account.status === "Error" ? "bg-red-50" : "bg-white/60"
+                                }`}
+                              >
+                                <div>
+                                  {account.email ? (
+                                    <div className="flex flex-col">
+                                      <span className="text-sm">{account.email}</span>
+                                      <span className="text-xs text-gray-500">
+                                        {getStatusText(account.status)}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-sm text-gray-500">No account connected</span>
+                                  )}
+                                </div>
+                                
+                                <div>
+                                  {account.account_id ? (
+                                    account.status === "Ongoing" ? (
+                                      <Button
+                                        onClick={() => {
+                                          setSelectedProvider(account);
+                                          setStopDialogOpen(true);
+                                        }}
+                                        variant="outline"
+                                        disabled={isFetchingTrackingStatus || isStoppingTracking}
+                                        className="flex items-center gap-1 h-7 text-xs border-slate-300/80 hover:bg-slate-100/70 text-slate-700"
+                                      >
+                                        {isFetchingTrackingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> :
+                                          <StopCircle className="h-3 w-3"/>}
+                                        Stop
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        onClick={() => {
+                                          setSelectedProvider(account);
+                                          setStartDialogOpen(true);
+                                        }}
+                                        disabled={isFetchingTrackingStatus || isStartingTracking}
+                                        className="flex items-center gap-1 h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
+                                      >
+                                        {isFetchingTrackingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> :
+                                          <PlayCircle className="h-3 w-3"/>}
+                                        Start
+                                      </Button>
+                                    )
+                                  ) : (
+                                    <Button
+                                      onClick={() => {
+                                        setSelectedProviderForAdd(provider);
+                                        setAddAccountDialogOpen(true);
+                                      }}
+                                      className="flex items-center gap-1 h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
+                                    >
+                                      <PlusCircle className="h-3 w-3"/>
+                                      Connect
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      )
+                      );
                     })}
                   </div>
 
