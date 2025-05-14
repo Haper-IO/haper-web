@@ -1,64 +1,74 @@
 "use client"
 
-import {Button} from "@/components/ui/button"
-import {
-  PanelLeftClose,
-  PanelLeft,
-} from "lucide-react"
-import React, {useState, useEffect} from "react"
-import {useRouter} from "next/navigation"
 import {LatestSummary, LastReport} from "@/app/(protected)/dashboard/dashboard-cards"
-import {Sidebar} from "@/components/report-sidebar";
 import {StatusCard} from "@/app/(protected)/dashboard/status-card"
+import { AppSidebar } from "@/components/app-sidebar"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
 
 export default function DashboardPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const router = useRouter();
-  const handleSelectReport = (id: string) => {
-    router.push(`/report/${id}`);
-  };
-
   return (
     <main className="min-h-screen bg-transparent relative">
 
-      {/* Header with Sidebar Toggle */}
-      <header className="fixed top-0 left-0 right-0 z-10 transition-all duration-300 bg-transparent">
-        <div className="px-5 py-3 flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden md:flex"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-          >
-            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5"/> : <PanelLeft className="h-5 w-5"/>}
-          </Button>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    Dashboard
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <Separator orientation="vertical" className="mr-2 h-4" />
 
-          {!isSidebarOpen && (
-            <div className="ml-2 hidden md:flex items-center">
-            </div>
-          )}
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="space-y-4 backdrop-blur-[1px]">
+            {/* Message Tracking Status Section */}
+            <StatusCard />
+            {/* Latest Summary Section */}
+            <LatestSummary/>
+            {/* Last Report Section */}
+            <LastReport/>
+          </div>
         </div>
-      </header>
+      </SidebarInset>
+    </SidebarProvider>
 
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onSelectReport={handleSelectReport}
-        currentReportId=""
-        onToggleSidebar={() => setIsSidebarOpen(false)}
-      />
-      <div className={`transition-[padding] duration-300 ${isSidebarOpen ? "md:pl-56" : "md:pl-0"}`}>
-        <div className="container p-4 mx-auto">
-          <div className="space-y-4">
-            <div className="space-y-4 backdrop-blur-[1px]">
-              {/* Message Tracking Status Section */}
-              <StatusCard />
-              {/* Latest Summary Section */}
-              <LatestSummary/>
-              {/* Last Report Section */}
-              <LastReport/>
-            </div>
+      <div className="container mx-auto">
+        <div className="space-y-4">
+          <div className="space-y-4 backdrop-blur-[1px]">
+            {/* Message Tracking Status Section */}
+            <StatusCard />
+            {/* Latest Summary Section */}
+            <LatestSummary/>
+            {/* Last Report Section */}
+            <LastReport/>
           </div>
         </div>
       </div>
