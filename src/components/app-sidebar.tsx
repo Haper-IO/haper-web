@@ -6,8 +6,7 @@ import {
   ChevronDownIcon,
   Loader2,
   LayoutDashboard,
-  Clock,
-  PanelLeftClose
+  Clock
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -133,20 +132,11 @@ function ReportHistorySection() {
   );
 }
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  className?: string;
-  onToggleSidebar?: () => void;
-}
-
-export function AppSidebar({ className, onToggleSidebar, ...props }: AppSidebarProps) {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userInfo, loading: userLoading } = useUserInfo();
   
   return (
-    <Sidebar 
-      variant="inset" 
-      className={`fixed top-0 left-0 z-20 h-full transition-transform duration-300 ease-in-out ${className || ""}`}
-      {...props}
-    >
+    <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -158,17 +148,6 @@ export function AppSidebar({ className, onToggleSidebar, ...props }: AppSidebarP
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          {onToggleSidebar && (
-            <SidebarMenuItem>
-              <button
-                onClick={onToggleSidebar}
-                className="p-1 ml-auto rounded-sm hover:bg-sidebar-secondary/60 transition-colors"
-                aria-label="Close sidebar"
-              >
-                <PanelLeftClose className="h-4 w-4 text-sidebar-foreground/60"/>
-              </button>
-            </SidebarMenuItem>
-          )}
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
