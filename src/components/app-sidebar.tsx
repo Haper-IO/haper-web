@@ -1,22 +1,16 @@
 "use client"
 
 import * as React from "react"
+import {useState, useEffect} from "react"
 import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
+  ChevronDownIcon,
+  Loader2,
+  LayoutDashboard,
+  Clock,
+  PanelLeftClose
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -27,7 +21,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import {Logo_sm} from "@/icons/logo"
+import {useRouter} from "next/navigation"
+import {getReportHistory} from "@/lib/requests/client/report"
+import {Report} from "@/lib/modal/report"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { useUserInfo } from "@/hooks/useUserInfo"
 
+// Original data for NavMain, NavProjects, and NavSecondary components
 const data = {
   user: {
     name: "shadcn",
@@ -36,149 +41,154 @@ const data = {
   },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboard,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
     },
     {
-      title: "Models",
+      title: "History",
       url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      icon: Clock,
     },
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+function ReportHistorySection() {
+  const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [currentReportId, setCurrentReportId] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchReportHistory = () => {
+      setLoading(true);
+      getReportHistory(1, 10).then((resp) => {
+        if (resp.data.reports) {
+          setReports(resp.data.reports)
+        }
+      }).finally(() => {
+        setLoading(false);
+      })
+    };
+
+    fetchReportHistory();
+  }, []);
+
+  const handleSelectReport = (id: string) => {
+    setCurrentReportId(id);
+    router.push(`/report/${id}`);
+  };
+
   return (
-    <Sidebar variant="inset" {...props}>
+    <div className="mb-6">
+      <div className="px-3 py-1.5 mb-2 flex items-center">
+        <h3 className="text-xs font-semibold text-sidebar-foreground/70">Reports</h3>
+      </div>
+      {loading ? (
+        <div className="flex justify-center py-2">
+          <Loader2 className="h-4 w-4 animate-spin text-sidebar-foreground/40"/>
+        </div>
+      ) : (
+        <Collapsible defaultOpen={true} className="px-3">
+          <CollapsibleTrigger
+            className="flex items-center justify-between w-full px-2 py-1 text-xs font-medium text-sidebar-foreground hover:bg-sidebar-secondary/30 rounded-sm">
+            <span>Most recent 10 reports</span>
+            <ChevronDownIcon className="h-4 w-4 text-sidebar-foreground/60"/>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-1 space-y-0.5">
+              {reports.length > 0 ? (
+                reports.map((report) => (
+                  <button
+                    key={report.id}
+                    onClick={() => handleSelectReport(report.id)}
+                    className={`flex items-start w-full px-2 py-2 text-xs text-left text-sidebar-foreground/80 hover:bg-sidebar-secondary/30 rounded-sm ${
+                      report.id === currentReportId ? "bg-sidebar-secondary/40" : ""
+                    }`}
+                  >
+                    <div className="w-full overflow-hidden">
+                      <p className={`font-medium truncate ${report.id === currentReportId ? "text-sidebar-foreground" : ""}`}>
+                        {new Date(report.created_at).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: 'numeric',
+                          hour12: true
+                        })}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="text-xs text-sidebar-foreground/60 text-center py-2">
+                  No reports found
+                </div>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+    </div>
+  );
+}
+
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  className?: string;
+  onToggleSidebar?: () => void;
+}
+
+export function AppSidebar({ className, onToggleSidebar, ...props }: AppSidebarProps) {
+  const { userInfo, loading: userLoading } = useUserInfo();
+  
+  return (
+    <Sidebar 
+      variant="inset" 
+      className={`fixed top-0 left-0 z-20 h-full transition-transform duration-300 ease-in-out ${className || ""}`}
+      {...props}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+              <a href="/dashboard">
+                <div className="">
+                  <Logo_sm />
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          {onToggleSidebar && (
+            <SidebarMenuItem>
+              <button
+                onClick={onToggleSidebar}
+                className="p-1 ml-auto rounded-sm hover:bg-sidebar-secondary/60 transition-colors"
+                aria-label="Close sidebar"
+              >
+                <PanelLeftClose className="h-4 w-4 text-sidebar-foreground/60"/>
+              </button>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <ReportHistorySection />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {userLoading ? (
+          <div className="p-3 flex items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-sidebar-foreground/40"/>
+          </div>
+        ) : (
+          <NavUser 
+            user={userInfo ? {
+              name: userInfo.name || "User",
+              email: userInfo.email || "",
+              avatar: userInfo.image || ""
+            } : data.user} 
+          />
+        )}
       </SidebarFooter>
     </Sidebar>
   )
