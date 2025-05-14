@@ -24,8 +24,6 @@ import {
   Trash,
   Move,
   RefreshCw,
-  PanelLeft,
-  PanelLeftClose,
   Loader2
 } from "lucide-react"
 import {Textarea} from "@/components/ui/textarea"
@@ -40,9 +38,18 @@ import {
 import {Report, MailReportItem} from "@/lib/modal/report"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 import {cn} from "@/lib/utils"
-import {Sidebar} from "@/components/report-sidebar"
 import {useRouter} from "next/navigation";
 import RichContent from "@/components/rich-content";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
 const SHARED_STYLES = {
   heading: "font-medium text-slate-900 text-sm",
@@ -254,10 +261,8 @@ interface BatchActionStatus {
 
 // Client Report Component
 export function ReportClient({reportId}: { reportId: string }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
-  // const [reportMessageProcessingStatus, setReportMessageProcessingStatus] = useState<Record<string, number> | null>(null);
   const [numberOfMessageInProcessing, setNumberOfMessageInProcessing] = useState(0);
   const [batchActionStatus, setBatchActionStatus] = useState<BatchActionStatus | null>(null);
   const [isApplyingActions, setIsApplyingActions] = useState(false);
@@ -552,232 +557,219 @@ export function ReportClient({reportId}: { reportId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <>
       {/* Add a style tag for custom scrollbar styling */}
       <style dangerouslySetInnerHTML={{__html: SCROLLBAR_STYLES}}/>
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-10 transition-all duration-300 bg-transparent">
-        <div className="px-5 py-3 flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden md:flex"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-          >
-            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5"/> : <PanelLeft className="h-5 w-5"/>}
-          </Button>
-
+      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/dashboard">
+                  Dashboard
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Report {reportId.substring(0, 8)}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </header>
 
-      {/* Sidebar Navigation */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onSelectReport={(id) => {
-          router.push(`/report/${id}`);
-        }}
-        currentReportId={reportId}
-        onToggleSidebar={() => setIsSidebarOpen(false)}
-      />
-
       {/* Main Content */}
-      <section
-        className={cn("min-h-screen pt-[61px] transition-[padding] duration-300", isSidebarOpen ? "md:pl-56" : "md:pl-0")}
-      >
-        <div className="container p-3 mx-auto">
-          {isLoadingReport ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="text-center">
-                <Loader2 className="h-7 w-7 animate-spin mx-auto text-slate-400"/>
-                <p className="text-xs text-slate-500 mt-1">Loading report data...</p>
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        {isLoadingReport ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <Loader2 className="h-7 w-7 animate-spin mx-auto text-slate-400"/>
+              <p className="text-xs text-slate-500 mt-1">Loading report data...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Message Processing Status */}
+            {numberOfMessageInProcessing > 0 && (
+              <div className="bg-blue-50/80 p-2 rounded-md border border-blue-200/70 mb-3 backdrop-blur-[2px]">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500"/>
+                    <span className="text-xs font-medium text-blue-700">
+                      Processing {numberOfMessageInProcessing} messages in queue
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {/* Message Processing Status */}
-              {numberOfMessageInProcessing > 0 && (
-                <div className="bg-blue-50/80 p-2 rounded-md border border-blue-200/70 mb-3 backdrop-blur-[2px]">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500"/>
-                      <span className="text-xs font-medium text-blue-700">
-                        Processing {numberOfMessageInProcessing} messages in queue
-                      </span>
-                    </div>
+            )}
+
+            {/* Batch Action Status */}
+            {batchActionStatus && batchActionStatus.status !== "Waiting" && (
+              <div className="bg-slate-100/80 p-2 rounded-md border border-slate-200/70 mb-3 backdrop-blur-[2px]">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={batchActionStatus.status === "Done" ? "secondary" : "default"}>
+                      {batchActionStatus.status}
+                    </Badge>
+                    <span className="text-xs text-slate-600">
+                      Processing actions: {batchActionStatus.succeed + batchActionStatus.failed} of {batchActionStatus.total} complete
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="text-xs text-green-600">Success: {batchActionStatus.succeed}</div>
+                    <div className="text-xs text-red-600">Failed: {batchActionStatus.failed}</div>
                   </div>
                 </div>
-              )}
-
-              {/* Batch Action Status */}
-              {batchActionStatus && batchActionStatus.status !== "Waiting" && (
-                <div className="bg-slate-100/80 p-2 rounded-md border border-slate-200/70 mb-3 backdrop-blur-[2px]">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={batchActionStatus.status === "Done" ? "secondary" : "default"}>
-                        {batchActionStatus.status}
-                      </Badge>
-                      <span className="text-xs text-slate-600">
-                        Processing actions: {batchActionStatus.succeed + batchActionStatus.failed} of {batchActionStatus.total} complete
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="text-xs text-green-600">Success: {batchActionStatus.succeed}</div>
-                      <div className="text-xs text-red-600">Failed: {batchActionStatus.failed}</div>
-                    </div>
-                  </div>
-                  {/* Simple progress bar */}
-                  <div className="w-full bg-slate-200/70 rounded-full h-1.5 mt-2">
-                    <div
-                      className="h-1.5 rounded-full bg-blue-500/80"
-                      style={{
-                        width: `${batchActionStatus.total ?
-                          Math.min(100, (batchActionStatus.succeed + batchActionStatus.failed) / batchActionStatus.total * 100) : 0}%`
-                      }}
-                    ></div>
-                  </div>
+                {/* Simple progress bar */}
+                <div className="w-full bg-slate-200/70 rounded-full h-1.5 mt-2">
+                  <div
+                    className="h-1.5 rounded-full bg-blue-500/80"
+                    style={{
+                      width: `${batchActionStatus.total ?
+                        Math.min(100, (batchActionStatus.succeed + batchActionStatus.failed) / batchActionStatus.total * 100) : 0}%`
+                    }}
+                  ></div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Report Header Card */}
-              <Card className="bg-slate-200/40 backdrop-blur-[2px]">
-                <CardHeader className="flex flex-row items-center gap-2 space-y-0 py-3 px-4">
-                  <Badge variant="default" size="md">Email Report</Badge>
-                  <Badge variant="secondary" size="md">
-                    {report?.created_at
-                      ? new Date(report.created_at).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: 'numeric',
-                        hour12: true
-                      })
-                      : 'Unknown date'}
-                  </Badge>
-                  <div className="ml-auto flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => {
-                        fetchReport()
-                      }}
-                      disabled={isLoadingReport}
-                      title="Refresh report"
-                    >
-                      <RefreshCw className={`h-3.5 w-3.5 ${isLoadingReport ? 'animate-spin' : ''}`}/>
-                      <span className="sr-only">Refresh</span>
-                    </Button>
-                    {<div className="flex gap-1">
-                      {hasGmail && (
-                        <div className="relative h-5 w-5" title="Gmail">
-                          <GmailIcon className="h-5 w-5"/>
-                        </div>
-                      )}
-                      {hasOutlook && (
-                        <div className="relative h-5 w-5" title="Outlook">
-                          <OutlookIcon className="h-5 w-5"/>
-                        </div>
-                      )}
-                    </div>}
-                  </div>
-                </CardHeader>
-                {report && report.content.summary && report.content.summary.length > 0 && (
-                  <CardContent className="pt-0 pb-3 px-4">
-                    <div
-                      className="px-3 py-2 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
-                      <RichContent richTextList={report.content.summary}></RichContent>
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-
-              {/* Tabs Card */}
-              <Card className="bg-slate-200/40 backdrop-blur-[2px] overflow-hidden">
-                <Tabs defaultValue="essential">
-                  <TabsList className="mx-4 mt-3 mb-2 bg-slate-100/80 p-1 rounded-md">
-                    <TabsTrigger
-                      value="essential"
-                      className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
-                    >
-                      Essential ({essentialEmails.length})
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="non-essential"
-                      className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
-                    >
-                      Non-Essential ({nonEssentialEmails.length})
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/*essential items*/}
-                  <TabsContent value="essential">
-                    <CardContent className="px-4 py-3 space-y-3">
-                      {essentialEmails.length === 0 ? (
-                        <div className="py-6 text-center">
-                          <p className="text-xs text-slate-600">No emails in this category.</p>
-                        </div>
-                      ) : (
-                        essentialEmails.map((email) => renderEmailItem(email))
-                      )}
-                    </CardContent>
-                  </TabsContent>
-
-                  {/*non-essential items*/}
-                  <TabsContent value="non-essential">
-                    <CardContent className="px-4 py-3 space-y-3">
-                      {nonEssentialEmails.length === 0 ? (
-                        <div className="py-6 text-center">
-                          <p className="text-xs text-slate-600">No emails in this category.</p>
-                        </div>
-                      ) : (
-                        nonEssentialEmails.map((email) => renderEmailItem(email))
-                      )}
-                    </CardContent>
-                  </TabsContent>
-
-                  {/* Apply All Actions button section */}
-                  <div className="px-4 py-3 border-t border-slate-200/70">
-                    <div className="flex justify-between items-center">
-                      <div className="text-xs text-slate-600">
-                        {emails.filter(email => email.action && !email.action_result).length > 0
-                          ? `${emails.filter(email => email.action && !email.action_result).length} suggested actions - click Apply to process`
-                          : "No actions pending"}
+            {/* Report Header Card */}
+            <Card className="bg-slate-200/40 backdrop-blur-[2px]">
+              <CardHeader className="flex flex-row items-center gap-2 space-y-0 py-3 px-4">
+                <Badge variant="default" size="md">Email Report</Badge>
+                <Badge variant="secondary" size="md">
+                  {report?.created_at
+                    ? new Date(report.created_at).toLocaleString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      hour12: true
+                    })
+                    : 'Unknown date'}
+                </Badge>
+                <div className="ml-auto flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => {
+                      fetchReport()
+                    }}
+                    disabled={isLoadingReport}
+                    title="Refresh report"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingReport ? 'animate-spin' : ''}`}/>
+                    <span className="sr-only">Refresh</span>
+                  </Button>
+                  {<div className="flex gap-1">
+                    {hasGmail && (
+                      <div className="relative h-5 w-5" title="Gmail">
+                        <GmailIcon className="h-5 w-5"/>
                       </div>
-                      <Button
-                        size="sm"
-                        className="bg-slate-600/90 hover:bg-slate-500/90 text-white h-7 px-4 text-xs"
-                        onClick={applyAllActions}
-                        disabled={
-                          (batchActionStatus && batchActionStatus.status !== "Done") ||
-                          isLoadingReport  // Disable when messages are still being processed
-                        }
-                      >
-                        {batchActionStatus && batchActionStatus.status !== "Done" ? (
-                          <>
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin"/>
-                            Applying Actions...
-                          </>
-                        ) : numberOfMessageInProcessing > 0 ? (
-                          <>
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin"/>
-                            Processing messages...
-                          </>
-                        ) : "Apply All Actions"}
-                      </Button>
-                    </div>
+                    )}
+                    {hasOutlook && (
+                      <div className="relative h-5 w-5" title="Outlook">
+                        <OutlookIcon className="h-5 w-5"/>
+                      </div>
+                    )}
+                  </div>}
+                </div>
+              </CardHeader>
+              {report && report.content.summary && report.content.summary.length > 0 && (
+                <CardContent className="pt-0 pb-3 px-4">
+                  <div
+                    className="px-3 py-2 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
+                    <RichContent richTextList={report.content.summary}></RichContent>
                   </div>
-                </Tabs>
-              </Card>
-            </div>
-          )}
-        </div>
-      </section>
+                </CardContent>
+              )}
+            </Card>
 
-      {/* Background texture */}
-      <div
-        className="fixed inset-0 -z-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[length:20px_20px] opacity-50"></div>
-    </div>
+            {/* Tabs Card */}
+            <Card className="bg-slate-200/40 backdrop-blur-[2px] overflow-hidden">
+              <Tabs defaultValue="essential">
+                <TabsList className="mx-4 mt-3 mb-2 bg-slate-100/80 p-1 rounded-md">
+                  <TabsTrigger
+                    value="essential"
+                    className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
+                  >
+                    Essential ({essentialEmails.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="non-essential"
+                    className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
+                  >
+                    Non-Essential ({nonEssentialEmails.length})
+                  </TabsTrigger>
+                </TabsList>
+
+                {/*essential items*/}
+                <TabsContent value="essential">
+                  <CardContent className="px-4 py-3 space-y-3">
+                    {essentialEmails.length === 0 ? (
+                      <div className="py-6 text-center">
+                        <p className="text-xs text-slate-600">No emails in this category.</p>
+                      </div>
+                    ) : (
+                      essentialEmails.map((email) => renderEmailItem(email))
+                    )}
+                  </CardContent>
+                </TabsContent>
+
+                {/*non-essential items*/}
+                <TabsContent value="non-essential">
+                  <CardContent className="px-4 py-3 space-y-3">
+                    {nonEssentialEmails.length === 0 ? (
+                      <div className="py-6 text-center">
+                        <p className="text-xs text-slate-600">No emails in this category.</p>
+                      </div>
+                    ) : (
+                      nonEssentialEmails.map((email) => renderEmailItem(email))
+                    )}
+                  </CardContent>
+                </TabsContent>
+
+                {/* Apply All Actions button section */}
+                <div className="px-4 py-3 border-t border-slate-200/70">
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs text-slate-600">
+                      {emails.filter(email => email.action && !email.action_result).length > 0
+                        ? `${emails.filter(email => email.action && !email.action_result).length} suggested actions - click Apply to process`
+                        : "No actions pending"}
+                    </div>
+                    <Button
+                      size="sm"
+                      className="bg-slate-600/90 hover:bg-slate-500/90 text-white h-7 px-4 text-xs"
+                      onClick={applyAllActions}
+                      disabled={
+                        (batchActionStatus && batchActionStatus.status !== "Done") ||
+                        isLoadingReport  // Disable when messages are still being processed
+                      }
+                    >
+                      {batchActionStatus && batchActionStatus.status !== "Done" ? (
+                        <>
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin"/>
+                          Applying Actions...
+                        </>
+                      ) : numberOfMessageInProcessing > 0 ? (
+                        <>
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin"/>
+                          Processing messages...
+                        </>
+                      ) : "Apply All Actions"}
+                    </Button>
+                  </div>
+                </div>
+              </Tabs>
+            </Card>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
