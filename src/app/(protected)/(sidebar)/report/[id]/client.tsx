@@ -38,7 +38,6 @@ import {
 import {Report, MailReportItem} from "@/lib/modal/report"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 import {cn} from "@/lib/utils"
-import {useRouter} from "next/navigation";
 import RichContent from "@/components/rich-content";
 import {
   Breadcrumb,
@@ -270,7 +269,6 @@ export function ReportClient({reportId}: { reportId: string }) {
   // Transform report data to emails if report exists
   const [emails, setEmails] = useState<Email[]>([]);
   const replyInputDebounceTimeout = useRef<NodeJS.Timeout | null>(null);
-  const router = useRouter();
 
   // Fetch report data on the client side
   const fetchReport = () => {
