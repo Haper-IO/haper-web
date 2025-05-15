@@ -14,16 +14,6 @@ export const getUserSettings = async () => {
 }
 
 /**
- * Create new user settings.
- *
- * @param settings - The settings to create.
- * @returns - A promise that resolves to the created settings.
- */
-export const createUserSettings = async (settings: UserSettings) => {
-  return reqHandler.post<{ setting: UserSettings }>('/user/setting', settings);
-}
-
-/**
  * Update existing user settings.
  *
  * @param settings - The settings to update.
