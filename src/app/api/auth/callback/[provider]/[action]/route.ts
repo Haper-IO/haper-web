@@ -4,28 +4,33 @@ import {loginByOAuth, signupByOAuth} from "@/lib/requests/server/user";
 import {oauthClients} from "@/oauth-config";
 import {ActionType, OAuthError} from "@/lib/oauth/types";
 import {AxiosError} from "axios";
+import {startMessageTrackingWithNewAccount} from "@/lib/requests/server/message-tracking";
+import {cookies} from "next/headers";
 
 export async function GET(
   req: NextRequest,
   {params}: { params: Promise<{ provider: string, action: string }> },
 ) {
+  const cookieStore = await cookies()
   const {searchParams} = req.nextUrl
   const {provider, action} = await params
-  const proto = req.headers.get("x-forwarded-proto") || "http";  // Default to 'http' if not found
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host")
+
+  const errorRedirectPath = action === "authorize" ? "/dashboard" : "/error"
 
   const client = oauthClients[provider]
   if (!client) {
-    return redirect("/error?error_msg=unknown provider")
+    return redirect(`${errorRedirectPath}?error_msg=unknown provider`)
   }
 
-  const scope = searchParams.get('scope')
-  if (!scope) {
-    return redirect("/error?error_msg=missing_scope")
-  }
+  if (provider === "google") {
+    const scope = searchParams.get('scope')
+    if (!scope) {
+      return redirect(`${errorRedirectPath}/error?error_msg=missing_scope`)
+    }
 
-  if (client.verifyScopes(scope.split(' ')) === false) {
-    return redirect("/error?error_msg=please make sure choose all necessary permission")
+    if (!client.verifyScopes(scope.split(' '))) {
+      return redirect(`${errorRedirectPath}?error_msg=please make sure choose all necessary permission`)
+    }
   }
 
   const code = searchParams.get('code')
@@ -54,7 +59,7 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
+      const resp = NextResponse.redirect(new URL("/dashboard", process.env.SITE_HOST_URL!))
       if (response.headers["set-cookie"]) {
         for (const cookie of response.headers["set-cookie"]) {
           resp.headers.append("Set-Cookie", cookie)
@@ -72,33 +77,43 @@ export async function GET(
         expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
         refreshToken,
       })
-      const resp = NextResponse.redirect(new URL("/dashboard", `${proto}://${host}`))
+      const resp = NextResponse.redirect(new URL("/intent", process.env.SITE_HOST_URL!))
       if (response.headers["set-cookie"]) {
         for (const cookie of response.headers["set-cookie"]) {
           resp.headers.append("Set-Cookie", cookie)
         }
       }
       return resp
+    } else if (action === 'authorize') {
+      await startMessageTrackingWithNewAccount({
+        provider,
+        providerAccountID: userProfile.accountId,
+        accessToken,
+        refreshToken,
+        expiresAt: Math.floor(accessTokenExpiresAt.getTime() / 1000),
+        email: userProfile.email,
+      }, cookieStore.toString())
+      return NextResponse.redirect(new URL("/dashboard", process.env.SITE_HOST_URL!))
     } else {
       throw new Error("unknown action")
     }
 
   } catch (e) {
     if (e instanceof OAuthError) {
-      return redirect(`/error?error_msg=${e.message}`)
+      return redirect(`${errorRedirectPath}?error_msg=${e.message}`)
     } else if (e instanceof AxiosError) {
       if (e.response && e.response.data && e.response.data.message
         && e.response.data.status && e.response.data.status != 9999) {
-        return redirect(`/error?error_msg=${e.response.data.message}`)
+        return redirect(`${errorRedirectPath}?error_msg=${e.response.data.message}`)
       } else {
         console.error(e)
-        return redirect(`/error?error_msg=unknown error happened when request backend`)
+        return redirect(`${errorRedirectPath}?error_msg=unknown error happened when request backend`)
       }
     } else if (e instanceof Error) {
       console.error(e)
-      return redirect(`/error?error_msg=${e.message}`)
+      return redirect(`${errorRedirectPath}?error_msg=${e.message}`)
     } else {
-      return redirect(`/error?error_msg=unknown error happened`)
+      return redirect(`${errorRedirectPath}?error_msg=unknown error happened`)
     }
   }
 }

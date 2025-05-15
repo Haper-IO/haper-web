@@ -1,6 +1,6 @@
 import * as arctic from "arctic";
 import {redirect} from "next/navigation";
-import {getBaseUrl, OAuthProvider} from "@/lib/oauth/providers/base";
+import {OAuthProvider} from "@/lib/oauth/providers/base";
 import {ActionType, OAuthError, OAuthProviderConfig, Profile} from "@/lib/oauth/types";
 
 const userInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
@@ -15,23 +15,22 @@ export class Google extends OAuthProvider {
   }
 
   private async constructClient(action: ActionType) {
-    const baseUrl = await getBaseUrl();
     let redirectUrl: string;
     switch (action) {
       case "login":
-        redirectUrl = new URL(this.loginRedirectUrl, baseUrl).toString();
+        redirectUrl = new URL(this.loginRedirectUrl, this.options.originUrl).toString();
         break;
       case "signup":
-        redirectUrl = new URL(this.signupRedirectUrl, baseUrl).toString();
+        redirectUrl = new URL(this.signupRedirectUrl, this.options.originUrl).toString();
         break;
       case "authorize":
-        redirectUrl = new URL(this.authorizeRedirectUrl, baseUrl).toString();
+        redirectUrl = new URL(this.authorizeRedirectUrl, this.options.originUrl).toString();
         break;
     }
     return new arctic.Google(this.options.clientId, this.options.clientSecret, redirectUrl);
   }
 
-  private async constructOAuthUrl(action: ActionType) {
+  private async redirectOAuthUrl(action: ActionType) {
     const client = await this.constructClient(action);
     const url = client.createAuthorizationURL(
       arctic.generateState(),
@@ -79,23 +78,14 @@ export class Google extends OAuthProvider {
   }
 
   public override async login() {
-    return this.constructOAuthUrl("login");
+    return this.redirectOAuthUrl("login");
   }
 
   public override async signup() {
-    return this.constructOAuthUrl("signup");
+    return this.redirectOAuthUrl("signup");
   }
 
   public override async authorize() {
-    return this.constructOAuthUrl("authorize");
-  }
-
-  public override verifyScopes(scopes: string[]): boolean {
-    for (const scope of this.options.scopes ?? []) {
-      if (!scopes.includes(scope)) {
-        return false
-      }
-    }
-    return true
+    return this.redirectOAuthUrl("authorize");
   }
 }

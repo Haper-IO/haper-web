@@ -5,8 +5,8 @@ import { jwtVerify } from 'jose';
  * An array of routes that can be accessed without logging in
  */
 const publicRoutes = [
-  "/about",
-  "/faq",
+  "/terms",
+  "/privacy",
 ];
 
 /**
@@ -41,6 +41,8 @@ async function checkLoggedIn(req: NextRequest) {
   }
 }
 
+//
+// export default async function middleware()
 
 export default async function middleware(req: NextRequest) {
   const { nextUrl } = req;

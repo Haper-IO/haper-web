@@ -1,9 +1,11 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import {Toaster} from "@/components/ui/sonner";
 import React from "react";
-import {PublicEnvScript} from "next-runtime-env";
+
+import { Inter } from 'next/font/google'
+import { Toaster } from "@/components/ui/sonner";
+import { PublicEnvScript } from "next-runtime-env";
+import texture from "@/assets/images/texture_flows.webp";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,14 +17,26 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
+
   return (
     <html lang="en">
     <head>
+      <link rel="icon" href="/favicon.ico" sizes="any"/>
       <PublicEnvScript/>
     </head>
     <body className={inter.className}>
-      <main>{children}</main>
-      <Toaster />
+
+    <main>
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-9999]"
+        style={{
+          backgroundImage: `url(${texture.src})`,
+          opacity: 0.16
+        }}
+      />
+      {children}
+    </main>
+    <Toaster position="top-right"/>
     </body>
     </html>
   )

@@ -47,7 +47,7 @@ export const RegisterForm = () => {
     setIsSigningUp(true)
 
     signupByCredential(values.name, values.email, values.password).then(() => {
-      router.push("/dashboard")
+      router.push("/intent")
     }).catch(({message}) => {
       setError(message)
     }).finally(()=>{

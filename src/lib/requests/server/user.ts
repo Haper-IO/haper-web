@@ -12,21 +12,22 @@ import {reqHandler} from "@/lib/requests/server/base";
  * @param expiresAt - The unix time of when will the access token expire.
  * @returns - A promise that resolves to the user information.
  */
-export const loginByOAuth = async ({
-  provider,
-  email,
-  providerAccountID,
-  accessToken,
-  refreshToken,
-  expiresAt,
-}: {
-  provider: string,
-  email: string,
-  providerAccountID: string,
-  accessToken: string,
-  refreshToken?: string,
-  expiresAt?: number,
-}) => {
+export const loginByOAuth = async (
+  {
+    provider,
+    email,
+    providerAccountID,
+    accessToken,
+    refreshToken,
+    expiresAt,
+  }: {
+    provider: string,
+    email: string,
+    providerAccountID: string,
+    accessToken: string,
+    refreshToken?: string,
+    expiresAt?: number,
+  }) => {
   return reqHandler.post(`/user/login`, {
     provider,
     email,
@@ -50,25 +51,26 @@ export const loginByOAuth = async ({
  * @param expiresAt - The unix time of when will the access token expire.
  * @returns - A promise that resolves to the user information.
  */
-export const signupByOAuth = async ({
-  provider,
-  email,
-  name,
-  image,
-  providerAccountID,
-  accessToken,
-  refreshToken,
-  expiresAt,
-}: {
-  provider: string,
-  email: string,
-  name?: string,
-  image?: string,
-  providerAccountID: string,
-  accessToken: string,
-  refreshToken?: string,
-  expiresAt?: number,
-}) => {
+export const signupByOAuth = async (
+  {
+    provider,
+    email,
+    name,
+    image,
+    providerAccountID,
+    accessToken,
+    refreshToken,
+    expiresAt,
+  }: {
+    provider: string,
+    email: string,
+    name?: string,
+    image?: string,
+    providerAccountID: string,
+    accessToken: string,
+    refreshToken?: string,
+    expiresAt?: number,
+  }) => {
   return reqHandler.post(`/user/signup`, {
     provider,
     email,
@@ -80,3 +82,4 @@ export const signupByOAuth = async ({
     expires_at: expiresAt,
   })
 }
+
