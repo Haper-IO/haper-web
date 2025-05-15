@@ -47,7 +47,7 @@ const data = {
     },
     {
       title: "History",
-      url: "#",
+      url: "/history",
       icon: Clock,
     },
   ],
@@ -134,7 +134,7 @@ function ReportHistorySection() {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userInfo, loading: userLoading } = useUserInfo();
-  
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -160,12 +160,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Loader2 className="h-5 w-5 animate-spin text-sidebar-foreground/40"/>
           </div>
         ) : (
-          <NavUser 
+          <NavUser
             user={userInfo ? {
               name: userInfo.name || "User",
               email: userInfo.email || "",
               avatar: userInfo.image || ""
-            } : data.user} 
+            } : data.user}
           />
         )}
       </SidebarFooter>
