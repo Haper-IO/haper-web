@@ -436,45 +436,6 @@ export function LastReport({ report: providedReport }: { report?: Report }) {
     return {essential, nonEssential, total};
   };
 
-  // Generate content for the report if summary is empty
-  const generateContent = (reportData: Report) => {
-    return (
-      <div className="space-y-2">
-        {reportData.content.summary && reportData.content.summary.length > 0 && (
-          <div className="text-slate-800 leading-relaxed">
-            <RichContent richTextList={reportData.content.summary} />
-          </div>
-        )}
-        {reportData?.content?.content?.gmail && reportData.content.content.gmail.some(account =>
-          account.messages && account.messages.length > 0
-        ) && (
-          <div className="space-y-2 mt-3 pt-2 border-t border-slate-100">
-            <p className="text-xs font-medium text-slate-700">Sample messages:</p>
-            {reportData.content.content.gmail.flatMap(account =>
-              account.messages?.slice(0, 2).map((msg, idx) => (
-                <div key={`${account.account_id}-${idx}`} className="px-3 py-2 bg-slate-50 rounded-md">
-                  <div className="flex justify-between items-start">
-                    <span
-                      className={`text-xs font-medium ${msg.category === "Essential" ? 'text-lime-600' : 'text-slate-800'}`}>
-                      {msg.sender.includes('<') ? msg.sender.split('<')[0].trim() : msg.sender}
-                    </span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      msg.category === "Essential" ? 'bg-lime-100 text-lime-800' : 'bg-slate-200 text-slate-800'
-                    }`}>
-                      {msg.category}
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-600 truncate">{msg.subject}</div>
-                  <p className="text-xs text-slate-700 mt-1">{msg.summary}</p>
-                </div>
-              ))
-            ).slice(0, 2)}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // Render appropriate email provider icons
   const renderEmailProviderIcons = () => {
     if (!report || (!hasGmail && !hasOutlook)) {

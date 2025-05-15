@@ -3,7 +3,6 @@
 import * as React from "react"
 import {useState, useEffect} from "react"
 import {
-  ChevronDownIcon,
   Loader2,
   LayoutDashboard,
   Clock
@@ -24,11 +23,6 @@ import {Logo_sm} from "@/icons/logo"
 import {useRouter} from "next/navigation"
 import {getReportHistory} from "@/lib/requests/client/report"
 import {Report} from "@/lib/modal/report"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { useUserInfo } from "@/hooks/useUserInfo"
 
 // Original data for NavMain, NavProjects, and NavSecondary components
@@ -80,35 +74,32 @@ function ReportHistorySection() {
   };
 
   return (
-    <div className="mb-6">
-      <div className="px-3 py-1.5 mb-2 flex items-center">
+    <div className="mb-4">
+      <div className="px-3 py-2">
         <h3 className="text-xs font-semibold text-sidebar-foreground/70">Reports</h3>
       </div>
+      
       {loading ? (
         <div className="flex justify-center py-2">
           <Loader2 className="h-4 w-4 animate-spin text-sidebar-foreground/40"/>
         </div>
       ) : (
-        <Collapsible defaultOpen={true} className="px-3">
-          <CollapsibleTrigger
-            className="flex items-center justify-between w-full px-2 py-1 text-xs font-medium text-sidebar-foreground hover:bg-sidebar-secondary/30 rounded-sm">
-            <span>Most recent 10 reports</span>
-            <ChevronDownIcon className="h-4 w-4 text-sidebar-foreground/60"/>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-1 space-y-0.5">
-              {reports.length > 0 ? (
-                reports.map((report) => (
+        <div className="mt-1">
+          {reports.length > 0 ? (
+            <>
+              <div className="space-y-0.5">
+                {reports.map((report) => (
                   <button
                     key={report.id}
                     onClick={() => handleSelectReport(report.id)}
-                    className={`flex items-start w-full px-2 py-2 text-xs text-left text-sidebar-foreground/80 hover:bg-sidebar-secondary/30 rounded-sm ${
-                      report.id === currentReportId ? "bg-sidebar-secondary/40" : ""
+                    className={`flex items-start w-full px-4 py-2 text-xs text-left text-sidebar-foreground/80 hover:bg-sidebar-secondary/30 ${
+                      report.id === currentReportId ? "bg-sidebar-secondary/40 text-sidebar-foreground" : ""
                     }`}
                   >
                     <div className="w-full overflow-hidden">
-                      <p className={`font-medium truncate ${report.id === currentReportId ? "text-sidebar-foreground" : ""}`}>
+                      <p className="font-medium truncate">
                         {new Date(report.created_at).toLocaleString('en-US', {
+                          weekday: 'short',
                           month: 'short',
                           day: 'numeric',
                           hour: 'numeric',
@@ -118,15 +109,21 @@ function ReportHistorySection() {
                       </p>
                     </div>
                   </button>
-                ))
-              ) : (
-                <div className="text-xs text-sidebar-foreground/60 text-center py-2">
-                  No reports found
-                </div>
-              )}
+                ))}
+              </div>
+              <a 
+                href="/history" 
+                className="flex items-center justify-start w-full px-4 py-2 mt-1 text-xs font-medium text-slate-400"
+              >
+                View all reports
+              </a>
+            </>
+          ) : (
+            <div className="text-xs text-sidebar-foreground/60 text-center py-2 px-3">
+              No reports found
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          )}
+        </div>
       )}
     </div>
   );
@@ -150,9 +147,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="py-2">
         <NavMain items={data.navMain} />
-        <ReportHistorySection />
+        <div className="mt-4">
+          <ReportHistorySection />
+        </div>
       </SidebarContent>
       <SidebarFooter>
         {userLoading ? (
