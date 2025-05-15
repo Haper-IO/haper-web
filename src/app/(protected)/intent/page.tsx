@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation'
 import {Button} from '@/components/ui/button'
 import {Card, CardContent} from '@/components/ui/card'
 import {Plus} from 'lucide-react'
-import {createUserSettings, getUserSettings} from "@/lib/requests/client/user-settings";
+import {getUserSettings, updateUserSettings} from "@/lib/requests/client/user-settings";
 
 interface EmailCategory {
   id: string
@@ -20,7 +20,6 @@ export default function UserIntentPage() {
     {id: 'personal', name: 'Personal Messages', selected: false},
     {id: 'financial', name: 'Financial Notifications', selected: false},
     {id: 'administrative', name: 'Administrative Updates', selected: false},
-    {id: 'promotional', name: 'Promotional Content', selected: false},
     {id: 'newsletters', name: 'Newsletters and Subscriptions', selected: false},
     {id: 'social', name: 'Social Media Notifications', selected: false},
     {id: 'calendar', name: 'Calendar Invites and Event Updates', selected: false},
@@ -53,7 +52,7 @@ export default function UserIntentPage() {
   useEffect(() => {
     // go to dashboard if user already has settings
     getUserSettings().then((resp) => {
-      if (resp.data.setting) {
+      if (resp.data.setting && resp.data.setting.key_message_tags && resp.data.setting.key_message_tags.length > 0) {
         router.push("/dashboard")
       }
     })
@@ -64,7 +63,7 @@ export default function UserIntentPage() {
       return
     }
     setIsSubmitting(true)
-    createUserSettings({
+    updateUserSettings({
       key_message_tags: categories.filter(categories => categories.selected).map(category => category.name)
     }).then(() => {
       router.push("/dashboard")
