@@ -378,19 +378,21 @@ export function LatestSummary() {
   );
 }
 
-export function LastReport() {
+export function LastReport({ report: providedReport }: { report?: Report }) {
   const router = useRouter();
   const [latestReport, setLatestReport] = useState<Report | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
-  // Determine which email providers are present in the report
-  const hasGmail = latestReport?.content?.content?.gmail && latestReport?.content?.content?.gmail.length > 0;
-  const hasOutlook = latestReport?.content?.content?.outlook && latestReport?.content?.content?.outlook.length > 0;
+  // Use provided report or fetched report
+  const report = providedReport || latestReport;
 
+  // Determine which email providers are present in the report
+  const hasGmail = report?.content?.content?.gmail && report?.content?.content?.gmail.length > 0;
+  const hasOutlook = report?.content?.content?.outlook && report?.content?.content?.outlook.length > 0;
 
   const fetchReportHistory = () => {
-    if (reportLoading) {
+    if (reportLoading || providedReport) {
       return;
     }
     setReportLoading(true);
@@ -412,13 +414,13 @@ export function LastReport() {
   };
 
   // Calculate message stats with safeguards for zero values
-  const calculateStats = (report: Report) => {
-    if (!report?.content?.content?.gmail) return {essential: 0, nonEssential: 0, total: 0};
+  const calculateStats = (reportData: Report) => {
+    if (!reportData?.content?.content?.gmail) return {essential: 0, nonEssential: 0, total: 0};
 
     let essential = 0;
     let nonEssential = 0;
 
-    report.content.content.gmail.forEach(account => {
+    reportData.content.content.gmail.forEach(account => {
       if (account.messages) {
         account.messages.forEach(message => {
           if (message.category === "Essential") {
@@ -435,21 +437,20 @@ export function LastReport() {
   };
 
   // Generate content for the report if summary is empty
-  const generateContent = (report: Report) => {
-
+  const generateContent = (reportData: Report) => {
     return (
       <div className="space-y-2">
-        {report.content.summary && report.content.summary.length > 0 && (
+        {reportData.content.summary && reportData.content.summary.length > 0 && (
           <div className="text-slate-800 leading-relaxed">
-            <RichContent richTextList={report.content.summary} />
+            <RichContent richTextList={reportData.content.summary} />
           </div>
         )}
-        {report?.content?.content?.gmail && report.content.content.gmail.some(account =>
+        {reportData?.content?.content?.gmail && reportData.content.content.gmail.some(account =>
           account.messages && account.messages.length > 0
         ) && (
           <div className="space-y-2 mt-3 pt-2 border-t border-slate-100">
             <p className="text-xs font-medium text-slate-700">Sample messages:</p>
-            {report.content.content.gmail.flatMap(account =>
+            {reportData.content.content.gmail.flatMap(account =>
               account.messages?.slice(0, 2).map((msg, idx) => (
                 <div key={`${account.account_id}-${idx}`} className="px-3 py-2 bg-slate-50 rounded-md">
                   <div className="flex justify-between items-start">
@@ -476,7 +477,7 @@ export function LastReport() {
 
   // Render appropriate email provider icons
   const renderEmailProviderIcons = () => {
-    if (!latestReport || (!hasGmail && !hasOutlook)) {
+    if (!report || (!hasGmail && !hasOutlook)) {
       return <Mail className="h-4 w-4 text-gray-400"/>;
     }
 
@@ -496,20 +497,22 @@ export function LastReport() {
     );
   };
 
-  const reportStats = latestReport ? calculateStats(latestReport) : null;
+  const reportStats = report ? calculateStats(report) : null;
 
   useEffect(() => {
-    // Initial load with real API call
-    fetchReportHistory();
-  }, []);
+    // Only fetch if no report was provided
+    if (!providedReport) {
+      fetchReportHistory();
+    }
+  }, [providedReport]);
 
   return (
     <Card className="bg-slate-200/40 backdrop-blur-[2px]">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-        <Badge variant="default" size="md">Last Report</Badge>
-        {latestReport ? (
+        <Badge variant="default" size="md">{providedReport ? "Report" : "Last Report"}</Badge>
+        {report ? (
           <Badge variant="secondary" size="md">
-            {new Date(latestReport.created_at).toLocaleString()}
+            {new Date(report.created_at).toLocaleString()}
           </Badge>
         ) : reportLoading ? (
           <Skeleton className="h-6 w-32"/>
@@ -517,17 +520,19 @@ export function LastReport() {
           <Badge variant="secondary" size="md">No data available</Badge>
         )}
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={fetchReportHistory}
-            disabled={reportLoading}
-            title="Refresh report"
-          >
-            <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`}/>
-            <span className="sr-only">Refresh</span>
-          </Button>
+          {!providedReport && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={fetchReportHistory}
+              disabled={reportLoading}
+              title="Refresh report"
+            >
+              <RefreshCw className={`h-4 w-4 ${reportLoading ? 'animate-spin' : ''}`}/>
+              <span className="sr-only">Refresh</span>
+            </Button>
+          )}
           {renderEmailProviderIcons()}
         </div>
       </CardHeader>
@@ -548,20 +553,20 @@ export function LastReport() {
                   Try Again
                 </Button>
               </div>
-            ) : latestReport ? (
+            ) : report ? (
               <>
                 <div
                   className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
-                  {latestReport.content.summary && latestReport.content.summary.length > 0 ? (
-                    <RichContent richTextList={latestReport.content.summary}></RichContent>
+                  {report.content.summary && report.content.summary.length > 0 ? (
+                    <RichContent richTextList={report.content.summary}></RichContent>
                   ) : (
-                    generateContent(latestReport)
+                    <p className="text-sm text-slate-500 italic">No essential emails in this report</p>
                   )}
                   <div className="pt-3 flex justify-center sm:justify-start">
                     <Button
                       variant="secondary"
-                      onClick={() => latestReport && router.push(`/report/${latestReport.id}`)}
-                      disabled={!latestReport || reportLoading}
+                      onClick={() => report && router.push(`/report/${report.id}`)}
+                      disabled={!report || reportLoading}
                       size="sm"
                       className="bg-slate-200/90 hover:bg-slate-300/90 text-slate-800"
                     >
