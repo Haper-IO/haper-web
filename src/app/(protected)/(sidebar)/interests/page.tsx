@@ -167,7 +167,7 @@ export default function MyInterestsPage() {
                     Select or add the topics you want to keep an eye on. Haper will still keep an eye on other topics, but will prioritize these.
                   </CardDescription>
                 </div>
-                <Button 
+                <Button
                   variant={isEditingTags ? "outline" : "default"}
                   onClick={() => setIsEditingTags(!isEditingTags)}
                   disabled={isLoadingSetting}
