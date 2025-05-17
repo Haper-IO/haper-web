@@ -5,7 +5,8 @@ import {useState, useEffect} from "react"
 import {
   Loader2,
   LayoutDashboard,
-  Clock
+  Clock,
+  Heart
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -38,6 +39,11 @@ const data = {
       url: "/dashboard",
       icon: LayoutDashboard,
       isActive: true,
+    },
+    {
+      title: "My Interests",
+      url: "/interests",
+      icon: Heart,
     },
     {
       title: "History",
@@ -78,7 +84,7 @@ function ReportHistorySection() {
       <div className="px-3 py-2">
         <h3 className="text-xs font-semibold text-sidebar-foreground/70">Reports</h3>
       </div>
-      
+
       {loading ? (
         <div className="flex justify-center py-2">
           <Loader2 className="h-4 w-4 animate-spin text-sidebar-foreground/40"/>
@@ -111,8 +117,8 @@ function ReportHistorySection() {
                   </button>
                 ))}
               </div>
-              <a 
-                href="/history" 
+              <a
+                href="/history"
                 className="flex items-center justify-start w-full px-4 py-2 mt-1 text-xs font-medium text-slate-400"
               >
                 View all reports

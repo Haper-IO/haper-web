@@ -17,7 +17,7 @@ import {
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons";
 import Image from "next/image";
 
-export default function TestProfilePage() {
+export default function MyInterestsPage() {
   const {userInfo, loading: userLoading} = useUserInfo();
   const [userSetting, setUserSetting] = useState<UserSettings | null>(null)
   const [isLoadingSetting, setIsLoadingSetting] = useState(false)
