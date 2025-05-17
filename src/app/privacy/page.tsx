@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <main className="flex-grow container mx-auto px-4 py-16 max-w-4xl">
         <div className="my-10">
           <h1 className="text-3xl font-bold mb-6">Haper Privacy Policy</h1>
-          <p className="text-sm text-gray-500 mb-8">Last Updated: 18 March, 2025</p>
+          <p className="text-sm text-gray-500 mb-8">Last Updated: 17 March, 2025</p>
 
           <div className="prose prose-slate max-w-none">
             <h2 className="text-2xl font-semibold mt-8 mb-4">1. Introduction</h2>
