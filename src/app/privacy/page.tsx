@@ -273,8 +273,10 @@ export default function PrivacyPage() {
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">9. Google API Services Usage Disclosure</h2>
             <p>
-              haper&apos;s use and transfer to any other app of information received from Google APIs will adhere to Google API Services User Data
-              Policy, including the Limited Use requirements.
+              Haper, Inc. does not use or retain any user data obtained through Google Workspace APIs to develop, improve, or train generalized artificial intelligence (AI) or machine learning (ML) models. Any data accessed through Google Workspace APIs is used solely for the purpose of providing the specific functionality requested by the user within our service and in accordance with our overall privacy policy and data handling practices as outlined in this document.
+            </p>
+            <p>
+              We commit to using Google Workspace API data only for the direct benefit of the user who authorized the access and only in ways that are clearly disclosed to and consented to by the user. This means we do not aggregate, anonymize, or otherwise process Google Workspace API data to create or enhance AI/ML models that would serve purposes beyond the direct service provided to the authorizing user.
             </p>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">10. Cookies</h2>
