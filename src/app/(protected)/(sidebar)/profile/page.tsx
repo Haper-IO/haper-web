@@ -6,13 +6,16 @@ import {Badge} from "@/components/ui/badge"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
 import {FadeInWhenVisible} from "@/components/background-effect/fade-in-when-visible"
+import {CheckCircle} from 'lucide-react'
 import {Input} from "@/components/ui/input"
 import React, {useState, useEffect} from "react"
 import {
   getUserSettings,
+  createUserSettings,
   updateUserSettings,
   UserSettings,
 } from "@/lib/requests/client/user-settings"
+import {GmailIcon, OutlookIcon} from "@/icons/provider-icons";
 import Image from "next/image";
 
 export default function MyInterestsPage() {
@@ -38,6 +41,19 @@ export default function MyInterestsPage() {
     })
   }
 
+  const createSetting = (settings: UserSettings) => {
+    if (isLoadingSetting) {
+      return
+    }
+    setIsLoadingSetting(true)
+    createUserSettings(settings).then((resp) => {
+      setUserSetting(resp.data.setting)
+    }).finally(() => {
+      setIsLoadingSetting(false)
+    })
+
+  }
+
   const updateSetting = (settings: UserSettings) => {
     if (isLoadingSetting) {
       return
@@ -53,6 +69,7 @@ export default function MyInterestsPage() {
   useEffect(() => {
     fetchSettings()
   }, [])
+
 
 
   // Toggle tag selection
@@ -75,7 +92,12 @@ export default function MyInterestsPage() {
       key_message_tags: selectedTags
     };
 
-    updateSetting(requestBody);
+    // Fix the check for existing settings
+    if (userSetting) {
+      updateSetting(requestBody);
+    } else {
+      createSetting(requestBody);
+    }
 
     setIsEditingTags(false);
   };
@@ -96,7 +118,7 @@ export default function MyInterestsPage() {
           <Alert>
             <div className="flex items-center">
               <div className="h-4 w-4 mr-2 rounded-full bg-blue-500 animate-pulse"></div>
-              <AlertDescription>Loading interests...</AlertDescription>
+              <AlertDescription>Loading user profile...</AlertDescription>
             </div>
           </Alert>
         </div>
@@ -194,6 +216,7 @@ export default function MyInterestsPage() {
                           'Personal messages',
                           'Financial notifications',
                           'Administrative updates',
+                          'Promotional content',
                           'Newsletters and subscriptions',
                           'Social media notifications',
                           'Calendar invites and event updates',
@@ -275,6 +298,59 @@ export default function MyInterestsPage() {
                       </div>
                     </div>
                   )}
+                </div>
+              </FadeInWhenVisible>
+            </div>
+          </section>
+
+          {/* Connected Platforms */}
+          <section className="py-2">
+            <div className="max-w-6xl mx-auto px-4">
+              <FadeInWhenVisible delay={0.2}>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between mb-6">
+                    <Badge variant="homepage_section" size="lg">Connected Platforms</Badge>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Gmail Connection */}
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                          <GmailIcon/>
+                        </div>
+                        <div>
+                          <div className="font-medium">Gmail</div>
+                          <div className="text-sm text-gray-500">{userInfo?.email}</div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <Badge variant="outline" className="border-green-100 bg-green-50 text-green-600">
+                          <CheckCircle className="h-3 w-3 mr-1"/> Connected
+                        </Badge>
+                        {/*<span className="text-xs text-gray-400 mt-1">*/}
+                        {/*  Since {new Date(userInfo?.created_at || '').toLocaleDateString()}*/}
+                        {/*</span>*/}
+                      </div>
+                    </div>
+
+                    {/* Outlook Connection - Example of not connected platform */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                          <OutlookIcon/>
+                        </div>
+                        <div>
+                          <div className="font-medium">Outlook</div>
+                          <div className="text-sm text-gray-500">Not connected</div>
+                        </div>
+                      </div>
+                      <button
+                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm">
+                        Connect
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </FadeInWhenVisible>
             </div>
