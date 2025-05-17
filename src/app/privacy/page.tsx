@@ -271,12 +271,15 @@ export default function PrivacyPage() {
               use and adherence to SCCs in contracts governing such data flows to meet this level of protection.
             </p>
 
-            <h2 className="text-2xl font-semibold mt-8 mb-4">9. Google API Services Usage Disclosure</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">9. Third-Party API Services Usage Disclosure</h2>
             <p>
-              Haper, Inc. does not use or retain any user data obtained through Google Workspace APIs to develop, improve, or train generalized artificial intelligence (AI) or machine learning (ML) models. Any data accessed through Google Workspace APIs is used solely for the purpose of providing the specific functionality requested by the user within our service and in accordance with our overall privacy policy and data handling practices as outlined in this document.
+              Haper, Inc. does not use or retain any user data obtained through Google Workspace APIs, Microsoft 365 APIs, or any other third-party platform APIs to develop, improve, or train generalized artificial intelligence (AI) or machine learning (ML) models. Any data accessed through these platform APIs is used solely for the purpose of providing the specific functionality requested by the user within our service and in accordance with our overall privacy policy and data handling practices as outlined in this document.
             </p>
             <p>
-              We commit to using Google Workspace API data only for the direct benefit of the user who authorized the access and only in ways that are clearly disclosed to and consented to by the user. This means we do not aggregate, anonymize, or otherwise process Google Workspace API data to create or enhance AI/ML models that would serve purposes beyond the direct service provided to the authorizing user.
+              We commit to using data obtained through third-party platform APIs (including but not limited to Google Workspace, Microsoft, Slack, Discord and other productivity and collaboration platforms) only for the direct benefit of the user who authorized the access and only in ways that are clearly disclosed to and consented to by the user. This means we do not aggregate, anonymize, or otherwise process API data from any platform to create or enhance AI/ML models that would serve purposes beyond the direct service provided to the authorizing user.
+            </p>
+            <p>
+              Our commitment to responsible data handling applies universally across all third-party platforms with which our service integrates, ensuring consistent protection of user data regardless of its source.
             </p>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">10. Cookies</h2>
@@ -433,8 +436,6 @@ export default function PrivacyPage() {
               If you have questions or need to contact us about this Privacy Policy, please email our compliance officer at
               support@haper.io
             </p>
-
-            <p className="mt-8 text-sm text-gray-500">Last Updated: 22 July, 2024</p>
           </div>
         </div>
       </main>
