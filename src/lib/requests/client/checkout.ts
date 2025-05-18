@@ -1,12 +1,10 @@
 import {reqHandler} from "@/lib/requests/client/base";
-import {env} from "next-runtime-env";
 import {BillingCycle} from "@/lib/checkout";
 
 
-export const newCheckoutSession = async (billingCycle: BillingCycle) => {
-  const returnURL = new URL("/checkout-result", env("NEXT_PUBLIC_SITE_HOST_URL"));
+export const newCheckoutSession = async (billingCycle: BillingCycle, returnUrl: string) => {
   return reqHandler.post<{checkout_session_client_secret: string}>('/checkout/session', {
-    return_url: returnURL.toString(),
+    return_url: returnUrl,
     billing_cycle: billingCycle,
   });
 }

@@ -18,7 +18,8 @@ export default function Checkout() {
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
-    newCheckoutSession("month").then((resp) => {
+    const returnURL = new URL("/checkout-result", env("NEXT_PUBLIC_SITE_HOST_URL"));
+    newCheckoutSession("month", returnURL.toString()).then((resp) => {
       setCheckoutClientSecret(resp.data.checkout_session_client_secret)
     }).catch(() => {
       setTimeout(() => {
