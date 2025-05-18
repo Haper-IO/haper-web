@@ -1,6 +1,6 @@
 "use client"
 
-import {useState, useEffect, useRef} from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Tabs,
   TabsContent,
@@ -13,9 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardHeader} from "@/components/ui/card"
-import {Badge} from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import {
   MoreVertical,
   ChevronDown,
@@ -24,20 +24,24 @@ import {
   Trash,
   Move,
   RefreshCw,
-  Loader2
+  Loader2,
+  Eye
 } from "lucide-react"
-import {Textarea} from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea"
 import {
   getReportById,
   generateReply,
   updateReport,
   ItemUpdateInfo,
   pollMessageProcessingStatus,
-  pollBatchActionStatus, applyReportActions
+  pollBatchActionStatus,
+  applyReportActions,
+  getReportMessageContent,
+  EmailMessageContentResponse
 } from "@/lib/requests/client/report"
-import {Report, MailReportItem} from "@/lib/modal/report"
-import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
-import {cn} from "@/lib/utils"
+import { Report, MailReportItem } from "@/lib/modal/report"
+import { GmailIcon, OutlookIcon } from "@/icons/provider-icons"
+import { cn } from "@/lib/utils"
 import RichContent from "@/components/rich-content";
 import {
   Breadcrumb,
@@ -49,6 +53,12 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const SHARED_STYLES = {
   heading: "font-medium text-slate-900 text-sm",
@@ -97,6 +107,7 @@ function EmailItem(
     onActionSelect,
     onRegenerateReply,
     onCancelGenerate,
+    onViewMessage,
     disabled = false
   }: {
     email: Email
@@ -105,6 +116,7 @@ function EmailItem(
     onActionSelect: (email: Email, action: "Read" | "Delete" | "Reply" | "Ignore") => void
     onRegenerateReply: (email: Email) => void
     onCancelGenerate: (email: Email) => void
+    onViewMessage: (email: Email) => void
     disabled?: boolean
   }) {
 
@@ -116,10 +128,10 @@ function EmailItem(
   }
 
   const actionIconMap: Record<string, React.ReactNode> = {
-    "Read": <Check className="mr-2 h-4 w-4 text-slate-600"/>,
-    "Delete": <Trash className="mr-2 h-4 w-4 text-red-500"/>,
-    "Reply": <Reply className="mr-2 h-4 w-4 text-blue-500"/>,
-    "Ignore": <MoreVertical className="mr-2 h-4 w-4 text-slate-500"/>
+    "Read": <Check className="mr-2 h-4 w-4 text-slate-600" />,
+    "Delete": <Trash className="mr-2 h-4 w-4 text-red-500" />,
+    "Reply": <Reply className="mr-2 h-4 w-4 text-blue-500" />,
+    "Ignore": <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />
   }
 
   return (
@@ -127,10 +139,25 @@ function EmailItem(
       className="border border-slate-200/70 rounded-lg p-3 bg-slate-50/60 backdrop-blur-[2px] shadow-sm hover:shadow transition-shadow">
       <div className="flex justify-between items-start mb-2">
         <div>
+          {email.tags && email.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {email.tags.map((tag) => {
+                return (
+                  <span
+                    key={tag}
+                    className={`bg-gray-400 text-white px-2 py-0.5 rounded text-xs font-medium`}
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
+            </div>
+          )}
           <h3 className={`${SHARED_STYLES.heading} text-sm mb-0.5`}>{email.subject}</h3>
           <p className={SHARED_STYLES.subtitle}>From: {email.sender}</p>
         </div>
         <div className="flex gap-1 items-center">
+          <Eye className="mr-2 h-4 w-4 text-slate-500" onClick={() => onViewMessage(email)} />
           {/*drop down menu for more option*/}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -140,7 +167,7 @@ function EmailItem(
                 className="text-slate-500 hover:text-slate-700 hover:bg-slate-100/70 h-7 w-7 p-0 rounded-full"
                 disabled={disabled}
               >
-                <MoreVertical className="h-3.5 w-3.5"/>
+                <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-slate-100/80 shadow-md">
@@ -150,7 +177,7 @@ function EmailItem(
                 }}
                 className="text-slate-700"
               >
-                <Move className="mr-2 h-4 w-4 text-slate-500"/>
+                <Move className="mr-2 h-4 w-4 text-slate-500" />
                 Move to {email.category == "Essential" ? "Non-Essential" : "Essential"}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -173,7 +200,7 @@ function EmailItem(
                 {email.action_result && (
                   <span className="ml-1 text-2xs text-slate-500">({email.action_result})</span>
                 )}
-                <ChevronDown className="h-3.5 w-3.5 ml-1"/>
+                <ChevronDown className="h-3.5 w-3.5 ml-1" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-slate-100/80 shadow-md">
@@ -181,28 +208,28 @@ function EmailItem(
                 onClick={() => onActionSelect(email, "Read")}
                 className={`${email.action === "Read" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
-                <Check className="mr-2 h-4 w-4 text-slate-600"/>
+                <Check className="mr-2 h-4 w-4 text-slate-600" />
                 Mark as Read
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onActionSelect(email, "Reply")}
                 className={`${email.action === "Reply" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
-                <Reply className="mr-2 h-4 w-4 text-blue-500"/>
+                <Reply className="mr-2 h-4 w-4 text-blue-500" />
                 Reply
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onActionSelect(email, "Delete")}
                 className={`${email.action === "Delete" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
-                <Trash className="mr-2 h-4 w-4 text-red-500"/>
+                <Trash className="mr-2 h-4 w-4 text-red-500" />
                 Delete
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onActionSelect(email, "Ignore")}
                 className={`${email.action === "Ignore" ? "bg-slate-50/90" : ""} text-slate-700`}
               >
-                <MoreVertical className="mr-2 h-4 w-4 text-slate-500"/>
+                <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />
                 Ignore
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -218,7 +245,7 @@ function EmailItem(
           <>
             <Textarea
               placeholder="Type your reply here..."
-              className="mb-2 border-slate-200/80 focus:border-slate-300/90 focus:ring-slate-200/50 text-slate-700 rounded-md resize-none min-h-[80px] text-xs"
+              className="mb-2 border-slate-200/80 focus:border-slate-300/90 focus:ring-slate-200/50 text-slate-700 rounded-md resize-y min-h-48 max-h-80 text-xs"
               disabled={disabled}
               value={email.reply_message || ""}
               onChange={(e) => onInput(e.target.value)}
@@ -231,8 +258,16 @@ function EmailItem(
                 className="text-slate-600 border-slate-200/80 hover:bg-slate-50/80 h-7 px-3 text-xs"
                 disabled={disabled || email.isGeneratingReply}
               >
-                <RefreshCw className="h-3 w-3 mr-1"/>
-                Regenerate
+                {email.isGeneratingReply ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                )}
+                {email.isGeneratingReply ? (
+                  "Generating..."
+                ) : (
+                  "Regenerate"
+                )}
               </Button>
               <Button
                 variant="outline"
@@ -259,12 +294,14 @@ interface BatchActionStatus {
 }
 
 // Client Report Component
-export function ReportClient({reportId}: { reportId: string }) {
+export function ReportClient({ reportId }: { reportId: string }) {
   const [report, setReport] = useState<Report | null>(null);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
   const [numberOfMessageInProcessing, setNumberOfMessageInProcessing] = useState(0);
   const [batchActionStatus, setBatchActionStatus] = useState<BatchActionStatus | null>(null);
   const [isApplyingActions, setIsApplyingActions] = useState(false);
+  const [messageToPresent, setMessageToPresent] = useState<EmailMessageContentResponse | null>(null);
+  const [isLoadingMessage, setIsLoadingMessage] = useState(false);
 
   // Transform report data to emails if report exists
   const [emails, setEmails] = useState<Email[]>([]);
@@ -323,7 +360,7 @@ export function ReportClient({reportId}: { reportId: string }) {
       if (resp.data) {
         const reader = resp.data.pipeThrough(new TextDecoderStream()).getReader();
         while (true) {
-          const {value, done} = await reader.read();
+          const { value, done } = await reader.read();
           if (done) {
             break
           }
@@ -343,7 +380,7 @@ export function ReportClient({reportId}: { reportId: string }) {
       if (resp.data) {
         const reader = resp.data.pipeThrough(new TextDecoderStream()).getReader();
         while (true) {
-          const {value, done} = await reader.read();
+          const { value, done } = await reader.read();
           if (done) {
             fetchReport()
             break
@@ -415,9 +452,9 @@ export function ReportClient({reportId}: { reportId: string }) {
               reply_message: value
             }]
             updateReport(reportId, {
-                gmail: email.source == "gmail" ? updateInfo : undefined,
-                outlook: email.source == "outlook" ? updateInfo : undefined,
-              }
+              gmail: email.source == "gmail" ? updateInfo : undefined,
+              outlook: email.source == "outlook" ? updateInfo : undefined,
+            }
             ).catch(() => {
             })
           }, 1000)
@@ -438,9 +475,9 @@ export function ReportClient({reportId}: { reportId: string }) {
             category: category,
           }]
           updateReport(reportId, {
-              gmail: email.source == "gmail" ? updateInfo : undefined,
-              outlook: email.source == "outlook" ? updateInfo : undefined,
-            }
+            gmail: email.source == "gmail" ? updateInfo : undefined,
+            outlook: email.source == "outlook" ? updateInfo : undefined,
+          }
           ).catch(() => {
           })
         }}
@@ -460,15 +497,25 @@ export function ReportClient({reportId}: { reportId: string }) {
             action: action,
           }]
           updateReport(reportId, {
-              gmail: email.source == "gmail" ? updateInfo : undefined,
-              outlook: email.source == "outlook" ? updateInfo : undefined,
-            }
+            gmail: email.source == "gmail" ? updateInfo : undefined,
+            outlook: email.source == "outlook" ? updateInfo : undefined,
+          }
           ).catch(() => {
           })
         }}
         onRegenerateReply={() => {
           // generate reply for the email
           const abortController = new AbortController()
+          setEmails((prev) => {
+            return prev.map((e) => {
+              if (e.id == email.id) {
+                e.isGeneratingReply = true
+                e.abortController = abortController
+              }
+              return e
+            })
+          })
+
           generateReply(reportId, {
             source: email.source,
             account_id: email.account_id,
@@ -478,9 +525,7 @@ export function ReportClient({reportId}: { reportId: string }) {
               setEmails((prev) => {
                 return prev.map((e) => {
                   if (e.id == email.id) {
-                    e.isGeneratingReply = true
                     e.reply_message = ""
-                    e.abortController = abortController
                   }
                   return e
                 })
@@ -488,7 +533,7 @@ export function ReportClient({reportId}: { reportId: string }) {
               const reader = resp.data.pipeThrough(new TextDecoderStream()).getReader();
               let generatedReply = ""
               while (true) {
-                const {value, done} = await reader.read();
+                const { value, done } = await reader.read();
                 if (done) {
                   // update email state
                   setEmails((prev) => {
@@ -509,9 +554,9 @@ export function ReportClient({reportId}: { reportId: string }) {
                   }]
 
                   updateReport(reportId, {
-                      gmail: email.source == "gmail" ? updateInfo : undefined,
-                      outlook: email.source == "outlook" ? updateInfo : undefined,
-                    }
+                    gmail: email.source == "gmail" ? updateInfo : undefined,
+                    outlook: email.source == "outlook" ? updateInfo : undefined,
+                  }
                   ).catch(() => {
                   })
                   break
@@ -527,6 +572,16 @@ export function ReportClient({reportId}: { reportId: string }) {
                 })
               }
             }
+          }).catch(() => {
+            setEmails((prev) => {
+              return prev.map((e) => {
+                if (e.id == email.id) {
+                  e.isGeneratingReply = false
+                  e.abortController = undefined
+                }
+                return e
+              })
+            })
           })
         }}
         onCancelGenerate={() => {
@@ -541,12 +596,22 @@ export function ReportClient({reportId}: { reportId: string }) {
               reply_message: email.reply_message
             }]
             updateReport(reportId, {
-                gmail: email.source == "gmail" ? updateInfo : undefined,
-                outlook: email.source == "outlook" ? updateInfo : undefined,
-              }
+              gmail: email.source == "gmail" ? updateInfo : undefined,
+              outlook: email.source == "outlook" ? updateInfo : undefined,
+            }
             ).catch(() => {
             })
           }
+        }}
+        onViewMessage={(email) => {
+          setIsLoadingMessage(true);
+          getReportMessageContent(reportId, email.source, email.account_id, email.id)
+            .then((response) => {
+              setMessageToPresent(response.data.message_content);
+            })
+            .finally(() => {
+              setIsLoadingMessage(false);
+            });
         }}
         disabled={(batchActionStatus && batchActionStatus.status !== "Done") ||
           isLoadingReport || numberOfMessageInProcessing > 0 || email.action_result == "Success"}
@@ -557,7 +622,7 @@ export function ReportClient({reportId}: { reportId: string }) {
   return (
     <>
       {/* Add a style tag for custom scrollbar styling */}
-      <style dangerouslySetInnerHTML={{__html: SCROLLBAR_STYLES}}/>
+      <style dangerouslySetInnerHTML={{ __html: SCROLLBAR_STYLES }} />
 
       {/* Header */}
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -585,18 +650,57 @@ export function ReportClient({reportId}: { reportId: string }) {
         {isLoadingReport ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
-              <Loader2 className="h-7 w-7 animate-spin mx-auto text-slate-400"/>
+              <Loader2 className="h-7 w-7 animate-spin mx-auto text-slate-400" />
               <p className="text-xs text-slate-500 mt-1">Loading report data...</p>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
+            {/* Message Content Dialog */}
+            <Dialog open={!!messageToPresent} onOpenChange={(open: boolean) => !open && setMessageToPresent(null)}>
+              <DialogContent className="max-w-2xl max-h-[80vh] bg-white">
+                <DialogHeader>
+                  <DialogTitle>{messageToPresent?.subject}</DialogTitle>
+                </DialogHeader>
+                <div className="overflow-y-auto max-h-[calc(80vh-8rem)]">
+                  <div className="mb-4 text-sm text-slate-600">
+                    <p><strong>From:</strong> {messageToPresent?.from}</p>
+                    <p><strong>To:</strong> {messageToPresent?.to}</p>
+                  </div>
+                  <div className="border rounded-md p-4 bg-white">
+                    {messageToPresent?.mime_type === "text/html" ? (
+                      <iframe
+                        srcDoc={messageToPresent.body}
+                        className="w-full h-[500px] md:h-[800px] border-0"
+                        sandbox="allow-same-origin"
+                      />
+                    ) : (
+                      <pre className="whitespace-pre-wrap font-sans">{messageToPresent?.body}</pre>
+                    )}
+                  </div>
+
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Loading Overlay */}
+            {isLoadingMessage && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin text-slate-600" />
+                    <span className="text-sm text-slate-600">Loading message content...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Message Processing Status */}
             {numberOfMessageInProcessing > 0 && (
               <div className="bg-blue-50/80 p-2 rounded-md border border-blue-200/70 mb-3 backdrop-blur-[2px]">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500"/>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
                     <span className="text-xs font-medium text-blue-700">
                       Processing {numberOfMessageInProcessing} messages in queue
                     </span>
@@ -661,18 +765,18 @@ export function ReportClient({reportId}: { reportId: string }) {
                     disabled={isLoadingReport}
                     title="Refresh report"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingReport ? 'animate-spin' : ''}`}/>
+                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingReport ? 'animate-spin' : ''}`} />
                     <span className="sr-only">Refresh</span>
                   </Button>
                   {<div className="flex gap-1">
                     {hasGmail && (
                       <div className="relative h-5 w-5" title="Gmail">
-                        <GmailIcon className="h-5 w-5"/>
+                        <GmailIcon className="h-5 w-5" />
                       </div>
                     )}
                     {hasOutlook && (
                       <div className="relative h-5 w-5" title="Outlook">
-                        <OutlookIcon className="h-5 w-5"/>
+                        <OutlookIcon className="h-5 w-5" />
                       </div>
                     )}
                   </div>}
@@ -751,12 +855,12 @@ export function ReportClient({reportId}: { reportId: string }) {
                     >
                       {batchActionStatus && batchActionStatus.status !== "Done" ? (
                         <>
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin"/>
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                           Applying Actions...
                         </>
                       ) : numberOfMessageInProcessing > 0 ? (
                         <>
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin"/>
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                           Processing messages...
                         </>
                       ) : "Apply All Actions"}

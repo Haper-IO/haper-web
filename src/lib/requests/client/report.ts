@@ -1,5 +1,5 @@
-import {reqHandler, streamingHandler} from "@/lib/requests/client/base";
-import {Report} from "@/lib/modal/report";
+import { reqHandler, streamingHandler } from "@/lib/requests/client/base";
+import { Report } from "@/lib/modal/report";
 
 export interface ReportResponse {
   report: Report | null;
@@ -27,7 +27,7 @@ export const generateReport = async () => {
 // Get report history
 export const getReportHistory = async (page: number, pageSize: number) => {
   return reqHandler.get<ReportListResponse>('/report/history', {
-    params: {page, page_size: pageSize}
+    params: { page, page_size: pageSize }
   });
 };
 
@@ -78,4 +78,33 @@ export const applyReportActions = async (reportId: string) => {
 
 export const pollBatchActionStatus = (reportId: string) => {
   return streamingHandler.post(`/report/${reportId}/batch-action-status`);
+}
+
+
+export interface EmailMessageContentResponse {
+  subject: string;
+  from: string;
+  to: string;
+  mime_type: "text/html" | "text/plain";
+  body: string;
+}
+
+
+/**
+ * Retrieves the content of a specific message within a report.
+ *
+ * @param reportId - The unique identifier of the report.
+ * @param source - The source of the message (e.g., Gmail, Outlook).
+ * @param accountId - The account ID associated with the message.
+ * @param id - The unique identifier of the message.
+ * @returns A promise that resolves to the message content.
+ */
+export const getReportMessageContent = (reportId: string, source: string, accountId: string, id: number) => {
+  return reqHandler.get<{ message_content: EmailMessageContentResponse }>(`/report/${reportId}/message-content`, {
+    params: {
+      source,
+      account_id: accountId,
+      id
+    }
+  });
 }

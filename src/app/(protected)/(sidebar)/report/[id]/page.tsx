@@ -9,6 +9,8 @@ export default async function ReportPage({
   // Await params before accessing its properties
   const { id } = await params;
 
+  //TODO: get report by id else redirect to not found
+
   // We'll move the data fetching to the client component to avoid server-side toast errors
   return <ReportClient reportId={id} />;
 }

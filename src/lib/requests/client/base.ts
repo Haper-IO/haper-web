@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import { toast } from "sonner";
 import {env} from "next-runtime-env";
 
@@ -25,7 +25,11 @@ const responseErrorInterceptor = (error: any) => {
       toast.warning(message)
     }
     isAuthFail = error.response.data.status == 1101
+  } else if (error instanceof AxiosError && error.code === "ERR_CANCELED") {
+    message = 'Request aborted'
+    // Don't show toast for aborted requests since they are intentional
   } else {
+    console.log(error)
     message = error.message
     toast.error(error.message)
   }
