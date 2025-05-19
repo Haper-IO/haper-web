@@ -196,7 +196,9 @@ export default function MyInterestsPage() {
                             type="button"
                             variant={selectedTags.includes(tag) ? "default" : "outline"}
                             size="sm"
-                            className="h-auto py-2.5 px-4 whitespace-normal text-left justify-start text-sm"
+                            className={`h-auto py-2.5 px-4 whitespace-normal text-left justify-start text-sm ${
+                              selectedTags.includes(tag) ? 'bg-slate-500 hover:bg-slate-600 text-white' : ''
+                            }`}
                             onClick={() => toggleTag(tag)}
                           >
                             {tag}
@@ -234,7 +236,7 @@ export default function MyInterestsPage() {
                             <Badge
                               key={index}
                               variant="secondary"
-                              className="group text-sm px-3 py-1.5 bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-1"
+                              className="group text-sm px-3 py-1.5 bg-slate-100 border border-slate-300 text-slate-800 flex items-center gap-1 hover:bg-slate-200 transition-colors"
                             >
                               {tag}
                               <button

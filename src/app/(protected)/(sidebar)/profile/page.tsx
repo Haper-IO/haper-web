@@ -181,7 +181,7 @@ export default function MyInterestsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <Badge variant="homepage_section" size="lg">My Interests</Badge>
                     <button
-                      className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+                      className="px-3 py-1.5 bg-lime-400 text-white text-sm rounded-md hover:bg-lime-500 transition-colors"
                       onClick={() => {
                         setIsEditingTags(!isEditingTags)
                       }}
@@ -198,7 +198,7 @@ export default function MyInterestsPage() {
                           <Badge
                             key={index}
                             variant="secondary"
-                            className="px-3 py-1 bg-blue-50 text-blue-700"
+                            className="px-3 py-1 bg-lime-50 text-lime-700"
                           >
                             {tag}
                           </Badge>
@@ -227,7 +227,7 @@ export default function MyInterestsPage() {
                             key={tag}
                             className={`px-3 py-1 rounded-md text-sm ${
                               selectedTags.includes(tag)
-                                ? 'bg-blue-500 text-white'
+                                ? 'bg-lime-400 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                             onClick={() => toggleTag(tag)}
@@ -247,7 +247,7 @@ export default function MyInterestsPage() {
                         />
                         <button
                           type="submit"
-                          className="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                          className="px-3 py-1.5 bg-lime-400 text-white text-sm rounded-md hover:bg-lime-500 transition-colors"
                           disabled={!newTag.trim()}
                         >
                           Add
@@ -261,7 +261,7 @@ export default function MyInterestsPage() {
                             <Badge
                               key={index}
                               variant="secondary"
-                              className="px-3 py-1 bg-blue-50 text-blue-700 flex items-center gap-1"
+                              className="px-3 py-1 bg-lime-50 text-lime-700 flex items-center gap-1"
                             >
                               {tag}
                               <button
@@ -289,7 +289,7 @@ export default function MyInterestsPage() {
                           Cancel
                         </button>
                         <button
-                          className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+                          className="px-3 py-1.5 bg-lime-400 text-white text-sm rounded-md hover:bg-lime-500 transition-colors"
                           onClick={saveTagChanges}
                           disabled={isLoadingSetting}
                         >
