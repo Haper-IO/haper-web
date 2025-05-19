@@ -1,19 +1,27 @@
 'use client'
 
-import {motion} from 'framer-motion'
 import {useUserInfo} from '@/hooks/useUserInfo'
 import {Badge} from "@/components/ui/badge"
 import {Label} from "@/components/ui/label"
-import {Alert, AlertDescription} from "@/components/ui/alert"
-import {FadeInWhenVisible} from "@/components/background-effect/fade-in-when-visible"
 import {Input} from "@/components/ui/input"
+import {Button} from "@/components/ui/button"
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import React, {useState, useEffect} from "react"
 import {
   getUserSettings,
   updateUserSettings,
   UserSettings,
 } from "@/lib/requests/client/user-settings"
-import Image from "next/image";
 
 export default function MyInterestsPage() {
   const {userInfo, loading: userLoading} = useUserInfo();
@@ -91,104 +99,87 @@ export default function MyInterestsPage() {
 
   if (userLoading) {
     return (
-      <div className="relative w-full min-h-screen bg-gray-50 justify-center">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <Alert>
-            <div className="flex items-center">
-              <div className="h-4 w-4 mr-2 rounded-full bg-blue-500 animate-pulse"></div>
-              <AlertDescription>Loading interests...</AlertDescription>
-            </div>
-          </Alert>
-        </div>
+      <div className="w-full px-4 py-8">
+        <Card className="max-w-6xl mx-auto bg-slate-50/30 backdrop-blur-[2px]">
+          <CardHeader>
+            <CardTitle className="text-xl font-medium text-slate-900">My Interests</CardTitle>
+            <CardDescription className="text-sm text-slate-600">Loading your interests...</CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="h-6 w-6 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full min-h-screen bg-gray-50 justify-center">
-      {/* Profile Content - Only shown when data is loaded */}
-      {userInfo && (
-        <>
-          {/* Profile Header */}
-          <section className="py-2 mt-4 bg-slate-50/75 md:mt-16">
-            <div className="max-w-6xl mx-auto px-4">
-              <FadeInWhenVisible>
-                <div className="flex items-center gap-6">
-                  <motion.div
-                    className="relative h-24 w-24 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg"
-                    whileHover={{scale: 1.05}}
-                  >
-                    {userInfo.image && (
-                      <Image
-                        src={userInfo.image}
-                        alt="profile-image"
-                        className="object-contain"
-                        fill
-                      />
-                    )}
-                  </motion.div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-medium">
-                        {userInfo.name || 'Unknown User'}
-                      </h1>
-                      <Badge variant="outline" className={
-                        userInfo.email_verified
-                          ? "border-green-100 bg-green-50 text-green-600"
-                          : "border-yellow-100 bg-yellow-50 text-yellow-600"
-                      }>
-                        {userInfo.email_verified ? "Verified" : "Unverified"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      Member since {new Date(
-                      userInfo.created_at || Date.now()
-                    ).toLocaleDateString()}
-                    </p>
-                  </div>
+    <>
+      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/dashboard">
+                  Dashboard
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>My Interests</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </header>
+
+      <div className="px-4 pt-2 pb-6">
+        {userInfo && (
+          <>
+            {/* Interests Section */}
+            <Card className="max-w-6xl mx-auto bg-slate-50/30 backdrop-blur-[2px]">
+              <CardHeader className="flex flex-row items-center justify-between pb-6">
+                <div className="space-y-1">
+                  <CardTitle className="text-xl font-medium text-slate-900">My Monitored Topics</CardTitle>
+                  <CardDescription className="text-sm text-slate-600">
+                    Select or add the topics you want to keep an eye on. Haper will still keep an eye on other topics, but will prioritize these.
+                  </CardDescription>
                 </div>
-              </FadeInWhenVisible>
-            </div>
-          </section>
-
-          {/* User Interests/Tags Section */}
-          <section className="py-4">
-            <div className="max-w-6xl mx-auto px-4">
-              <FadeInWhenVisible delay={0.4}>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <Badge variant="homepage_section" size="lg">My Interests</Badge>
-                    <button
-                      className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
-                      onClick={() => {
-                        setIsEditingTags(!isEditingTags)
-                      }}
-                      disabled={isLoadingSetting}
-                    >
-                      {isEditingTags ? "Cancel" : "Edit"}
-                    </button>
-                  </div>
-
-                  {!isEditingTags ? (
-                    <div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {userSetting?.key_message_tags?.map((tag: string, index: number) => (
-                          <Badge
-                            key={index}
-                            variant="secondary"
-                            className="px-3 py-1 bg-blue-50 text-blue-700"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                        {(!userSetting?.key_message_tags?.length) && (
-                          <p className="text-gray-500 italic">No tags selected yet</p>
-                        )}
-                      </div>
+                <Button 
+                  variant={isEditingTags ? "outline" : "default"}
+                  onClick={() => setIsEditingTags(!isEditingTags)}
+                  disabled={isLoadingSetting}
+                  size="sm"
+                  className="h-9"
+                >
+                  {isEditingTags ? "Cancel" : "Edit"}
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {!isEditingTags ? (
+                  <div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {userSetting?.key_message_tags?.map((tag: string, index: number) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="px-3 py-1.5 text-sm text-slate-700 bg-slate-100 border border-slate-200/80"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                      {(!userSetting?.key_message_tags?.length) && (
+                        <p className="text-sm text-slate-500 italic">No interests selected yet</p>
+                      )}
                     </div>
-                  ) : (
+                  </div>
+                ) : (
+                  <div className="space-y-6">
                     <div>
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <h3 className="text-sm font-medium text-slate-800 mb-3">Choose from common interests:</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {[
                           'Work communications',
                           'Personal messages',
@@ -200,87 +191,97 @@ export default function MyInterestsPage() {
                           'Travel-related emails',
                           'Shopping and order updates'
                         ].map((tag) => (
-                          <button
+                          <Button
                             key={tag}
-                            className={`px-3 py-1 rounded-md text-sm ${
-                              selectedTags.includes(tag)
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+                            type="button"
+                            variant={selectedTags.includes(tag) ? "default" : "outline"}
+                            size="sm"
+                            className="h-auto py-2.5 px-4 whitespace-normal text-left justify-start text-sm"
                             onClick={() => toggleTag(tag)}
                           >
                             {tag}
-                          </button>
+                          </Button>
                         ))}
                       </div>
+                    </div>
 
-                      <form onSubmit={addCustomTag} className="mb-4 flex gap-2">
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-800 mb-3">Add a custom interest:</h3>
+                      <form onSubmit={addCustomTag} className="flex gap-2">
                         <Input
                           type="text"
                           value={newTag}
                           onChange={(e) => setNewTag(e.target.value)}
                           placeholder="Type a custom interest..."
-                          className="flex-1"
+                          className="flex-1 text-sm"
                         />
-                        <button
+                        <Button
                           type="submit"
-                          className="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                          variant="secondary"
+                          size="sm"
                           disabled={!newTag.trim()}
                         >
                           Add
-                        </button>
+                        </Button>
                       </form>
+                    </div>
 
-                      <div className="mb-4">
-                        <Label className="text-sm text-gray-500 mb-2">Selected Interests:</Label>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedTags.map((tag, index) => (
+                    <div>
+                      <Label className="text-sm font-medium text-slate-800 mb-3 block">Your selected interests:</Label>
+                      <div className="flex flex-wrap gap-2 p-4 border rounded-md bg-white min-h-[100px]">
+                        {selectedTags.length > 0 ? (
+                          selectedTags.map((tag, index) => (
                             <Badge
                               key={index}
                               variant="secondary"
-                              className="px-3 py-1 bg-blue-50 text-blue-700 flex items-center gap-1"
+                              className="group text-sm px-3 py-1.5 bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-1"
                             >
                               {tag}
                               <button
                                 onClick={() => toggleTag(tag)}
-                                className="ml-1 hover:text-red-500"
+                                className="ml-1.5 rounded-full hover:bg-slate-200 h-4 w-4 inline-flex items-center justify-center"
+                                aria-label={`Remove ${tag}`}
                               >
                                 ×
                               </button>
                             </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end gap-2">
-                        <button
-                          className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors"
-                          onClick={() => {
-                            const existingTags = userSetting?.key_message_tags || [];
-                            if (existingTags.length > 0) {
-                              setSelectedTags(existingTags);
-                            }
-                            setIsEditingTags(false);
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
-                          onClick={saveTagChanges}
-                          disabled={isLoadingSetting}
-                        >
-                          {isLoadingSetting ? 'Saving...' : 'Save'}
-                        </button>
+                          ))
+                        ) : (
+                          <p className="text-sm text-slate-500 italic">No interests selected yet</p>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              </FadeInWhenVisible>
-            </div>
-          </section>
-        </>
-      )}
-    </div>
+                  </div>
+                )}
+              </CardContent>
+              {isEditingTags && (
+                <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const existingTags = userSetting?.key_message_tags || [];
+                      if (existingTags.length > 0) {
+                        setSelectedTags(existingTags);
+                      }
+                      setIsEditingTags(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={saveTagChanges}
+                    disabled={isLoadingSetting || selectedTags.length === 0}
+                  >
+                    {isLoadingSetting ? 'Saving...' : 'Save'}
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+          </>
+        )}
+      </div>
+    </>
   );
 }
