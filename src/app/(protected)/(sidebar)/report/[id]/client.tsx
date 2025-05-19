@@ -67,29 +67,6 @@ const SHARED_STYLES = {
   accent: "text-slate-600"
 }
 
-// Add custom scrollbar styles
-const SCROLLBAR_STYLES = `
-  /* For Webkit browsers (Chrome, Safari) */
-  ::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #e2e8f0;
-    border-radius: 20px;
-  }
-
-  /* For Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #e2e8f0 transparent;
-  }
-`;
-
 type Email = MailReportItem & {
   source: string,
   account_id: string
@@ -621,9 +598,6 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
   return (
     <>
-      {/* Add a style tag for custom scrollbar styling */}
-      <style dangerouslySetInnerHTML={{ __html: SCROLLBAR_STYLES }} />
-
       {/* Header */}
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
         <div className="flex items-center gap-2 px-4">

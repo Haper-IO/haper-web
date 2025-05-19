@@ -197,7 +197,7 @@ export function LatestSummary() {
   };
 
   return (
-    <Card className="bg-slate-200/40 backdrop-blur-[2px]">
+    <Card id="user-guide-step3" className="bg-slate-200/40 backdrop-blur-[2px]">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="emphasis" size="md">Latest Summary</Badge>
         {report ? (
