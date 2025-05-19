@@ -8,7 +8,7 @@ import {useState, useEffect} from "react"
 import {
   stopMessageTracking,
   listMessageTrackingStatus,
-  startMessageTrackingByAccountID, 
+  startMessageTrackingByAccountID,
   TrackingStatus
 } from "@/lib/requests/client/message-tracking"
 import {oauthRedirect} from "@/app/actions/oauth"
@@ -31,7 +31,7 @@ export function StatusCard() {
   const [startDialogOpen, setStartDialogOpen] = useState(false)
   const [stopDialogOpen, setStopDialogOpen] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<TrackingStatus | null>(null)
-  const [isStatusExpanded, setIsStatusExpanded] = useState(false);
+  const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [addAccountDialogOpen, setAddAccountDialogOpen] = useState(false)
   const [selectedProviderForAdd, setSelectedProviderForAdd] = useState("")
 
@@ -246,6 +246,7 @@ export function StatusCard() {
           </div>
           <div className="ml-auto flex items-center gap-2">
             <Button
+              id="user-guide-step1"
               variant="ghost"
               size="sm"
               className="h-8 p-2 flex items-center gap-1 text-sm text-slate-700"
@@ -281,12 +282,12 @@ export function StatusCard() {
           </div>
         </CardHeader>
         {isStatusExpanded && (
-          <CardContent>
+          <CardContent id="user-guide-step2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {SupportedProviders.map((provider) => {
                 // Get all accounts for this provider
                 const accounts = trackingStatuses[provider] || [];
-                
+
                 // If no accounts, add a placeholder
                 if (accounts.length === 0) {
                   accounts.push({
@@ -298,7 +299,7 @@ export function StatusCard() {
                     updated_at: null,
                   });
                 }
-                
+
                 // Return a single card per provider containing all accounts
                 return (
                   <div
@@ -313,10 +314,10 @@ export function StatusCard() {
                       ) : null}
                       <span className="font-medium">{getProviderName(provider)}</span>
                     </div>
-                    
+
                     <div className="space-y-3">
                       {accounts.map((account, idx) => (
-                        <div 
+                        <div
                           key={`${provider}-${idx}`}
                           className={`flex justify-between items-center p-2 rounded-md ${
                             account.status === "Error" ? "bg-red-50" : "bg-white/60"
@@ -334,7 +335,7 @@ export function StatusCard() {
                               <span className="text-sm text-gray-500">No account connected</span>
                             )}
                           </div>
-                          
+
                           <div>
                             {account.account_id ? (
                               account.status === "Ongoing" ? (
@@ -397,4 +398,4 @@ export function StatusCard() {
       </Card>
     </>
   );
-} 
+}

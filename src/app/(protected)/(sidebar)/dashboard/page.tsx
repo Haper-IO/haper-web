@@ -12,8 +12,20 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import {useEffect} from "react";
+import {useNextStep} from "nextstepjs";
 
 export default function DashboardPage() {
+  const { startNextStep } = useNextStep();
+
+  useEffect(() => {
+    if (!localStorage.getItem("user-guide-done")) {
+      startNextStep("mainTour")
+      localStorage.setItem("user-guide-done", "true");
+    }
+
+  }, [startNextStep]);
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
