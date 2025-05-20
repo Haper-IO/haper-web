@@ -15,6 +15,9 @@ const NavigationLinks = () => (
     <Link href="/terms" className="text-sm text-gray-600 hover:text-gray-900">
       Terms
     </Link>
+    <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900">
+      Login
+    </Link>
   </>
 )
 

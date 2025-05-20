@@ -39,7 +39,7 @@ export default function LandingPage() {
                 <Clock className="h-4 w-4 text-gray-600"/>
               </motion.div>
             </div>
-            Save 5+ hours every week on email management
+            Save 5+ hours every week on cross-email management
           </Badge>
         </div>
 
