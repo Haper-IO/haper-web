@@ -11,13 +11,14 @@ import {Input} from "@/components/ui/input"
 import React, {useState, useEffect} from "react"
 import {
   getUserSettings,
+  createUserSettings,
   updateUserSettings,
   UserSettings,
 } from "@/lib/requests/client/user-settings"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons";
 import Image from "next/image";
 
-export default function TestProfilePage() {
+export default function MyInterestsPage() {
   const {userInfo, loading: userLoading} = useUserInfo();
   const [userSetting, setUserSetting] = useState<UserSettings | null>(null)
   const [isLoadingSetting, setIsLoadingSetting] = useState(false)
@@ -40,6 +41,19 @@ export default function TestProfilePage() {
     })
   }
 
+  const createSetting = (settings: UserSettings) => {
+    if (isLoadingSetting) {
+      return
+    }
+    setIsLoadingSetting(true)
+    createUserSettings(settings).then((resp) => {
+      setUserSetting(resp.data.setting)
+    }).finally(() => {
+      setIsLoadingSetting(false)
+    })
+
+  }
+
   const updateSetting = (settings: UserSettings) => {
     if (isLoadingSetting) {
       return
@@ -55,6 +69,7 @@ export default function TestProfilePage() {
   useEffect(() => {
     fetchSettings()
   }, [])
+
 
 
   // Toggle tag selection
@@ -77,7 +92,12 @@ export default function TestProfilePage() {
       key_message_tags: selectedTags
     };
 
-    updateSetting(requestBody);
+    // Fix the check for existing settings
+    if (userSetting) {
+      updateSetting(requestBody);
+    } else {
+      createSetting(requestBody);
+    }
 
     setIsEditingTags(false);
   };
@@ -196,6 +216,7 @@ export default function TestProfilePage() {
                           'Personal messages',
                           'Financial notifications',
                           'Administrative updates',
+                          'Promotional content',
                           'Newsletters and subscriptions',
                           'Social media notifications',
                           'Calendar invites and event updates',
