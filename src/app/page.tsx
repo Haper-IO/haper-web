@@ -39,7 +39,7 @@ export default function LandingPage() {
                 <Clock className="h-4 w-4 text-gray-600"/>
               </motion.div>
             </div>
-            Save 5+ hours every week on cross-email management
+            Save 5+ Hours Weekly & Eliminate Email Overwhelm
           </Badge>
         </div>
 
@@ -52,7 +52,7 @@ export default function LandingPage() {
               transition={{duration: 0.8, ease: "easeOut"}}
               className="text-4xl md:text-5xl lg:text-6xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-gray-800 via-gray-500 to-gray-600 mb-6 pb-2"
             >
-              Shield Yourself From Non-Relevant Messages
+              Manage Emails with Your Personal AI Front Desk
             </motion.h1>
 
             <div className="mt-16 mx-auto max-w-5xl rounded-2xl overflow-hidden border border-gray-200 shadow-xl mb-8">
