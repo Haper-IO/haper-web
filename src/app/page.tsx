@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronDown, CheckCircle, MessageSquare, Clock, Filter, Zap, Tag, Compass, ThumbsUp } from 'lucide-react'
 import { Accordion } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
+import Image from 'next/image'
 
 import { FeatureCard } from "@/components/feature-card";
 import { FAQItem } from "@/components/faq-item";
@@ -56,9 +57,14 @@ export default function LandingPage() {
             </motion.h1>
 
             <div className="mt-16 mx-auto max-w-5xl rounded-2xl overflow-hidden border border-gray-200 shadow-xl mb-8">
-              <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
-                <p className="text-gray-400">Replace this placeholder with your app screenshot</p>
-              </div>
+              <Image 
+                src="/haper_homepage_1.png"
+                alt="Haper Email Summary Interface"
+                width={1000}
+                height={500}
+                className="w-full object-contain"
+                priority
+              />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
