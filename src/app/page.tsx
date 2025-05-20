@@ -29,8 +29,8 @@ export default function LandingPage() {
       <NavigationUnauthenticated/>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen py-24 md:py-32 bg-slate-50/75">
-        <div className="flex items-center space-x-2 mt-4 justify-center mb-4">
+      <section className="relative min-h-screen py-8 md:py-16 bg-slate-50/75">
+        <div className="flex items-center space-x-2 justify-center mb-4">
           <Badge className={"mb-4 bg-slate-50"} variant="homepage_section" size="lg">
             <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
               <motion.div
@@ -51,12 +51,12 @@ export default function LandingPage() {
               initial={{opacity: 0, y: 20}}
               animate={{opacity: 1, y: 0}}
               transition={{duration: 0.8, ease: "easeOut"}}
-              className="text-4xl md:text-5xl lg:text-6xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-gray-800 via-gray-500 to-gray-600 mb-6 pb-2"
+              className="text-4xl md:text-5xl lg:text-6xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-gray-800 via-gray-500 to-gray-600 mb-4 pb-1"
             >
               Manage Emails with Your Personal AI Front Desk
             </motion.h1>
 
-            <div className="mt-16 mx-auto max-w-5xl rounded-2xl overflow-hidden border border-gray-200 shadow-xl mb-8">
+            <div className="mt-8 mx-auto max-w-5xl rounded-2xl overflow-hidden border border-gray-200 shadow-xl mb-8">
               <Image 
                 src="/haper_homepage_1.png"
                 alt="Haper Email Summary Interface"
@@ -120,21 +120,24 @@ export default function LandingPage() {
             <FeatureCard
               icon={<MessageSquare className="h-6 w-6 text-gray-600"/>}
               title="Chat Interface"
-              description="Coming soon: Interact with your emails through a natural chat interface for quick actions."
+              description="Interact with your emails through a natural chat interface for quick actions."
+              badge={<Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 shadow-none" size="sm">Coming soon</Badge>}
               delay={0.4}
             />
 
             <FeatureCard
               icon={<Tag className="h-6 w-6 text-gray-600"/>}
               title="Topic Tracking"
-              description="Coming soon: Keep track of key topics across your emails without manual sorting."
+              description="Keep track of key topics across your emails without manual sorting."
+              badge={<Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 shadow-none" size="sm">Coming soon</Badge>}
               delay={0.5}
             />
 
             <FeatureCard
               icon={<CheckCircle className="h-6 w-6 text-gray-600"/>}
               title="Auto Organization"
-              description="Coming soon: Let Haper clean and categorize your inbox automatically."
+              description="Let Haper clean and categorize your inbox automatically."
+              badge={<Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 shadow-none" size="sm">Coming soon</Badge>}
               delay={0.6}
             />
           </div>
