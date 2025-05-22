@@ -1,7 +1,7 @@
 'use client'
 
 import {motion} from 'framer-motion'
-import {useUserInfo} from '@/hooks/useUserInfo'
+import {useUserInfo} from '@/hooks/user-info'
 import {Badge} from "@/components/ui/badge"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
@@ -80,7 +80,6 @@ export default function MyInterestsPage() {
       key_message_tags: selectedTags
     };
 
-    // Update settings (will create if doesn't exist)
     updateSetting(requestBody);
 
     setIsEditingTags(false);
