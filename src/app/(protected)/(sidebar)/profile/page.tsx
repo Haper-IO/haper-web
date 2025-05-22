@@ -1,7 +1,7 @@
 'use client'
 
 import {motion} from 'framer-motion'
-import {useUserInfo} from '@/hooks/useUserInfo'
+import {useUserInfo} from '@/hooks/user-info'
 import {Badge} from "@/components/ui/badge"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
@@ -11,7 +11,6 @@ import {Input} from "@/components/ui/input"
 import React, {useState, useEffect} from "react"
 import {
   getUserSettings,
-  createUserSettings,
   updateUserSettings,
   UserSettings,
 } from "@/lib/requests/client/user-settings"
@@ -39,19 +38,6 @@ export default function MyInterestsPage() {
     }).finally(() => {
       setIsLoadingSetting(false)
     })
-  }
-
-  const createSetting = (settings: UserSettings) => {
-    if (isLoadingSetting) {
-      return
-    }
-    setIsLoadingSetting(true)
-    createUserSettings(settings).then((resp) => {
-      setUserSetting(resp.data.setting)
-    }).finally(() => {
-      setIsLoadingSetting(false)
-    })
-
   }
 
   const updateSetting = (settings: UserSettings) => {
@@ -92,12 +78,7 @@ export default function MyInterestsPage() {
       key_message_tags: selectedTags
     };
 
-    // Fix the check for existing settings
-    if (userSetting) {
-      updateSetting(requestBody);
-    } else {
-      createSetting(requestBody);
-    }
+    updateSetting(requestBody);
 
     setIsEditingTags(false);
   };

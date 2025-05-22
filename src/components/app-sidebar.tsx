@@ -24,7 +24,7 @@ import {Logo_sm} from "@/icons/logo"
 import {useRouter} from "next/navigation"
 import {getReportHistory} from "@/lib/requests/client/report"
 import {Report} from "@/lib/modal/report"
-import { useUserInfo } from "@/hooks/useUserInfo"
+import { useUserInfo } from "@/hooks/user-info"
 
 // Original data for NavMain, NavProjects, and NavSecondary components
 const data = {

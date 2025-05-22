@@ -1,6 +1,6 @@
 'use client'
 
-import {useUserInfo} from '@/hooks/useUserInfo'
+import {useUserInfo} from '@/hooks/user-info'
 import {Badge} from "@/components/ui/badge"
 import {Label} from "@/components/ui/label"
 import {Input} from "@/components/ui/input"
