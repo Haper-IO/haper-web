@@ -20,6 +20,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
 import {Logo_sm} from "@/icons/logo"
 import {useRouter} from "next/navigation"
 import {getReportHistory} from "@/lib/requests/client/report"
@@ -80,8 +81,8 @@ function ReportHistorySection() {
   };
 
   return (
-    <div className="mb-4">
-      <div className="px-3 py-2">
+    <div>
+      <div className="px-3 py-1.5">
         <h3 className="text-xs font-semibold text-sidebar-foreground/70">Reports</h3>
       </div>
 
@@ -90,15 +91,15 @@ function ReportHistorySection() {
           <Loader2 className="h-4 w-4 animate-spin text-sidebar-foreground/40"/>
         </div>
       ) : (
-        <div className="mt-1">
+        <div>
           {reports.length > 0 ? (
             <>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {reports.map((report) => (
                   <button
                     key={report.id}
                     onClick={() => handleSelectReport(report.id)}
-                    className={`flex items-start w-full px-4 py-2 text-xs text-left text-sidebar-foreground/80 hover:bg-sidebar-secondary/30 ${
+                    className={`flex items-start w-full px-4 py-1.5 text-xs text-left text-sidebar-foreground/80 hover:bg-sidebar-secondary/30 ${
                       report.id === currentReportId ? "bg-sidebar-secondary/40 text-sidebar-foreground" : ""
                     }`}
                   >
@@ -119,7 +120,7 @@ function ReportHistorySection() {
               </div>
               <a
                 href="/history"
-                className="flex items-center justify-start w-full px-4 py-2 mt-1 text-xs font-medium text-slate-400"
+                className="flex items-center justify-start w-full px-4 py-1.5 mt-2 text-xs font-medium text-slate-400 hover:text-slate-500 transition-colors"
               >
                 View all reports
               </a>
@@ -140,10 +141,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar variant="inset" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="pb-1.5">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="lg" asChild className="py-2.5">
               <a href="/dashboard">
                 <div className="">
                   <Logo_sm />
@@ -153,15 +154,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className="py-2">
-        <NavMain items={data.navMain} />
-        <div className="mt-4">
+      <SidebarContent className="py-0 flex flex-col gap-1">
+        <div className="py-1">
+          <NavMain items={data.navMain} />
+        </div>
+        <Separator className="my-2 bg-gray-200/70" />
+        <div>
           <ReportHistorySection />
         </div>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-gray-200/70 pt-1.5">
         {userLoading ? (
-          <div className="p-3 flex items-center justify-center">
+          <div className="p-2.5 flex items-center justify-center">
             <Loader2 className="h-5 w-5 animate-spin text-sidebar-foreground/40"/>
           </div>
         ) : (
