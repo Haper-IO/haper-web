@@ -312,10 +312,18 @@ export function LatestSummary() {
                       <div className="h-[180px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
+                            <defs>
+                              <linearGradient id="essentialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#64748b" />
+                                <stop offset="30%" stopColor="#475569" />
+                                <stop offset="70%" stopColor="#334155" />
+                                <stop offset="100%" stopColor="#0f172a" />
+                              </linearGradient>
+                            </defs>
                             <Pie
                               data={[
-                                { name: 'Essential', value: reportStatsData.essentialCount, color: '#10b981' },
-                                { name: 'Non-essential', value: reportStatsData.nonEssentialCount, color: '#94a3b8' },
+                                { name: 'Essential', value: reportStatsData.essentialCount, color: '#475569' },
+                                { name: 'Non-essential', value: reportStatsData.nonEssentialCount, color: '#cbd5e1' },
                               ]}
                               cx="50%"
                               cy="50%"
@@ -324,8 +332,8 @@ export function LatestSummary() {
                               paddingAngle={2}
                               dataKey="value"
                             >
-                              <Cell fill="#10b981" />
-                              <Cell fill="#94a3b8" />
+                              <Cell fill="url(#essentialGradient)" />
+                              <Cell fill="#cbd5e1" />
                             </Pie>
                             <Tooltip
                               formatter={(value: number) => [`${value} emails`, '']}
@@ -346,37 +354,37 @@ export function LatestSummary() {
                     {/* Stats breakdown - takes 7/12 on medium screens */}
                     <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
                       <h4 className="text-sm font-medium text-slate-700 mb-3">Email Categories</h4>
-                      <div className="space-y-4">
-                        {/* Essential emails with count */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="h-3 w-3 rounded-sm bg-emerald-500"></div>
-                              <span className="text-sm font-medium text-slate-700">Essential</span>
+                                              <div className="space-y-4">
+                          {/* Essential emails with count */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-sm bg-gradient-to-br from-slate-500 via-slate-600 to-slate-900"></div>
+                                <span className="text-sm font-medium text-slate-700">Essential</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm tabular-nums font-medium bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
+                                  {reportStatsData.essentialCount}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm tabular-nums font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md">
-                                {reportStatsData.essentialCount}
-                              </span>
+                          </div>
+                          
+                          {/* Non-essential emails with count */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-sm bg-slate-300"></div>
+                                <span className="text-sm font-medium text-slate-700">Non-essential</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm tabular-nums font-medium bg-slate-50 text-slate-600 px-2.5 py-1 rounded-md">
+                                  {reportStatsData.nonEssentialCount}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        
-                        {/* Non-essential emails with count */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="h-3 w-3 rounded-sm bg-slate-400"></div>
-                              <span className="text-sm font-medium text-slate-700">Non-essential</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm tabular-nums font-medium bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
-                                {reportStatsData.nonEssentialCount}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -396,7 +404,7 @@ export function LatestSummary() {
                 }}
                 disabled={!report || reportLoading || isGenerating}
                 size="sm"
-                className="bg-slate-600/90 hover:bg-slate-500/90"
+                className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white shadow-md"
               >
                 Generate Report
               </Button>

@@ -99,14 +99,14 @@ function ReportHistorySection() {
                   // Format date and time separately
                   const date = new Date(report.created_at);
                   const formattedDate = date.toLocaleString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric',
                   });
                   const formattedTime = date.toLocaleString('en-US', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    hour12: true
+                          hour: 'numeric',
+                          minute: 'numeric',
+                          hour12: true
                   });
                   
                   return (
@@ -120,8 +120,8 @@ function ReportHistorySection() {
                       <div className="w-full flex justify-between">
                         <span className="font-medium">{formattedDate}</span>
                         <span className="text-sidebar-foreground/50">{formattedTime}</span>
-                      </div>
-                    </button>
+                    </div>
+                  </button>
                   );
                 })}
               </div>
