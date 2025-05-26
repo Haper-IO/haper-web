@@ -41,6 +41,17 @@
     --sidebar-secondary: 220 13% 91%;
   }
   
+  /* Prevent overscroll background issue */
+  html, body {
+    overscroll-behavior: none;
+    background-color: white;
+  }
+  
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
   /* Sidebar dark theme */
   .sidebar-dark {
     --sidebar-background: 215 28% 17%; /* dark blue-gray */
