@@ -95,32 +95,39 @@ function ReportHistorySection() {
           {reports.length > 0 ? (
             <>
               <div className="space-y-1">
-                {reports.map((report) => (
-                  <button
-                    key={report.id}
-                    onClick={() => handleSelectReport(report.id)}
-                    className={`flex items-start w-full px-4 py-1.5 text-xs text-left text-sidebar-foreground/80 hover:bg-sidebar-secondary/30 ${
-                      report.id === currentReportId ? "bg-sidebar-secondary/40 text-sidebar-foreground" : ""
-                    }`}
-                  >
-                    <div className="w-full overflow-hidden">
-                      <p className="font-medium truncate">
-                        {new Date(report.created_at).toLocaleString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: 'numeric',
-                          minute: 'numeric',
-                          hour12: true
-                        })}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                {reports.map((report) => {
+                  // Format date and time separately
+                  const date = new Date(report.created_at);
+                  const formattedDate = date.toLocaleString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                  });
+                  const formattedTime = date.toLocaleString('en-US', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true
+                  });
+                  
+                  return (
+                    <button
+                      key={report.id}
+                      onClick={() => handleSelectReport(report.id)}
+                      className={`flex items-center w-full px-4 py-1.5 text-xs text-left hover:bg-sidebar-secondary/30 ${
+                        report.id === currentReportId ? "bg-sidebar-secondary/40 text-sidebar-foreground" : "text-sidebar-foreground/80"
+                      }`}
+                    >
+                      <div className="w-full flex justify-between">
+                        <span className="font-medium">{formattedDate}</span>
+                        <span className="text-sidebar-foreground/50">{formattedTime}</span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
               <a
                 href="/history"
-                className="flex items-center justify-start w-full px-4 py-1.5 mt-2 text-xs font-medium text-slate-400 hover:text-slate-500 transition-colors"
+                className="flex items-center justify-start w-full px-4 py-1.5 mt-2 text-xs font-medium text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors"
               >
                 View all reports
               </a>
@@ -140,11 +147,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userInfo, loading: userLoading } = useUserInfo();
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar 
+      variant="inset" 
+      className="sidebar-dark"
+      {...props}
+    >
       <SidebarHeader className="pb-1.5">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="py-2.5">
+            <SidebarMenuButton size="lg" asChild>
               <a href="/dashboard">
                 <div className="">
                   <Logo_sm />
@@ -158,12 +169,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="py-1">
           <NavMain items={data.navMain} />
         </div>
-        <Separator className="my-2 bg-gray-200/70" />
+        <Separator className="my-2 bg-sidebar-border" />
         <div>
           <ReportHistorySection />
         </div>
       </SidebarContent>
-      <SidebarFooter className="border-t border-gray-200/70 pt-1.5">
+      <SidebarFooter className="border-t border-sidebar-border pt-1.5">
         {userLoading ? (
           <div className="p-2.5 flex items-center justify-center">
             <Loader2 className="h-5 w-5 animate-spin text-sidebar-foreground/40"/>

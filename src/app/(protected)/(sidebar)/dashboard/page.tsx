@@ -48,8 +48,8 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="space-y-4 backdrop-blur-[1px]">
+      <div className="flex flex-1 flex-col gap-3 p-2 pt-0">
+        <div className="space-y-3 backdrop-blur-[1px]">
           {/* Message Tracking Status Section */}
           <StatusCard />
           {/* Latest Summary Section */}

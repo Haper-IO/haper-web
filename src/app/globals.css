@@ -38,7 +38,46 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-secondary: 220 13% 91%;
   }
+  
+  /* Sidebar dark theme */
+  .sidebar-dark {
+    --sidebar-background: 215 28% 17%; /* dark blue-gray */
+    --sidebar-foreground: 210 40% 98%; /* near white */
+    --sidebar-primary: 210 100% 52%; /* bright blue */
+    --sidebar-primary-foreground: 0 0% 100%; /* white */
+    --sidebar-accent: 215 25% 27%; /* lighter blue-gray for accent elements */
+    --sidebar-accent-foreground: 210 40% 98%; /* near white */
+    --sidebar-border: 217 19% 27%; /* darker border color */
+    --sidebar-ring: 217.2 91.2% 59.8%; /* keep the same ring color */
+    --sidebar-secondary: 215 25% 27%; /* secondary background for hover states */
+    --sidebar-muted: 220 8% 56%; /* muted text color */
+  }
+  
+  /* Sidebar Dark Theme Button Overrides */
+  .sidebar-dark [data-sidebar="menu-button"] {
+    color: hsl(var(--sidebar-foreground));
+  }
+  
+  .sidebar-dark [data-sidebar="menu-button"]:hover {
+    background-color: hsl(var(--sidebar-accent) / 0.5);
+    color: hsl(var(--sidebar-foreground));
+  }
+  
+  .sidebar-dark [data-sidebar="menu-button"][data-active="true"] {
+    background-color: hsl(var(--sidebar-accent) / 0.7);
+    color: hsl(var(--sidebar-foreground));
+  }
+  
+  .sidebar-dark [data-sidebar="footer"] button {
+    color: hsl(var(--sidebar-foreground));
+  }
+  
+  .sidebar-dark [data-sidebar="footer"] button:hover {
+    background-color: hsl(var(--sidebar-accent) / 0.5);
+  }
+  
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -72,6 +111,7 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-secondary: 240 3.7% 15.9%;
   }
 }
 
