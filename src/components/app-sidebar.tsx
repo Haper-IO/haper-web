@@ -21,8 +21,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import {Logo_sm} from "@/icons/logo"
-import {useRouter} from "next/navigation"
+import {Logo_md_light} from "@/icons/logo"
+import {useRouter, usePathname} from "next/navigation"
 import {getReportHistory} from "@/lib/requests/client/report"
 import {Report} from "@/lib/modal/report"
 import { useUserInfo } from "@/hooks/useUserInfo"
@@ -145,6 +145,29 @@ function ReportHistorySection() {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userInfo, loading: userLoading } = useUserInfo();
+  const pathname = usePathname();
+
+  // Create navigation items with active state based on current path
+  const navItems = [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboard,
+      isActive: pathname === "/dashboard" || pathname.startsWith("/dashboard/"),
+    },
+    {
+      title: "My Interests",
+      url: "/interests",
+      icon: Heart,
+      isActive: pathname === "/interests" || pathname.startsWith("/interests/"),
+    },
+    {
+      title: "History",
+      url: "/history",
+      icon: Clock,
+      isActive: pathname === "/history" || pathname.startsWith("/history/"),
+    },
+  ];
 
   return (
     <Sidebar 
@@ -157,8 +180,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="/dashboard">
-                <div className="">
-                  <Logo_sm />
+                <div className="flex items-center justify-center">
+                  <Logo_md_light />
                 </div>
               </a>
             </SidebarMenuButton>
@@ -166,8 +189,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="py-0 flex flex-col gap-1">
+        <Separator className="my-2 bg-sidebar-border" />
         <div className="py-1">
-          <NavMain items={data.navMain} />
+          <NavMain items={navItems} />
         </div>
         <Separator className="my-2 bg-sidebar-border" />
         <div>
