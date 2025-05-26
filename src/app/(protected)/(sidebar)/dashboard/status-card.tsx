@@ -227,23 +227,18 @@ export function StatusCard() {
       <Card className="pb-2">
         <CardHeader className="flex flex-row justify-start items-center gap-4 space-y-0">
           <Badge variant="default" size="md">Status</Badge>
-          <div className="flex items-center gap-4">
-            {!isStatusExpanded && runningProviders.length > 0 && (
-              <span className="text-sm text-slate-600">
-                {runningProviders.map(({provider, count}) => (
-                  <span key={provider} className="flex items-center gap-2 mr-2">
-                    {provider === 'google' ? (
-                      <GmailIcon className="h-4 w-4"/>
-                    ) : provider === 'microsoft' ? (
-                      <OutlookIcon className="h-4 w-4"/>
-                    ) : null}
-                    <span
-                      className="text-slate-500 font-medium text-sm">Tracking {count} {count === 1 ? "Email" : "Emails"} Now</span>
-                  </span>
-                ))}
-              </span>
-            )}
-          </div>
+          
+          {!isStatusExpanded && runningProviders.length > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+              <div className="flex items-center">
+                <Badge variant="outline" className="text-xs font-medium bg-white/70 border-slate-200">
+                  {runningProviders.reduce((total, {count}) => total + count, 0)} active
+                </Badge>
+              </div>
+            </div>
+          )}
+          
           <div className="ml-auto flex items-center gap-2">
             <Button
               id="user-guide-step1"

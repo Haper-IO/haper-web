@@ -1,6 +1,6 @@
 "use client"
 
-import {LatestSummary, LastReport} from "@/app/(protected)/(sidebar)/dashboard/dashboard-cards"
+import {LatestSummary} from "@/app/(protected)/(sidebar)/dashboard/dashboard-cards"
 import {StatusCard} from "@/app/(protected)/(sidebar)/dashboard/status-card"
 import {
   Breadcrumb,
@@ -54,8 +54,6 @@ export default function DashboardPage() {
           <StatusCard />
           {/* Latest Summary Section */}
           <LatestSummary/>
-          {/* Last Report Section */}
-          <LastReport/>
         </div>
       </div>
     </>
