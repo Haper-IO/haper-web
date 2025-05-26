@@ -226,7 +226,7 @@ export function StatusCard() {
       {/* Message Tracking Status Section */}
       <Card className="pb-2">
         <CardHeader className="flex flex-row justify-start items-center gap-4 space-y-0">
-          <Badge variant="default" size="md">Status</Badge>
+          <Badge variant="outline" size="md" className="bg-slate-50 text-slate-700 border-slate-300 font-medium">Status</Badge>
           
           {!isStatusExpanded && runningProviders.length > 0 && (
             <div className="flex items-center gap-2">
@@ -250,17 +250,6 @@ export function StatusCard() {
             >
               <PlusCircle className="h-4 w-4" />
               <span>Add Account</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={fetchTrackingStatus}
-              disabled={isFetchingTrackingStatus}
-              title="Refresh status"
-            >
-              <RefreshCw className={`h-4 w-4 ${isFetchingTrackingStatus ? 'animate-spin' : ''}`}/>
-              <span className="sr-only">Refresh</span>
             </Button>
             <Button
               variant="ghost"
@@ -312,7 +301,8 @@ export function StatusCard() {
                           <Badge 
                             variant={account.status === "Ongoing" ? "outline" : 
                                   account.status === "Error" ? "destructive" : "outline"} 
-                            className={`text-xs h-5 ml-1.5 ${
+                            size="md"
+                            className={`ml-1.5 ${
                               account.status === "Ongoing" ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" : ""
                             }`}
                           >
@@ -361,7 +351,8 @@ export function StatusCard() {
                           <span className="text-sm text-gray-500">No account connected</span>
                           <Badge 
                             variant="outline" 
-                            className="text-xs h-5 ml-1.5 text-gray-500"
+                            size="md"
+                            className="ml-1.5 text-gray-500"
                           >
                             Not Connected
                           </Badge>

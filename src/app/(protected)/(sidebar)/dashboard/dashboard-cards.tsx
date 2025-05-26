@@ -16,7 +16,42 @@ import {Skeleton} from "@/components/ui/skeleton"
 import {GmailIcon, OutlookIcon} from "@/icons/provider-icons"
 import {WaitingIllustration} from "@/icons/illustrations";
 import RichContent from "@/components/rich-content";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
+// Utility function for hybrid time formatting
+function formatUpdateTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  // Less than 1 hour: show minutes
+  if (diffInMinutes < 60) {
+    if (diffInMinutes < 1) return "Updated just now";
+    return `Updated ${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+  }
+  
+  // Less than 24 hours: show hours
+  if (diffInHours < 24) {
+    return `Updated ${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+  }
+  
+  // Less than 7 days: show days
+  if (diffInDays < 7) {
+    return `Updated ${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+  }
+  
+  // 7+ days: show absolute time
+  return `Updated ${date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }).replace(',', ' |')}`;
+}
 
 export function transToReportSummary(report: Report) {
   if (!report) {
@@ -78,7 +113,7 @@ export function transToReportSummary(report: Report) {
 
   return {
     title: "",
-    updateTime: new Date(report.created_at).toLocaleString(),
+    updateTime: formatUpdateTime(report.created_at),
     summaries: summaryContent,
     accountReports,
     totalCounts
@@ -199,10 +234,10 @@ export function LatestSummary() {
   return (
     <Card id="user-guide-step3">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-        <Badge variant="emphasis" size="md">Latest Summary</Badge>
+        <Badge variant="outline" size="md" className="bg-slate-50 text-slate-700 border-slate-300 font-medium">Latest Summary</Badge>
         {report ? (
           <Badge variant="secondary" size="md">
-            Updated {new Date(report.created_at).toLocaleString()}
+            {formatUpdateTime(report.created_at)}
           </Badge>
         ) : reportLoading || isGenerating ? (
           <Skeleton className="h-6 w-32"/>
@@ -225,135 +260,154 @@ export function LatestSummary() {
         </div>
       </CardHeader>
 
-      <div>
-        <div className="flex flex-col md:flex-row flex-wrap gap-4">
-          {/* Email Summary */}
-          <CardContent className="flex-1 min-w-[300px] space-y-4 md:min-w-[420px] ">
-            {reportLoading || isGenerating ? (
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-64"/>
-                <Skeleton className="h-24 w-full"/>
-                {isGenerating && (
-                  <p className="text-sm text-slate-600">Generating new report...</p>
-                )}
+      {/* Improved layout structure */}
+      <div className="px-6 pb-6">
+        {reportLoading || isGenerating ? (
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-64"/>
+            <Skeleton className="h-24 w-full"/>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <Skeleton className="h-32 w-full rounded-md"/>
+              <Skeleton className="h-32 w-full rounded-md"/>
+            </div>
+            {isGenerating && (
+              <p className="text-sm text-slate-600 mt-2">Generating new report...</p>
+            )}
+          </div>
+        ) : reportError ? (
+          <div className="px-4 py-4 bg-red-50/90 text-red-800 rounded-md backdrop-blur-[2px]">
+            <p className="text-sm">{reportError}</p>
+            <div className="flex gap-2 mt-3">
+              <Button variant="outline" size="sm" onClick={handleGenerateReport}>
+                Try Again
+              </Button>
+            </div>
+          </div>
+        ) : reportSummaryData ? (
+          <div className="space-y-6">
+            {/* Report summary content */}
+            <div className="bg-white/70 backdrop-blur-[2px] rounded-lg shadow-sm border border-slate-200/70 overflow-hidden">
+              <div className="px-4 py-4">
+                {report && report.content && report.content.summary && 
+                  <RichContent richTextList={report.content.summary}></RichContent>
+                }
+                {report && report.content.summary == null &&
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <WaitingIllustration className="h-24 w-24 sm:h-32 sm:w-32 flex-shrink-0"/>
+                    <div className="bg-slate-50/70 backdrop-blur-[2px] rounded-md p-4 border border-slate-200/60 flex-1">
+                      <p className="text-sm text-gray-500">
+                        Haper tracks your emails since the last report generation. If the summary is still empty after refreshing, please wait for incoming emails and try again later.
+                      </p>
+                    </div>
+                  </div>
+                }
               </div>
-            ) : reportError ? (
-              <div className="px-3 py-3 bg-red-50/90 text-red-800 rounded-md backdrop-blur-[2px]">
-                <p className="text-sm">{reportError}</p>
-                <div className="flex gap-2 mt-2">
-                  <Button variant="outline" size="sm" onClick={handleGenerateReport}>
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            ) : reportSummaryData ? (
-              <>
-                <div
-                  className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
-                  {report && report.content && report.content.summary && <RichContent richTextList={report.content.summary}></RichContent>}
-                  {report && report.content.summary == null &&
-                    <div className={"flex flex-row items-center justify-between gap-6"}>
-                      <WaitingIllustration/>
-                      <div className="bg-slate-50/70 backdrop-blur-[2px] rounded-md p-4 border border-slate-200/60">
-                        <p className="text-sm text-gray-500">Haper tracks your emails since the last report generation. If the summary is still empty after refreshing, please wait for incoming emails and try again later.
-                        </p>
+              
+              {/* Stats and chart in a nice grid layout */}
+              {reportStatsData && (reportStatsData.essentialCount > 0 || reportStatsData.nonEssentialCount > 0) && (
+                <div className="border-t border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4">
+                    {/* Chart visualization - takes 5/12 on medium screens */}
+                    <div className="md:col-span-5 lg:col-span-4 flex justify-center items-center">
+                      <div className="h-[180px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: 'Essential', value: reportStatsData.essentialCount, color: '#10b981' },
+                                { name: 'Non-essential', value: reportStatsData.nonEssentialCount, color: '#94a3b8' },
+                              ]}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={40}
+                              outerRadius={70}
+                              paddingAngle={2}
+                              dataKey="value"
+                            >
+                              <Cell fill="#10b981" />
+                              <Cell fill="#94a3b8" />
+                            </Pie>
+                            <Tooltip
+                              formatter={(value: number) => [`${value} emails`, '']}
+                              contentStyle={{
+                                backgroundColor: 'white',
+                                borderRadius: '0.375rem',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                                padding: '0.5rem 0.75rem',
+                                fontSize: '0.875rem',
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
                       </div>
                     </div>
-                  }
-                </div>
-                {/* Button Section */}
-                <div className="pt-3 flex justify-center sm:justify-start">
-                  <Button
-                    variant="default"
-                    onClick={() => {
-                      generateReport().then((resp) => {
-                        if (resp.data.report?.id) {
-                          router.push(`/report/${resp.data.report.id}`);
-                        }
-                      })
-                    }}
-                    disabled={!report || reportLoading || isGenerating}
-                    size="sm"
-                    className="bg-slate-600/90 hover:bg-slate-500/90"
-                  >
-                    Generate Report
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="px-3 py-3 bg-white/70 backdrop-blur-[2px] rounded-md border border-slate-200/70">
-                <p className="text-sm text-gray-600">No report data available. Click the + button generate a new
-                  report for testing.</p>
-              </div>
-            )}
-          </CardContent>
-
-          {/* Message Stats Statistics */}
-          <CardContent className="flex min-w-[300px] md:min-w-[300px]">
-            {reportLoading || isGenerating ? (
-              <div className="flex">
-                <Skeleton className="h-40 w-40 rounded-full"/>
-              </div>
-            ) : reportStatsData && reportStatsData.essentialCount > 0 ? (
-              <div className="flex flex-col lg:flex-row items-center gap-8">
-                <div className="relative h-40 w-40">
-                  <svg className="h-full w-full" viewBox="0 0 36 36">
-                    {/* Background circle */}
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4"/>
-                    {/* Non-essential segment */}
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="16"
-                      fill="none"
-                      className="stroke-slate-400/80"
-                      strokeWidth="4"
-                      strokeDasharray={`${reportStatsData.nonEssentialPercentage} 100`}
-                      transform="rotate(-90 18 18)"
-                    />
-                    {/* Essential segment */}
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="16"
-                      fill="none"
-                      className="stroke-lime-400/80"
-                      strokeWidth="4"
-                      strokeDasharray={`${reportStatsData.essentialPercentage} 100`}
-                      transform={`rotate(${reportStatsData.nonEssentialPercentage * 3.6 - 90} 18 18)`}
-                    />
-                  </svg>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-lime-400/90"/>
-                    <span className="text-sm text-gray-600">
-                    Essential ({reportStatsData.essentialCount})
-                    </span>
-                    <span className="ml-auto text-sm font-medium">
-                    {Math.round(reportStatsData.essentialPercentage)}%
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-slate-400/80"/>
-                    <span className="text-sm text-gray-600">
-                    Non-essential ({reportStatsData.nonEssentialCount})
-                    </span>
-                    <span className="ml-auto text-sm font-medium">
-                    {Math.round(reportStatsData.nonEssentialPercentage)}%
-                    </span>
+                    
+                    {/* Stats breakdown - takes 7/12 on medium screens */}
+                    <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
+                      <h4 className="text-sm font-medium text-slate-700 mb-3">Email Categories</h4>
+                      <div className="space-y-4">
+                        {/* Essential emails with count */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="h-3 w-3 rounded-sm bg-emerald-500"></div>
+                              <span className="text-sm font-medium text-slate-700">Essential</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm tabular-nums font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md">
+                                {reportStatsData.essentialCount}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Non-essential emails with count */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="h-3 w-3 rounded-sm bg-slate-400"></div>
+                              <span className="text-sm font-medium text-slate-700">Non-essential</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm tabular-nums font-medium bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
+                                {reportStatsData.nonEssentialCount}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center">
-                  <p className="text-sm text-gray-500">
-                    No Statistics available. Click refresh to track newest update.
-                  </p>
-              </div>
-            )}
-          </CardContent>
-        </div>
+              )}
+            </div>
+            
+            {/* Button Section */}
+            <div className="flex justify-center sm:justify-start">
+              <Button
+                variant="default"
+                onClick={() => {
+                  generateReport().then((resp) => {
+                    if (resp.data.report?.id) {
+                      router.push(`/report/${resp.data.report.id}`);
+                    }
+                  })
+                }}
+                disabled={!report || reportLoading || isGenerating}
+                size="sm"
+                className="bg-slate-600/90 hover:bg-slate-500/90"
+              >
+                Generate Report
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md border border-slate-200/70">
+            <p className="text-sm text-gray-600">No report data available. Click the + button generate a new
+              report for testing.</p>
+          </div>
+        )}
       </div>
     </Card>
   );
@@ -451,10 +505,10 @@ export function LastReport({ report: providedReport }: { report?: Report }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-        <Badge variant="default" size="md">{providedReport ? "Report" : "Last Report"}</Badge>
+        <Badge variant="outline" size="md" className="bg-slate-50 text-slate-700 border-slate-300 font-medium">{providedReport ? "Report" : "Last Report"}</Badge>
         {report ? (
           <Badge variant="secondary" size="md">
-            {new Date(report.created_at).toLocaleString()}
+            {formatUpdateTime(report.created_at)}
           </Badge>
         ) : reportLoading ? (
           <Skeleton className="h-6 w-32"/>
