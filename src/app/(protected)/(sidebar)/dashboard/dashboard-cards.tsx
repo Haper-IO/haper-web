@@ -77,7 +77,7 @@ export function transToReportSummary(report: Report) {
   }
 
   return {
-    title: "Email Summary Report",
+    title: "",
     updateTime: new Date(report.created_at).toLocaleString(),
     summaries: summaryContent,
     accountReports,
@@ -197,7 +197,7 @@ export function LatestSummary() {
   };
 
   return (
-    <Card id="user-guide-step3" className="bg-slate-200/40 backdrop-blur-[2px]">
+    <Card id="user-guide-step3">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="emphasis" size="md">Latest Summary</Badge>
         {report ? (
@@ -248,7 +248,6 @@ export function LatestSummary() {
               </div>
             ) : reportSummaryData ? (
               <>
-                <h3 className="font-medium text-black-900">{reportSummaryData.title}</h3>
                 <div
                   className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70 max-w-[800px]">
                   {report && report.content && report.content.summary && <RichContent richTextList={report.content.summary}></RichContent>}
@@ -261,7 +260,6 @@ export function LatestSummary() {
                       </div>
                     </div>
                   }
-
                 </div>
                 {/* Button Section */}
                 <div className="pt-3 flex justify-center sm:justify-start">
@@ -281,23 +279,6 @@ export function LatestSummary() {
                     Generate Report
                   </Button>
                 </div>
-
-                {/* Display provider information if available */}
-                {(hasGmail || hasOutlook) && (
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>Data sources:</span>
-                    {hasGmail && (
-                      <span className="flex items-center gap-1">
-                      <GmailIcon className="h-3 w-3"/>
-                    </span>
-                    )}
-                    {hasOutlook && (
-                      <span className="flex items-center gap-1">
-                      <OutlookIcon className="h-3 w-3"/>
-                    </span>
-                    )}
-                  </div>
-                )}
               </>
             ) : (
               <div className="px-3 py-3 bg-white/70 backdrop-blur-[2px] rounded-md border border-slate-200/70">
@@ -468,7 +449,7 @@ export function LastReport({ report: providedReport }: { report?: Report }) {
   }, [providedReport]);
 
   return (
-    <Card className="bg-slate-200/40 backdrop-blur-[2px]">
+    <Card>
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <Badge variant="default" size="md">{providedReport ? "Report" : "Last Report"}</Badge>
         {report ? (
