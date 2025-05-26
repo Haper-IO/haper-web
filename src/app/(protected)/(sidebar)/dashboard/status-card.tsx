@@ -31,7 +31,7 @@ export function StatusCard() {
   const [startDialogOpen, setStartDialogOpen] = useState(false)
   const [stopDialogOpen, setStopDialogOpen] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<TrackingStatus | null>(null)
-  const [isStatusExpanded, setIsStatusExpanded] = useState(true);
+  const [isStatusExpanded, setIsStatusExpanded] = useState(false); // Will be set based on first-time user logic
   const [addAccountDialogOpen, setAddAccountDialogOpen] = useState(false)
   const [selectedProviderForAdd, setSelectedProviderForAdd] = useState("")
 
@@ -57,6 +57,17 @@ export function StatusCard() {
 
   useEffect(() => {
     fetchTrackingStatus()
+    
+    // Check if this is the first time user visits the dashboard
+    const hasVisitedBefore = localStorage.getItem('haper-dashboard-visited')
+    if (!hasVisitedBefore) {
+      // First time user - keep tracking status expanded
+      setIsStatusExpanded(true)
+      localStorage.setItem('haper-dashboard-visited', 'true')
+    } else {
+      // Returning user - keep it collapsed by default
+      setIsStatusExpanded(false)
+    }
   }, []);
 
   const handleStartTrackingToOAuth = (provider: string) => {
@@ -226,17 +237,13 @@ export function StatusCard() {
       {/* Message Tracking Status Section */}
       <Card className="pb-2">
         <CardHeader className="flex flex-row justify-start items-center gap-4 space-y-0">
-          <Badge variant="outline" size="md" className="bg-slate-50 text-slate-700 border-slate-300 font-medium">Status</Badge>
+          <Badge variant="outline" size="md" className="bg-slate-50 text-slate-700 border-slate-300 font-medium">Tracking Status</Badge>
           
           {!isStatusExpanded && runningProviders.length > 0 && (
-            <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs font-medium bg-white/70 border-slate-200 flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-              <div className="flex items-center">
-                <Badge variant="outline" className="text-xs font-medium bg-white/70 border-slate-200">
-                  {runningProviders.reduce((total, {count}) => total + count, 0)} active
-                </Badge>
-              </div>
-            </div>
+              {runningProviders.reduce((total, {count}) => total + count, 0)} active
+            </Badge>
           )}
           
           <div className="ml-auto flex items-center gap-2">
@@ -332,7 +339,7 @@ export function StatusCard() {
                               }}
                               size="sm"
                               disabled={isFetchingTrackingStatus || isStartingTracking}
-                              className="h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
+                              className="h-7 text-xs bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white shadow-md"
                             >
                               {isStartingTracking ? <Loader2 className="h-3 w-3 animate-spin mr-1"/> : <PlayCircle className="h-3 w-3 mr-1"/>}
                               Start
@@ -364,7 +371,7 @@ export function StatusCard() {
                               setAddAccountDialogOpen(true);
                             }}
                             size="sm"
-                            className="h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
+                            className="h-7 text-xs bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white shadow-md"
                           >
                             <PlusCircle className="h-3 w-3 mr-1"/>
                             Connect
