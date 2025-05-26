@@ -330,6 +330,8 @@ export function LatestSummary() {
                               innerRadius={40}
                               outerRadius={70}
                               paddingAngle={2}
+                              startAngle={90}
+                              endAngle={450}
                               dataKey="value"
                             >
                               <Cell fill="url(#essentialGradient)" />
