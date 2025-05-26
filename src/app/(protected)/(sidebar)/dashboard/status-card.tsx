@@ -224,7 +224,7 @@ export function StatusCard() {
       </AlertDialog>
 
       {/* Message Tracking Status Section */}
-      <Card className="bg-slate-200/40 backdrop-blur-2xl pb-2">
+      <Card className="pb-2">
         <CardHeader className="flex flex-row justify-start items-center gap-4 space-y-0">
           <Badge variant="default" size="md">Status</Badge>
           <div className="flex items-center gap-4">
@@ -283,12 +283,9 @@ export function StatusCard() {
         </CardHeader>
         {isStatusExpanded && (
           <CardContent id="user-guide-step2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {SupportedProviders.map((provider) => {
-                // Get all accounts for this provider
-                const accounts = trackingStatuses[provider] || [];
-
-                // If no accounts, add a placeholder
+            <div className="grid grid-cols-1 gap-3">
+              {Object.entries(trackingStatuses).flatMap(([provider, accounts]) => {
+                // If no accounts for this provider, add a placeholder
                 if (accounts.length === 0) {
                   accounts.push({
                     account_id: "",
@@ -300,90 +297,97 @@ export function StatusCard() {
                   });
                 }
 
-                // Return a single card per provider containing all accounts
-                return (
+                // Return each account as a separate item
+                return accounts.map((account, idx) => (
                   <div
-                    key={provider}
-                    className="border rounded-lg p-3 bg-slate-50/70 backdrop-blur-[2px] border-slate-200/70"
+                    key={`${provider}-${idx}`}
+                    className={`flex items-center justify-between gap-3 p-2.5 rounded-md ${
+                      account.status === "Error" ? "bg-red-50" : "bg-white/60"
+                    } border border-slate-200/70`}
                   >
-                    <div className="flex items-center gap-2 mb-3">
-                      {provider === 'google' ? (
-                        <GmailIcon className="h-4 w-4"/>
-                      ) : provider === 'microsoft' ? (
-                        <OutlookIcon className="h-4 w-4"/>
-                      ) : null}
-                      <span className="font-medium">{getProviderName(provider)}</span>
-                    </div>
-
-                    <div className="space-y-3">
-                      {accounts.map((account, idx) => (
-                        <div
-                          key={`${provider}-${idx}`}
-                          className={`flex justify-between items-center p-2 rounded-md ${
-                            account.status === "Error" ? "bg-red-50" : "bg-white/60"
-                          }`}
-                        >
-                          <div>
-                            {account.email ? (
-                              <div className="flex flex-col">
-                                <span className="text-sm">{account.email}</span>
-                                <span className="text-xs text-gray-500">
-                                  {getStatusText(account.status)}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-sm text-gray-500">No account connected</span>
-                            )}
-                          </div>
-
-                          <div>
-                            {account.account_id ? (
-                              account.status === "Ongoing" ? (
-                                <Button
-                                  onClick={() => {
-                                    setSelectedProvider(account);
-                                    setStopDialogOpen(true);
-                                  }}
-                                  variant="outline"
-                                  disabled={isFetchingTrackingStatus || isStoppingTracking}
-                                  className="flex items-center gap-1 h-7 text-xs border-slate-300/80 hover:bg-slate-100/70 text-slate-700"
-                                >
-                                  {isFetchingTrackingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> :
-                                    <StopCircle className="h-3 w-3"/>}
-                                  Stop
-                                </Button>
-                              ) : (
-                                <Button
-                                  onClick={() => {
-                                    setSelectedProvider(account);
-                                    setStartDialogOpen(true);
-                                  }}
-                                  disabled={isFetchingTrackingStatus || isStartingTracking}
-                                  className="flex items-center gap-1 h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
-                                >
-                                  {isFetchingTrackingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> :
-                                    <PlayCircle className="h-3 w-3"/>}
-                                  Start
-                                </Button>
-                              )
-                            ) : (
-                              <Button
-                                onClick={() => {
-                                  setSelectedProviderForAdd(provider);
-                                  setAddAccountDialogOpen(true);
-                                }}
-                                className="flex items-center gap-1 h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
-                              >
-                                <PlusCircle className="h-3 w-3"/>
-                                Connect
-                              </Button>
-                            )}
-                          </div>
+                    {account.email ? (
+                      <>
+                        <div className="flex items-center gap-2.5">
+                          {account.provider === 'google' ? (
+                            <GmailIcon className="h-4 w-4 shrink-0"/>
+                          ) : account.provider === 'microsoft' ? (
+                            <OutlookIcon className="h-4 w-4 shrink-0"/>
+                          ) : null}
+                          <span className="text-sm font-medium">{account.email}</span>
+                          <Badge 
+                            variant={account.status === "Ongoing" ? "outline" : 
+                                  account.status === "Error" ? "destructive" : "outline"} 
+                            className={`text-xs h-5 ml-1.5 ${
+                              account.status === "Ongoing" ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" : ""
+                            }`}
+                          >
+                            {getStatusText(account.status)}
+                          </Badge>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex items-center gap-2">
+                          {account.status === "Ongoing" ? (
+                            <Button
+                              onClick={() => {
+                                setSelectedProvider(account);
+                                setStopDialogOpen(true);
+                              }}
+                              variant="outline"
+                              size="sm"
+                              disabled={isFetchingTrackingStatus || isStoppingTracking}
+                              className="h-7 text-xs border-slate-300/80 hover:bg-slate-100/70 text-slate-700"
+                            >
+                              {isStoppingTracking ? <Loader2 className="h-3 w-3 animate-spin mr-1"/> : <StopCircle className="h-3 w-3 mr-1"/>}
+                              Stop
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={() => {
+                                setSelectedProvider(account);
+                                setStartDialogOpen(true);
+                              }}
+                              size="sm"
+                              disabled={isFetchingTrackingStatus || isStartingTracking}
+                              className="h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
+                            >
+                              {isStartingTracking ? <Loader2 className="h-3 w-3 animate-spin mr-1"/> : <PlayCircle className="h-3 w-3 mr-1"/>}
+                              Start
+                            </Button>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2.5">
+                          {account.provider === 'google' ? (
+                            <GmailIcon className="h-4 w-4 shrink-0"/>
+                          ) : account.provider === 'microsoft' ? (
+                            <OutlookIcon className="h-4 w-4 shrink-0"/>
+                          ) : null}
+                          <span className="text-sm text-gray-500">No account connected</span>
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs h-5 ml-1.5 text-gray-500"
+                          >
+                            Not Connected
+                          </Badge>
+                        </div>
+                        <div>
+                          <Button
+                            onClick={() => {
+                              setSelectedProviderForAdd(account.provider);
+                              setAddAccountDialogOpen(true);
+                            }}
+                            size="sm"
+                            className="h-7 text-xs bg-slate-700/90 hover:bg-slate-800/90 text-white"
+                          >
+                            <PlusCircle className="h-3 w-3 mr-1"/>
+                            Connect
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                );
+                ));
               })}
             </div>
 
