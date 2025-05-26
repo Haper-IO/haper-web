@@ -2,13 +2,13 @@ import './globals.css'
 import type {Metadata} from 'next'
 import React from "react";
 
-import {Inter} from 'next/font/google'
+import {GeistSans} from 'geist/font/sans'
 import {Toaster} from "@/components/ui/sonner";
 import {PublicEnvScript} from "next-runtime-env";
 import texture from "@/assets/images/texture_flows.webp";
 import {NextStepProvider, NextStep} from 'nextstepjs';
 
-const inter = Inter({subsets: ['latin']})
+// Geist font is already configured, no need for additional setup
 
 const steps = [
   {
@@ -82,7 +82,7 @@ export default function RootLayout(
     <head>
       <PublicEnvScript/>
     </head>
-    <body className={inter.className}>
+    <body className={GeistSans.className}>
     <NextStepProvider>
 
       <NextStep
