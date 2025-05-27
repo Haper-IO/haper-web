@@ -11,7 +11,6 @@ import {Input} from "@/components/ui/input"
 import React, {useState, useEffect} from "react"
 import {
   getUserSettings,
-  createUserSettings,
   updateUserSettings,
   UserSettings,
 } from "@/lib/requests/client/user-settings"
@@ -41,18 +40,7 @@ export default function MyInterestsPage() {
     })
   }
 
-  const createSetting = (settings: UserSettings) => {
-    if (isLoadingSetting) {
-      return
-    }
-    setIsLoadingSetting(true)
-    createUserSettings(settings).then((resp) => {
-      setUserSetting(resp.data.setting)
-    }).finally(() => {
-      setIsLoadingSetting(false)
-    })
 
-  }
 
   const updateSetting = (settings: UserSettings) => {
     if (isLoadingSetting) {
@@ -92,12 +80,8 @@ export default function MyInterestsPage() {
       key_message_tags: selectedTags
     };
 
-    // Fix the check for existing settings
-    if (userSetting) {
-      updateSetting(requestBody);
-    } else {
-      createSetting(requestBody);
-    }
+    // Update settings (will create if doesn't exist)
+    updateSetting(requestBody);
 
     setIsEditingTags(false);
   };
