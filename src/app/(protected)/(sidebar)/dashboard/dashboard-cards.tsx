@@ -285,7 +285,7 @@ export function LatestSummary() {
           </div>
         ) : reportSummaryData ? (
           <div className="space-y-6">
-            {/* Report summary content */}
+                        {/* Report summary content */}
             <div className="bg-white/70 backdrop-blur-[2px] rounded-lg shadow-sm border border-slate-200/70 overflow-hidden">
               <div className="px-4 py-4">
                 {report && report.content && report.content.summary && 
@@ -313,16 +313,16 @@ export function LatestSummary() {
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <defs>
-                              <linearGradient id="essentialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#64748b" />
-                                <stop offset="30%" stopColor="#475569" />
-                                <stop offset="70%" stopColor="#334155" />
-                                <stop offset="100%" stopColor="#0f172a" />
+                              <linearGradient id="essentialGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#be185d" />
+                                <stop offset="30%" stopColor="#ec4899" />
+                                <stop offset="70%" stopColor="#f472b6" />
+                                <stop offset="100%" stopColor="#f9a8d4" />
                               </linearGradient>
                             </defs>
                             <Pie
                               data={[
-                                { name: 'Essential', value: reportStatsData.essentialCount, color: '#475569' },
+                                { name: 'Essential', value: reportStatsData.essentialCount, color: '#ec4899' },
                                 { name: 'Non-essential', value: reportStatsData.nonEssentialCount, color: '#cbd5e1' },
                               ]}
                               cx="50%"
@@ -356,37 +356,37 @@ export function LatestSummary() {
                     {/* Stats breakdown - takes 7/12 on medium screens */}
                     <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
                       <h4 className="text-sm font-medium text-slate-700 mb-3">Email Categories</h4>
-                                              <div className="space-y-4">
-                          {/* Essential emails with count */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-sm bg-gradient-to-br from-slate-500 via-slate-600 to-slate-900"></div>
-                                <span className="text-sm font-medium text-slate-700">Essential</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm tabular-nums font-medium bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
-                                  {reportStatsData.essentialCount}
-                                </span>
-                              </div>
+                      <div className="space-y-4">
+                        {/* Essential emails with count */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="h-3 w-3 rounded-sm bg-gradient-to-b from-pink-700 via-pink-400 to-pink-300"></div>
+                              <span className="text-sm font-medium text-slate-700">Essential</span>
                             </div>
-                          </div>
-                          
-                          {/* Non-essential emails with count */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-sm bg-slate-300"></div>
-                                <span className="text-sm font-medium text-slate-700">Non-essential</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm tabular-nums font-medium bg-slate-50 text-slate-600 px-2.5 py-1 rounded-md">
-                                  {reportStatsData.nonEssentialCount}
-                                </span>
-                              </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm tabular-nums font-medium bg-pink-50 text-pink-700 px-2.5 py-1 rounded-md">
+                                {reportStatsData.essentialCount}
+                              </span>
                             </div>
                           </div>
                         </div>
+                        
+                        {/* Non-essential emails with count */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="h-3 w-3 rounded-sm bg-slate-300"></div>
+                              <span className="text-sm font-medium text-slate-700">Non-essential</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm tabular-nums font-medium bg-slate-50 text-slate-600 px-2.5 py-1 rounded-md">
+                                {reportStatsData.nonEssentialCount}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
