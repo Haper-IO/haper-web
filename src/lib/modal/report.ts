@@ -36,8 +36,10 @@ export interface MailMessagesByAccount {
 
 export interface Report {
   id: string;
+  type: "Realtime" | "Previous";
   content: ReportModel;
-  // status: "Appending" | "Finalized";
+  status: "Appending" | "Finalized";
   created_at: string;
   finalized_at: string | null;
+  last_updated_at: string | null;
 }

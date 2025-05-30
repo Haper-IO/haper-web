@@ -33,7 +33,7 @@ export default function SidebarLayout({
 
       {/*feedback form*/}
       <Button
-        className="fixed right-4 top-4 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-full px-4 py-2 text-sm"
+        className="fixed right-4 bottom-4 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-full px-4 py-2 text-sm"
         onClick={userInfo ? () => openTallyForm(userInfo.id, userInfo.email) : undefined}
       >
         Give Feedback

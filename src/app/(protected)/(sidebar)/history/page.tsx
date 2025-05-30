@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getReportHistory } from "@/lib/requests/client/report"
 import { Report } from "@/lib/modal/report"
-import { LastReport } from "@/app/(protected)/(sidebar)/dashboard/dashboard-cards"
+import { ReportCard } from "@/app/(protected)/(sidebar)/history/report-card"
 import { HistoryPagination } from "./pagination"
 
 export default function HistoryPage() {
@@ -123,7 +123,7 @@ export default function HistoryPage() {
           <div className="space-y-3 sm:space-y-4">
             {reports.map((report) => (
               <div key={report.id}>
-                <LastReport report={report} />
+                <ReportCard report={report} />
               </div>
             ))}
 
