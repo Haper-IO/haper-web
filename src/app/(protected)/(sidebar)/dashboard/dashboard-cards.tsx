@@ -306,10 +306,10 @@ export function LatestSummary() {
               {/* Stats and chart in a nice grid layout */}
               {reportStatsData && (reportStatsData.essentialCount > 0 || reportStatsData.nonEssentialCount > 0) && (
                 <div className="border-t border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4">
-                    {/* Chart visualization - takes 5/12 on medium screens */}
-                    <div className="md:col-span-5 lg:col-span-4 flex justify-center items-center">
-                      <div className="h-[180px] w-full">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 p-3 sm:p-4">
+                    {/* Chart visualization - full width on mobile, 5/12 on large screens */}
+                    <div className="lg:col-span-5 xl:col-span-4 flex justify-center items-center">
+                      <div className="h-[160px] sm:h-[180px] w-full max-w-[200px] sm:max-w-none">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <defs>
@@ -327,8 +327,8 @@ export function LatestSummary() {
                               ]}
                               cx="50%"
                               cy="50%"
-                              innerRadius={40}
-                              outerRadius={70}
+                              innerRadius={30}
+                              outerRadius={60}
                               paddingAngle={2}
                               startAngle={90}
                               endAngle={450}
@@ -353,19 +353,19 @@ export function LatestSummary() {
                       </div>
                     </div>
                     
-                    {/* Stats breakdown - takes 7/12 on medium screens */}
-                    <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
+                    {/* Stats breakdown - full width on mobile, 7/12 on large screens */}
+                    <div className="lg:col-span-7 xl:col-span-8 flex flex-col justify-center">
                       <h4 className="text-sm font-medium text-slate-700 mb-3">Email Categories</h4>
-                      <div className="space-y-4">
+                      <div className="space-y-3 sm:space-y-4">
                         {/* Essential emails with count */}
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="h-3 w-3 rounded-sm bg-gradient-to-b from-pink-700 via-pink-400 to-pink-300"></div>
+                              <div className="h-3 w-3 rounded-sm bg-gradient-to-b from-pink-700 via-pink-400 to-pink-300 flex-shrink-0"></div>
                               <span className="text-sm font-medium text-slate-700">Essential</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm tabular-nums font-medium bg-pink-50 text-pink-700 px-2.5 py-1 rounded-md">
+                              <span className="text-sm tabular-nums font-medium bg-pink-50 text-pink-700 px-2 sm:px-2.5 py-1 rounded-md whitespace-nowrap">
                                 {reportStatsData.essentialCount}
                               </span>
                             </div>
@@ -376,11 +376,11 @@ export function LatestSummary() {
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="h-3 w-3 rounded-sm bg-slate-300"></div>
+                              <div className="h-3 w-3 rounded-sm bg-slate-300 flex-shrink-0"></div>
                               <span className="text-sm font-medium text-slate-700">Non-essential</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm tabular-nums font-medium bg-slate-50 text-slate-600 px-2.5 py-1 rounded-md">
+                              <span className="text-sm tabular-nums font-medium bg-slate-50 text-slate-600 px-2 sm:px-2.5 py-1 rounded-md whitespace-nowrap">
                                 {reportStatsData.nonEssentialCount}
                               </span>
                             </div>

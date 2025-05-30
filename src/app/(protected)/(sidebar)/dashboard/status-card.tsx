@@ -236,27 +236,30 @@ export function StatusCard() {
 
       {/* Message Tracking Status Section */}
       <Card className="pb-2">
-        <CardHeader className="flex flex-row justify-start items-center gap-4 space-y-0">
-          <Badge variant="outline" size="md" className="bg-slate-50 text-slate-700 border-slate-300 font-medium">Tracking Status</Badge>
+        <CardHeader className="flex flex-col sm:flex-row sm:justify-start sm:items-center gap-2 sm:gap-4 space-y-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" size="md" className="bg-slate-50 text-slate-700 border-slate-300 font-medium">Tracking Status</Badge>
+            
+            {!isStatusExpanded && runningProviders.length > 0 && (
+              <Badge variant="outline" className="text-xs font-medium bg-white/70 border-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                {runningProviders.reduce((total, {count}) => total + count, 0)} active
+              </Badge>
+            )}
+          </div>
           
-          {!isStatusExpanded && runningProviders.length > 0 && (
-            <Badge variant="outline" className="text-xs font-medium bg-white/70 border-slate-200 flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-              {runningProviders.reduce((total, {count}) => total + count, 0)} active
-            </Badge>
-          )}
-          
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:ml-auto">
             <Button
               id="user-guide-step1"
               variant="ghost"
               size="sm"
-              className="h-8 p-2 flex items-center gap-1 text-sm text-slate-700"
+              className="h-8 px-2 flex items-center gap-1 text-sm text-slate-700"
               onClick={() => setAddAccountDialogOpen(true)}
               title="Add Account"
             >
               <PlusCircle className="h-4 w-4" />
-              <span>Add Account</span>
+              <span className="hidden sm:inline">Add Account</span>
+              <span className="sm:hidden">Add</span>
             </Button>
             <Button
               variant="ghost"
@@ -292,31 +295,31 @@ export function StatusCard() {
                 return accounts.map((account, idx) => (
                   <div
                     key={`${provider}-${idx}`}
-                    className={`flex items-center justify-between gap-3 p-2.5 rounded-md ${
+                    className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-2.5 rounded-md ${
                       account.status === "Error" ? "bg-red-50" : "bg-white/60"
                     } border border-slate-200/70`}
                   >
                     {account.email ? (
                       <>
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           {account.provider === 'google' ? (
                             <GmailIcon className="h-4 w-4 shrink-0"/>
                           ) : account.provider === 'microsoft' ? (
                             <OutlookIcon className="h-4 w-4 shrink-0"/>
                           ) : null}
-                          <span className="text-sm font-medium">{account.email}</span>
+                          <span className="text-sm font-medium truncate">{account.email}</span>
                           <Badge 
                             variant={account.status === "Ongoing" ? "outline" : 
                                   account.status === "Error" ? "destructive" : "outline"} 
                             size="md"
-                            className={`ml-1.5 ${
+                            className={`ml-1.5 whitespace-nowrap ${
                               account.status === "Ongoing" ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" : ""
                             }`}
                           >
                             {getStatusText(account.status)}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 sm:ml-auto">
                           {account.status === "Ongoing" ? (
                             <Button
                               onClick={() => {
@@ -326,7 +329,7 @@ export function StatusCard() {
                               variant="outline"
                               size="sm"
                               disabled={isFetchingTrackingStatus || isStoppingTracking}
-                              className="h-7 text-xs border-slate-300/80 hover:bg-slate-100/70 text-slate-700"
+                              className="h-7 text-xs border-slate-300/80 hover:bg-slate-100/70 text-slate-700 whitespace-nowrap"
                             >
                               {isStoppingTracking ? <Loader2 className="h-3 w-3 animate-spin mr-1"/> : <StopCircle className="h-3 w-3 mr-1"/>}
                               Stop
@@ -339,7 +342,7 @@ export function StatusCard() {
                               }}
                               size="sm"
                               disabled={isFetchingTrackingStatus || isStartingTracking}
-                              className="h-7 text-xs bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white shadow-md"
+                              className="h-7 text-xs bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white shadow-md whitespace-nowrap"
                             >
                               {isStartingTracking ? <Loader2 className="h-3 w-3 animate-spin mr-1"/> : <PlayCircle className="h-3 w-3 mr-1"/>}
                               Start
@@ -349,7 +352,7 @@ export function StatusCard() {
                       </>
                     ) : (
                       <>
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           {account.provider === 'google' ? (
                             <GmailIcon className="h-4 w-4 shrink-0"/>
                           ) : account.provider === 'microsoft' ? (
@@ -359,19 +362,19 @@ export function StatusCard() {
                           <Badge 
                             variant="outline" 
                             size="md"
-                            className="ml-1.5 text-gray-500"
+                            className="ml-1.5 text-gray-500 whitespace-nowrap"
                           >
                             Not Connected
                           </Badge>
                         </div>
-                        <div>
+                        <div className="sm:ml-auto">
                           <Button
                             onClick={() => {
                               setSelectedProviderForAdd(account.provider);
                               setAddAccountDialogOpen(true);
                             }}
                             size="sm"
-                            className="h-7 text-xs bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white shadow-md"
+                            className="h-7 text-xs bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white shadow-md whitespace-nowrap"
                           >
                             <PlusCircle className="h-3 w-3 mr-1"/>
                             Connect
