@@ -95,7 +95,7 @@ export default function LandingPage() {
             </FadeInWhenVisible>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <FeatureCard
               icon={<Filter className="h-6 w-6 text-gray-600"/>}
               title="Smart Email Filtering"
@@ -191,7 +191,7 @@ export default function LandingPage() {
             </FadeInWhenVisible>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <TestimonialCard
               quote="Haper has been a game-changer for managing my overflowing inbox. The daily summaries save me at least an hour every day."
               author="Sarah J."

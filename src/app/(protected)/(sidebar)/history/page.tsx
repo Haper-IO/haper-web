@@ -60,7 +60,7 @@ export default function HistoryPage() {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
+        <div className="flex items-center gap-2 px-3 sm:px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumb>
@@ -79,27 +79,31 @@ export default function HistoryPage() {
         </div>
       </header>
 
-      <div className="flex flex-col gap-6 p-4">
+      <div className="flex flex-col gap-4 sm:gap-6 p-3 sm:p-4">
         {loading ? (
           // Loading skeletons
-          Array.from({ length: 2 }).map((_, index) => (
-            <Card key={index} className="bg-slate-200/40 backdrop-blur-[2px]">
-              <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-6 w-32 ml-2" />
-                <div className="ml-auto">
-                  <Skeleton className="h-8 w-8" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-24 w-full" />
-              </CardContent>
-            </Card>
-          ))
+          <div className="space-y-3 sm:space-y-4">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <Card key={index} className="bg-slate-200/40 backdrop-blur-[2px]">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center gap-2 space-y-0 pb-3 sm:pb-6">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Skeleton className="h-5 sm:h-6 w-24 sm:w-32" />
+                    <Skeleton className="h-5 sm:h-6 w-20 sm:w-32" />
+                  </div>
+                  <div className="sm:ml-auto">
+                    <Skeleton className="h-6 sm:h-8 w-6 sm:w-8" />
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Skeleton className="h-20 sm:h-24 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : error ? (
           // Error message
-          <div className="px-4 py-4 bg-red-50/90 text-red-800 rounded-md backdrop-blur-[2px]">
-            <p>{error}</p>
+          <div className="px-3 sm:px-4 py-3 sm:py-4 bg-red-50/90 text-red-800 rounded-md backdrop-blur-[2px]">
+            <p className="text-sm sm:text-base">{error}</p>
             <Button
               variant="outline"
               size="sm"
@@ -111,25 +115,29 @@ export default function HistoryPage() {
           </div>
         ) : reports.length === 0 ? (
           // No reports
-          <div className="px-4 py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
+          <div className="px-3 sm:px-4 py-3 sm:py-4 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
             <p className="text-sm text-slate-800">No report history available.</p>
           </div>
         ) : (
           // Report list
-          <>
+          <div className="space-y-3 sm:space-y-4">
             {reports.map((report) => (
-              <div key={report.id} className="mb-4">
+              <div key={report.id}>
                 <LastReport report={report} />
               </div>
             ))}
 
             {/* Use the extracted pagination component */}
-            <HistoryPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </>
+            {totalPages > 1 && (
+              <div className="pt-2 sm:pt-4">
+                <HistoryPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </div>
         )}
       </div>
     </>

@@ -30,7 +30,7 @@ export const CardWrapper = ({
   authType
 }: CardWrapperProps) => {
   return (
-    <Card className={"w-[400px] shadow-md"}>
+    <Card className="w-full max-w-[400px] mx-auto shadow-md">
       <CardHeader>
         <Header label={headerLabel} />
       </CardHeader>
@@ -43,15 +43,16 @@ export const CardWrapper = ({
         <Separator className="flex-1"/>
       </div>
       <CardFooter>
-        <div className={"flex items-center w-full gap-x-2"}>
+        <div className="flex items-center w-full gap-x-2">
           <Button
             size="lg"
             className="w-full"
             variant="outline"
             onClick={() => oauthRedirect("google", authType)}
           >
-            <FcGoogle className={"w-5 h-5"}/>
-            {`${authType === "login" ? "Login" : "Sign Up"} with Google`}
+            <FcGoogle className="w-5 h-5"/>
+            <span className="hidden sm:inline">{`${authType === "login" ? "Login" : "Sign Up"} with Google`}</span>
+            <span className="sm:hidden">Google</span>
           </Button>
         </div>
       </CardFooter>

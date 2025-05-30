@@ -105,24 +105,24 @@ function EmailItem(
   }
 
   const actionIconMap: Record<string, React.ReactNode> = {
-    "Read": <Check className="mr-2 h-4 w-4 text-slate-600" />,
-    "Delete": <Trash className="mr-2 h-4 w-4 text-red-500" />,
-    "Reply": <Reply className="mr-2 h-4 w-4 text-blue-500" />,
-    "Ignore": <MoreVertical className="mr-2 h-4 w-4 text-slate-500" />
+    "Read": <Check className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4 text-slate-600" />,
+    "Delete": <Trash className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4 text-red-500" />,
+    "Reply": <Reply className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4 text-blue-500" />,
+    "Ignore": <MoreVertical className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4 text-slate-500" />
   }
 
   return (
     <div
-      className="border border-slate-200/70 rounded-lg p-3 bg-slate-50/60 backdrop-blur-[2px] shadow-sm hover:shadow transition-shadow">
-      <div className="flex justify-between items-start mb-2">
-        <div>
+      className="border border-slate-200/70 rounded-lg p-2 sm:p-3 bg-slate-50/60 backdrop-blur-[2px] shadow-sm hover:shadow transition-shadow">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0 mb-2">
+        <div className="flex-1 min-w-0">
           {email.tags && email.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {email.tags.map((tag) => {
                 return (
                   <span
                     key={tag}
-                    className={`bg-gray-400 text-white px-2 py-0.5 rounded text-xs font-medium`}
+                    className="bg-gray-400 text-white px-1.5 sm:px-2 py-0.5 rounded text-xs font-medium"
                   >
                     {tag}
                   </span>
@@ -130,21 +130,29 @@ function EmailItem(
               })}
             </div>
           )}
-          <h3 className={`${SHARED_STYLES.heading} text-sm mb-0.5`}>{email.subject}</h3>
-          <p className={SHARED_STYLES.subtitle}>From: {email.sender}</p>
+          <h3 className={`${SHARED_STYLES.heading} text-sm mb-0.5 pr-2`}>{email.subject}</h3>
+          <p className={`${SHARED_STYLES.subtitle} truncate sm:text-clip`}>From: {email.sender}</p>
         </div>
-        <div className="flex gap-1 items-center">
-          <Eye className="mr-2 h-4 w-4 text-slate-500" onClick={() => onViewMessage(email)} />
+        <div className="flex gap-1 items-center justify-end sm:justify-start flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-slate-500 hover:text-slate-700 hover:bg-slate-100/70 h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full"
+            onClick={() => onViewMessage(email)}
+            disabled={disabled}
+          >
+            <Eye className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+          </Button>
           {/*drop down menu for more option*/}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-slate-500 hover:text-slate-700 hover:bg-slate-100/70 h-7 w-7 p-0 rounded-full"
+                className="text-slate-500 hover:text-slate-700 hover:bg-slate-100/70 h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full"
                 disabled={disabled}
               >
-                <MoreVertical className="h-3.5 w-3.5" />
+                <MoreVertical className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-slate-100/80 shadow-md">
@@ -166,18 +174,19 @@ function EmailItem(
               <Button
                 variant="outline"
                 size="sm"
-                className={cn("gap-1 h-7 px-2 text-xs", actionButtonStyleMap[email.action])}
+                className={cn("gap-1 h-6 sm:h-7 px-1.5 sm:px-2 text-xs", actionButtonStyleMap[email.action])}
                 disabled={disabled}
               >
                 {actionIconMap[email.action]}
-                {email.action}
+                <span className="hidden sm:inline">{email.action}</span>
+                <span className="sm:hidden">{email.action.slice(0, 3)}</span>
                 {!email.action_result && (
-                  <span className="ml-1 text-2xs text-slate-500">(pending)</span>
+                  <span className="ml-1 text-2xs text-slate-500 hidden sm:inline">(pending)</span>
                 )}
                 {email.action_result && (
-                  <span className="ml-1 text-2xs text-slate-500">({email.action_result})</span>
+                  <span className="ml-1 text-2xs text-slate-500 hidden sm:inline">({email.action_result})</span>
                 )}
-                <ChevronDown className="h-3.5 w-3.5 ml-1" />
+                <ChevronDown className="h-3 w-3 ml-0.5 sm:ml-1" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-slate-100/80 shadow-md">
@@ -222,12 +231,12 @@ function EmailItem(
           <>
             <Textarea
               placeholder="Type your reply here..."
-              className="mb-2 border-slate-200/80 focus:border-slate-300/90 focus:ring-slate-200/50 text-slate-700 rounded-md resize-y min-h-48 max-h-80 text-xs"
+              className="mb-2 border-slate-200/80 focus:border-slate-300/90 focus:ring-slate-200/50 text-slate-700 rounded-md resize-y min-h-32 sm:min-h-48 max-h-60 sm:max-h-80 text-xs"
               disabled={disabled}
               value={email.reply_message || ""}
               onChange={(e) => onInput(e.target.value)}
             />
-            <div className="flex gap-2 justify-end">
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
               <Button
                 variant="outline"
                 size="sm"
@@ -600,7 +609,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
     <>
       {/* Header */}
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
+        <div className="flex items-center gap-2 px-3 sm:px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumb>
@@ -620,7 +629,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
       </header>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-3 sm:gap-4 p-3 sm:p-4 pt-0">
         {isLoadingReport ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
@@ -632,27 +641,26 @@ export function ReportClient({ reportId }: { reportId: string }) {
           <div className="space-y-3">
             {/* Message Content Dialog */}
             <Dialog open={!!messageToPresent} onOpenChange={(open: boolean) => !open && setMessageToPresent(null)}>
-              <DialogContent className="max-w-2xl max-h-[80vh] bg-white">
+              <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] sm:max-h-[80vh] bg-white mx-2 sm:mx-auto">
                 <DialogHeader>
-                  <DialogTitle>{messageToPresent?.subject}</DialogTitle>
+                  <DialogTitle className="text-sm sm:text-base pr-8">{messageToPresent?.subject}</DialogTitle>
                 </DialogHeader>
-                <div className="overflow-y-auto max-h-[calc(80vh-8rem)]">
-                  <div className="mb-4 text-sm text-slate-600">
-                    <p><strong>From:</strong> {messageToPresent?.from}</p>
-                    <p><strong>To:</strong> {messageToPresent?.to}</p>
+                <div className="overflow-y-auto max-h-[calc(90vh-8rem)] sm:max-h-[calc(80vh-8rem)]">
+                  <div className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-600 space-y-1">
+                    <p><strong>From:</strong> <span className="break-all">{messageToPresent?.from}</span></p>
+                    <p><strong>To:</strong> <span className="break-all">{messageToPresent?.to}</span></p>
                   </div>
-                  <div className="border rounded-md p-4 bg-white">
+                  <div className="border rounded-md p-2 sm:p-4 bg-white">
                     {messageToPresent?.mime_type === "text/html" ? (
                       <iframe
                         srcDoc={messageToPresent.body}
-                        className="w-full h-[500px] md:h-[800px] border-0"
+                        className="w-full h-[400px] sm:h-[500px] md:h-[800px] border-0"
                         sandbox="allow-same-origin"
                       />
                     ) : (
-                      <pre className="whitespace-pre-wrap font-sans">{messageToPresent?.body}</pre>
+                      <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm">{messageToPresent?.body}</pre>
                     )}
                   </div>
-
                 </div>
               </DialogContent>
             </Dialog>
@@ -660,10 +668,10 @@ export function ReportClient({ reportId }: { reportId: string }) {
             {/* Loading Overlay */}
             {isLoadingMessage && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg shadow-lg p-4">
+                <div className="bg-white rounded-lg shadow-lg p-3 sm:p-4 mx-4">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin text-slate-600" />
-                    <span className="text-sm text-slate-600">Loading message content...</span>
+                    <Loader2 className="h-4 sm:h-5 w-4 sm:w-5 animate-spin text-slate-600" />
+                    <span className="text-xs sm:text-sm text-slate-600">Loading message content...</span>
                   </div>
                 </div>
               </div>
@@ -671,10 +679,10 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
             {/* Message Processing Status */}
             {numberOfMessageInProcessing > 0 && (
-              <div className="bg-blue-50/80 p-2 rounded-md border border-blue-200/70 mb-3 backdrop-blur-[2px]">
-                <div className="flex justify-between items-center">
+              <div className="bg-blue-50/80 p-2 sm:p-3 rounded-md border border-blue-200/70 mb-3 backdrop-blur-[2px]">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
+                    <Loader2 className="h-3 sm:h-3.5 w-3 sm:w-3.5 animate-spin text-blue-500 flex-shrink-0" />
                     <span className="text-xs font-medium text-blue-700">
                       Processing {numberOfMessageInProcessing} messages in queue
                     </span>
@@ -685,19 +693,19 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
             {/* Batch Action Status */}
             {batchActionStatus && batchActionStatus.status !== "Waiting" && (
-              <div className="bg-slate-100/80 p-2 rounded-md border border-slate-200/70 mb-3 backdrop-blur-[2px]">
-                <div className="flex justify-between items-center">
+              <div className="bg-slate-100/80 p-2 sm:p-3 rounded-md border border-slate-200/70 mb-3 backdrop-blur-[2px]">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
                   <div className="flex items-center gap-2">
-                    <Badge variant={batchActionStatus.status === "Done" ? "secondary" : "default"}>
+                    <Badge variant={batchActionStatus.status === "Done" ? "secondary" : "default"} size="sm">
                       {batchActionStatus.status}
                     </Badge>
                     <span className="text-xs text-slate-600">
                       Processing actions: {batchActionStatus.succeed + batchActionStatus.failed} of {batchActionStatus.total} complete
                     </span>
                   </div>
-                  <div className="flex gap-2">
-                    <div className="text-xs text-green-600">Success: {batchActionStatus.succeed}</div>
-                    <div className="text-xs text-red-600">Failed: {batchActionStatus.failed}</div>
+                  <div className="flex gap-3 sm:gap-2 text-xs">
+                    <div className="text-green-600">Success: {batchActionStatus.succeed}</div>
+                    <div className="text-red-600">Failed: {batchActionStatus.failed}</div>
                   </div>
                 </div>
                 {/* Simple progress bar */}
@@ -715,49 +723,51 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
             {/* Report Header Card */}
             <Card className="bg-slate-200/40 backdrop-blur-[2px]">
-              <CardHeader className="flex flex-row items-center gap-2 space-y-0 py-3 px-4">
-                <Badge variant="default" size="md">Email Report</Badge>
-                <Badge variant="secondary" size="md">
-                  {report?.created_at
-                    ? new Date(report.created_at).toLocaleString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                      hour12: true
-                    })
-                    : 'Unknown date'}
-                </Badge>
-                <div className="ml-auto flex items-center gap-2">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center gap-2 space-y-0 py-3 px-3 sm:px-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="default" size="md">Email Report</Badge>
+                  <Badge variant="secondary" size="md" className="text-xs">
+                    {report?.created_at
+                      ? new Date(report.created_at).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        hour12: true
+                      })
+                      : 'Unknown date'}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2 sm:ml-auto">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0"
+                    className="h-6 w-6 sm:h-7 sm:w-7 p-0"
                     onClick={() => {
                       fetchReport()
                     }}
                     disabled={isLoadingReport}
                     title="Refresh report"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingReport ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-3 sm:h-3.5 w-3 sm:w-3.5 ${isLoadingReport ? 'animate-spin' : ''}`} />
                     <span className="sr-only">Refresh</span>
                   </Button>
                   {<div className="flex gap-1">
                     {hasGmail && (
-                      <div className="relative h-5 w-5" title="Gmail">
-                        <GmailIcon className="h-5 w-5" />
+                      <div className="relative h-4 w-4 sm:h-5 sm:w-5" title="Gmail">
+                        <GmailIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
                     )}
                     {hasOutlook && (
-                      <div className="relative h-5 w-5" title="Outlook">
-                        <OutlookIcon className="h-5 w-5" />
+                      <div className="relative h-4 w-4 sm:h-5 sm:w-5" title="Outlook">
+                        <OutlookIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
                     )}
                   </div>}
                 </div>
               </CardHeader>
               {report && report.content.summary && report.content.summary.length > 0 && (
-                <CardContent className="pt-0 pb-3 px-4">
+                <CardContent className="pt-0 pb-3 px-3 sm:px-4">
                   <div
                     className="px-3 py-2 bg-white/70 backdrop-blur-[2px] rounded-md shadow-sm border border-slate-200/70">
                     <RichContent richTextList={report.content.summary}></RichContent>
@@ -769,16 +779,16 @@ export function ReportClient({ reportId }: { reportId: string }) {
             {/* Tabs Card */}
             <Card className="bg-slate-200/40 backdrop-blur-[2px] overflow-hidden">
               <Tabs defaultValue="essential">
-                <TabsList className="mx-4 mt-3 mb-2 bg-slate-100/80 p-1 rounded-md">
+                <TabsList className="mx-3 sm:mx-4 mt-3 mb-2 bg-slate-100/80 p-1 rounded-md w-auto">
                   <TabsTrigger
                     value="essential"
-                    className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
+                    className="rounded-sm py-1 px-2 sm:px-3 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
                   >
                     Essential ({essentialEmails.length})
                   </TabsTrigger>
                   <TabsTrigger
                     value="non-essential"
-                    className="rounded-sm py-1 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
+                    className="rounded-sm py-1 px-2 sm:px-3 text-xs font-medium data-[state=active]:bg-white/90 data-[state=active]:text-slate-800 data-[state=active]:shadow-sm"
                   >
                     Non-Essential ({nonEssentialEmails.length})
                   </TabsTrigger>
@@ -786,7 +796,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
                 {/*essential items*/}
                 <TabsContent value="essential">
-                  <CardContent className="px-4 py-3 space-y-3">
+                  <CardContent className="px-3 sm:px-4 py-3 space-y-2 sm:space-y-3">
                     {essentialEmails.length === 0 ? (
                       <div className="py-6 text-center">
                         <p className="text-xs text-slate-600">No emails in this category.</p>
@@ -799,7 +809,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
 
                 {/*non-essential items*/}
                 <TabsContent value="non-essential">
-                  <CardContent className="px-4 py-3 space-y-3">
+                  <CardContent className="px-3 sm:px-4 py-3 space-y-2 sm:space-y-3">
                     {nonEssentialEmails.length === 0 ? (
                       <div className="py-6 text-center">
                         <p className="text-xs text-slate-600">No emails in this category.</p>
@@ -811,8 +821,8 @@ export function ReportClient({ reportId }: { reportId: string }) {
                 </TabsContent>
 
                 {/* Apply All Actions button section */}
-                <div className="px-4 py-3 border-t border-slate-200/70">
-                  <div className="flex justify-between items-center">
+                <div className="px-3 sm:px-4 py-3 border-t border-slate-200/70">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
                     <div className="text-xs text-slate-600">
                       {emails.filter(email => email.action && !email.action_result).length > 0
                         ? `${emails.filter(email => email.action && !email.action_result).length} suggested actions - click Apply to process`
@@ -820,7 +830,7 @@ export function ReportClient({ reportId }: { reportId: string }) {
                     </div>
                     <Button
                       size="sm"
-                      className="bg-slate-600/90 hover:bg-slate-500/90 text-white h-7 px-4 text-xs"
+                      className="bg-slate-600/90 hover:bg-slate-500/90 text-white h-7 px-3 sm:px-4 text-xs w-full sm:w-auto"
                       onClick={applyAllActions}
                       disabled={
                         (batchActionStatus && batchActionStatus.status !== "Done") ||
