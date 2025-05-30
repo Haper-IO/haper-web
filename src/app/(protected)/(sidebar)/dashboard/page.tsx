@@ -1,6 +1,6 @@
 "use client"
 
-import {LatestSummary} from "@/app/(protected)/(sidebar)/dashboard/dashboard-cards"
+import {LatestSummary} from "@/app/(protected)/(sidebar)/dashboard/summary-card"
 import {StatusCard} from "@/app/(protected)/(sidebar)/dashboard/status-card"
 import {
   Breadcrumb,
