@@ -19,9 +19,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import {Logo_md_light} from "@/icons/logo"
+import {Logo_md_light, Logo_md} from "@/icons/logo"
 import {useRouter, usePathname} from "next/navigation"
 import {getReportHistory} from "@/lib/requests/client/report"
 import {Report} from "@/lib/modal/report"
@@ -145,6 +146,7 @@ function ReportHistorySection() {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userInfo, loading: userLoading } = useUserInfo();
+  const { isMobile } = useSidebar();
   const pathname = usePathname();
 
   // Create navigation items with active state based on current path
@@ -181,7 +183,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="/dashboard">
                 <div className="flex items-center justify-center">
-                  <Logo_md_light />
+                  {isMobile ? <Logo_md /> : <Logo_md_light />}
                 </div>
               </a>
             </SidebarMenuButton>
