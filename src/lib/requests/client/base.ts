@@ -1,5 +1,5 @@
 import axios, {AxiosError} from "axios";
-import { toast } from "sonner";
+import {toast} from "sonner";
 import {env} from "next-runtime-env";
 
 export const apiV1 = "api/v1"
@@ -15,12 +15,7 @@ const responseErrorInterceptor = (error: any) => {
   if (error.response && error.response.data && error.response.data.message && error.response.data.status) {
     message = error.response.data.message
     if (error.response.data.status == 9999) {
-      toast.error(`${error.message}: ${message}`, {
-        classNames: {
-          toast: "bg-white",
-          title: 'text-red-400',
-        }
-      })
+      toast.error(`${error.message}: ${message}`)
     } else {
       toast.warning(message)
     }
@@ -48,6 +43,7 @@ reqHandler.interceptors.response.use(
 
 class EventSourceFactory {
   private option: { baseUrl: string }
+
   constructor(options: { baseUrl: string }) {
     this.option = options
   }

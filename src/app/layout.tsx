@@ -57,7 +57,8 @@ const steps = [
       {
         icon: "🎉",
         title: "Enjoy your journey",
-        content: <>Now you have finished the setup. <br/><br/> You can start using Haper by checking your reports whenever you want.</>,
+        content: <>Now you have finished the setup. <br/><br/> You can start using Haper by checking your reports
+          whenever you want.</>,
         showControls: true,
         showSkip: true,
       },
@@ -103,7 +104,7 @@ export default function RootLayout(
           />
           {children}
         </main>
-        <Toaster position="top-right"/>
+        <Toaster position="top-right" theme="light"/>
       </NextStep>
     </NextStepProvider>
 

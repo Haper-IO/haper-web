@@ -13,6 +13,7 @@ import { FeatureCard } from "@/components/feature-card";
 import { FAQItem } from "@/components/faq-item";
 import { TestimonialCard } from "@/components/testimonial-card";
 import { FadeInWhenVisible } from "@/components/background-effect/fade-in-when-visible";
+import Link from "next/link";
 
 // Main Component
 export default function LandingPage() {
@@ -57,7 +58,7 @@ export default function LandingPage() {
             </motion.h1>
 
             <div className="mt-8 mx-auto max-w-5xl rounded-2xl overflow-hidden border border-gray-200 shadow-xl mb-8">
-              <Image 
+              <Image
                 src="/haper_homepage_1.png"
                 alt="Haper Email Summary Interface"
                 width={1000}
@@ -68,8 +69,11 @@ export default function LandingPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg">
-                Start Free Trial
+
+              <Button size="lg" asChild>
+                <Link href="/register">
+                  Start Free Trial
+                </Link>
               </Button>
               <Button variant="outline" onClick={scrollToFeatures} className="" size="lg">
                 See How It Works <ChevronDown size={18}/>
