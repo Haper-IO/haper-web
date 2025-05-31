@@ -15,9 +15,13 @@ export interface BatchActionResponse {
 }
 
 // Get the newest report
-export const getNewestReport = async () => {
+export const getNewestRealtimeReport = async () => {
   return reqHandler.get<ReportResponse>('/report/newest');
 };
+
+export const getNewestPreviousReport = async () => {
+  return reqHandler.get<ReportResponse>('/report/previous/newest');
+}
 
 // Generate a new report
 export const generateReport = async () => {
@@ -107,4 +111,15 @@ export const getReportMessageContent = (reportId: string, source: string, accoun
       id
     }
   });
+}
+
+export interface GeneratePreviousReportRequest {
+  task_info: {
+    account_id: string;
+    number_of_email: number;
+  }[];
+}
+
+export const generatePreviousReport = async (req: GeneratePreviousReportRequest) => {
+  return reqHandler.post<ReportResponse>(`/report/previous/generate`, req);
 }

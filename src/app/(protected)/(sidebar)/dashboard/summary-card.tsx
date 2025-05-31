@@ -8,7 +8,7 @@ import {useRouter} from "next/navigation"
 import {useState, useEffect} from "react"
 import {
   generateReport,
-  getNewestReport,
+  getNewestRealtimeReport,
 } from "@/lib/requests/client/report"
 import {Report} from "@/lib/modal/report"
 import {Skeleton} from "@/components/ui/skeleton"
@@ -104,7 +104,7 @@ export function LatestSummary() {
     setReportLoading(true);
     setReportError(null);
 
-    getNewestReport().then((resp) => {
+    getNewestRealtimeReport().then((resp) => {
       if (resp.data.report) {
         setReport(resp.data.report);
       } else {
